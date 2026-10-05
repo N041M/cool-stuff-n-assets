@@ -1,6 +1,6 @@
 # cool stuff n assets
 
-This repository holds seven pieces. Each folder has a demo page, the code, the assets it needs and a README. The pieces are plain HTML, CSS and JavaScript with no build step, and each folder runs without the others.
+This repository holds eight pieces. Each folder has a demo page, the code, the assets it needs and a README. The pieces are plain HTML, CSS and JavaScript with no build step, and each folder runs without the others.
 
 The demos are online at https://n041m.github.io/cool-stuff-n-assets/.
 
@@ -11,6 +11,7 @@ The demos are online at https://n041m.github.io/cool-stuff-n-assets/.
 - [`cursor-trail/`](cursor-trail/) is a trail of glyphs the pointer leaves, and a ripple sent out from a click. It runs over any page.
 - [`gothic-corridor/`](gothic-corridor/) is a candlelit gothic hall where a servitor swings a censer, raymarched in the browser with WebGL2 from hand-written shaders.
 - [`stl-models/`](stl-models/) holds nine generated STL models of armour, terrain, relics and characters in a gothic sci-fi style. The demo turns each one in 3D, draws it in four looks and gives its size and triangle count.
+- [`crt-boot/`](crt-boot/) is the power-on and power-off sequence of a CRT terminal, with a degauss wave and a start-up log, on glass with scanlines and grain.
 
 ## Running the demos
 
@@ -29,5 +30,6 @@ The drive, the globe, the background and the trail follow the page's light or da
 Everything in this repository is under the MIT licence in [LICENSE](LICENSE), except for these parts, which keep their own licences:
 
 - [Departure Mono](https://departuremono.com) by Helena Zhang is under the SIL Open Font License 1.1. Each folder that uses it has a copy in `fonts/` with the licence text.
+- VT323 by the VT323 Project Authors and Share Tech Mono by Carrois Type Design, both in `crt-boot/fonts/`, are under the SIL Open Font License 1.1, with their licence texts beside them.
 - [three.js](https://threejs.org) in `stl-models/vendor/three/` is under the MIT licence in its own `LICENSE` file.
 - The map in `globe/data/` is made from [Natural Earth](https://www.naturalearthdata.com) data, which is in the public domain.

@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CRT boot</title>
+  <link rel="stylesheet" href="crt.css">
+  <link rel="stylesheet" href="term.css">
+  <link rel="stylesheet" href="demo.css">
+  <script type="module" src="js/main.js"></script>
+</head>
+<body>
+  <header class="top">
+    <a class="back" href="../" aria-label="All demos">← <span>All demos</span></a>
+    <h1 class="brand">CRT boot</h1>
+    <div class="ctl" role="group" aria-label="Screen">
+      <button type="button" data-power-on>Power on</button>
+      <button type="button" data-power-off aria-disabled="true">Power off</button>
+      <button type="button" data-degauss>Degauss</button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="slot">
+      <div class="crt" data-state="standby"></div>
+    </div>
+  </main>
+</body>
+</html>

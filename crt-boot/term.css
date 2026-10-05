@@ -1,0 +1,135 @@
+/* The terminal the screen shows once it is on. It has a title bar, a few
+   lines with a prompt, and a status line. */
+
+.tui {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.tui p {
+  margin: 0;
+}
+
+.tui__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 2ch;
+  padding: 5px var(--t-pad) 4px;
+  background: var(--p);
+  color: var(--p-bg);
+  text-shadow: none;
+  box-shadow: 0 0 22px rgb(var(--p-rgb) / 0.32);
+  white-space: nowrap;
+}
+
+.tui__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tui__sep {
+  opacity: 0.55;
+}
+
+.tui__meta {
+  display: flex;
+  align-items: center;
+  gap: 2.5ch;
+}
+
+.tui__body {
+  min-height: 0;
+  overflow: hidden;
+  padding: 16px var(--t-pad) 20px;
+}
+
+.tui__dim {
+  color: var(--p-2);
+}
+
+.tui__prompt {
+  color: var(--p-hi);
+}
+
+/* label ........ value */
+.tui__specs {
+  display: grid;
+  gap: 3px;
+  max-width: 34ch;
+  margin: 4px 0 4px 2ch;
+}
+
+.tui__specs div {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.tui__specs div::after {
+  content: "";
+  order: 1;
+  flex: 1;
+  min-width: 2ch;
+  margin: 0 0.6ch;
+  border-bottom: 2px dotted var(--p-4);
+}
+
+.tui__specs dt {
+  color: var(--p-2);
+  white-space: nowrap;
+}
+
+.tui__specs dd {
+  order: 2;
+  margin: 0;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tui__status {
+  display: flex;
+  align-items: center;
+  gap: 3ch;
+  padding: 4px var(--t-pad) 5px;
+  border-top: 1px solid var(--p-4);
+  color: var(--p-3);
+  white-space: nowrap;
+}
+
+.tui__fill {
+  flex: 1;
+}
+
+.caret {
+  display: inline-block;
+  width: 0.55em;
+  height: 0.85em;
+  margin-left: 0.3ch;
+  vertical-align: -0.08em;
+  background: currentColor;
+  box-shadow: 0 0 8px rgb(var(--p-rgb) / 0.5);
+  animation: blink 1.05s steps(1) infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .hide-sm {
+    display: none;
+  }
+  .tui__status {
+    gap: 2ch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .caret {
+    animation: none;
+  }
+}
