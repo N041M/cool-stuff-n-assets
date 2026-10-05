@@ -72,6 +72,7 @@ Every change to the drive should be checked against this file. When a rule has t
    - Clouds are the first drive's: patches of a noise field twice as wide as they are tall, drawn in ink, `■■■▪═■` where they are thick, `=+□▪≈=` further out and `-:·.'-` at their edges and base, with holes, ragged streaks and the odd digit. The pixel look keeps rounded clouds.
    - The sun is the first drive's: a disc of quarter blocks 20 CSS px in radius on a 1200 px wide window, growing toward dusk, in its sun colour. When it is low it turns to the dusk colour and its lower half is striped. It has no glow.
    - The moon is the first drive's crescent: a disc 15 CSS px in radius on a 1200 px wide window, less a smaller disc set up and to its right, set in the page's cells in quarter blocks. It is pale yellow on dark rows and ochre on light ones, and has no glow. The pixel look keeps the moon's phase and glow.
+   - The pixel moon shows the real phase for the date and hour the drive shows, and the phase moves on with every day of the drive. Its glow is as bright as its lit share, so a new moon has none.
    - The moon lays a path on the distant sea, as in the first drive: `─` in the moon's colour in some of the cells below it, `═` along the middle, in a band that widens toward the road. The lines belong to the water, so they drift through the path and fade in and out at its edges. The pixel look draws the same path as short streaks.
    - Wind turbines stand in the middle distance, in farms of two to four on open fields and meadow in the lowland and the hills: a white tower 30 to 38 px tall that tapers from two pixels to one, a nacelle and a hub, and blades a little over half the tower's height, two pixels wide near the hub. In the character look each blade is a line of characters from the hub to its tip, one per row where it is steep (`│ / \`) and `─` along the columns with a slash at each step where it is shallow, round a `+` hub on a `│` tower.
    - The airliner is two rows of characters: the fuselage between two lines of `_`, a `<` or `>` nose, a `/|` tail fin and a row of `·` windows. By day it trails a dashed contrail. At night its body fades, its windows glow and it shows a red light on the wing and a white strobe on the fin.
@@ -152,9 +153,9 @@ Every change to the drive should be checked against this file. When a rule has t
 The pitch is a nod to a referee from the years of communist Czechoslovakia.
 
 1. It appears on most visits within the first few minutes, in a village or farmland place, and now and then after that.
-2. It is a small village ground: a railing with spectators, a clubhouse, wooden benches, two floodlights and a scoreboard of wooden number plates under DOMÁCÍ and HOSTÉ. There are no advertising boards, no names and no political symbols.
+2. It is a small village ground: a railing with spectators in small groups along it, a clubhouse with two wooden benches against its wall, two floodlights and a scoreboard of wooden number plates under DOMÁCÍ and HOSTÉ. There are no advertising boards, no names and no political symbols.
 3. The referee and the linesman wear the black kit with a white collar that referees wore until the early 1990s. The referee has a whistle, a watch and a notebook.
-4. The players wear light kits with black armbands.
+4. The players wear light kits with shorts, socks and black armbands. Their knees are bare, and the armband shows from the side as well as from the front. The goalkeepers wear dark shorts and socks. People who are not in a kit wear trousers down to the shoe.
 5. Each time the pitch passes, one moment is chosen and timed to happen near the middle of the screen:
    - a minute's silence, with both teams and the officials lined up across the middle of the pitch, facing the road with heads bowed, until the referee's whistle
    - a foul, the whistle, the yellow card and the notebook

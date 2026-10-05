@@ -48,7 +48,7 @@
   window.DriveEngine = E;
   let vw = 0, vh = 0, heroEl = null, heroH = 0, heroBlocks = [], barBottom = 56;
   let pageBg = [251, 250, 248], darkPage = false;
-  let seed = 0, hour0 = 12, started = false, raf = 0, lastNow = 0;
+  let seed = 0, hour0 = 12, day0 = 0, started = false, raf = 0, lastNow = 0;
   let planes = [];
   let traffic, trains, boats, sky;
   const dust = [];
@@ -148,6 +148,7 @@
     E.pace = 1;
     E.speedNow = E.speed;
     const now = new Date();
+    day0 = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
     hour0 = opts.hour !== undefined ? opts.hour : params.get("hour") !== null ? Number(params.get("hour")) : now.getHours() + now.getMinutes() / 60;
     if (E.still) hour0 = opts.hour !== undefined ? opts.hour : E.rng.range(0, 24);
     if (opts.place) {
@@ -1024,6 +1025,34 @@
   // The look of the moment: the time of day, the weather and the page theme.
   function hourNow() {
     return K.mod(hour0 + (E.t * 24) / DAY_S, 24);
+  }
+
+  // The moon's phase at the moment the drive shows: the day it started, at
+  // the drive's hour, moving on a day with every day of the drive. The age
+  // is counted in mean synodic months from the new moon of 6 January 2000 at
+  // 18:14 UTC. The pixel moon is its disc less a disc of the same size moved
+  // sideways by 2r times the phase, so the phase is the shift that leaves the
+  // real lit share of the disc. It is negative while the moon waxes, which
+  // lights its right side.
+  const SYNODIC_DAYS = 29.530588853;
+  const NEW_MOON_MS = Date.UTC(2000, 0, 6, 18, 14);
+  function litShare(s) {
+    const d = 2 * s;
+    if (d >= 2) return 1;
+    return 1 - (2 * Math.acos(d / 2) - (d / 2) * Math.sqrt(4 - d * d)) / Math.PI;
+  }
+  function moonPhaseNow() {
+    const ms = day0 + (hour0 + (E.t * 24) / DAY_S) * 3600000;
+    const age = K.mod((ms - NEW_MOON_MS) / 86400000 / SYNODIC_DAYS, 1);
+    const lit = (1 - Math.cos(2 * Math.PI * age)) / 2;
+    let lo = 0, hi = 1;
+    for (let i = 0; i < 20; i++) {
+      const mid = (lo + hi) / 2;
+      if (litShare(mid) < lit) lo = mid;
+      else hi = mid;
+    }
+    E.moonLit = lit;
+    return age < 0.5 ? -lo : lo;
   }
 
   const LOOK = { amb: [1, 1, 1], hor: [0, 0, 0], top: [0, 0, 0], fogCol: [0, 0, 0], cover: 0, wet: 0, snow: 0, fog: 0, fogPlane: 0, theme: [1, 1, 1], sun: [0, 0, 0], low: 0, sunEl: 0, chimneys: 0 };
@@ -2121,14 +2150,15 @@
       }
     }
     // The moon, and the sun with a glow around it. Both set behind the far
-    // plane, which is drawn over them. The pixel moon has its phase and a
-    // glow; the character moon is the first drive's crescent.
+    // plane, which is drawn over them. The pixel moon has the real phase and
+    // a glow as bright as its lit share. The character moon is the first
+    // drive's crescent.
     if (env.moonEl > -0.1) {
       const mx = E.Wsp * (0.12 + 0.76 * env.moonUp), my = L.horizon - env.moonEl * (L.horizon - L.skyTop) * 0.78;
       const r = 4;
       const cx = Math.round(mx * E.pD), cy = E.devY(my);
       if (E.ascii) drawMoonAscii(mx * E.P, my * E.P, 0.3 + 0.7 * env.dark);
-      else glow(cx, cy, 22 * E.pD, 0.12 * K.smooth(0.3, 0.8, env.dark), [210, 220, 255]);
+      else glow(cx, cy, 22 * E.pD, 0.12 * K.smooth(0.3, 0.8, env.dark) * E.moonLit, [210, 220, 255]);
       if (!E.ascii) for (let yy = -r; yy <= r; yy++) for (let xx = -r; xx <= r; xx++) {
         if (xx * xx + yy * yy > r * r + 1) continue;
         const lit = (xx - E.moonPhase * r * 2) * (xx - E.moonPhase * r * 2) + yy * yy > r * r;
@@ -2476,6 +2506,7 @@
   function update(dt) {
     E.dt = dt;
     E.t += dt;
+    E.moonPhase = moonPhaseNow();
     updatePace(dt);
     E.camX += E.speedNow * dt;
     const env = K.timeOfDay(hourNow(), E.env);
@@ -2584,7 +2615,7 @@
     readInk();
     layout();
     reset({});
-    E.moonPhase = E.rng.range(-0.9, 0.9);
+    E.moonPhase = moonPhaseNow();
     makeStars();
     if (E.still) {
       // Let the weather and the scene settle into a moment.
@@ -2707,7 +2738,7 @@
       o = o || {};
       if (o.seed === undefined) o.seed = seed;
       reset(o);
-      E.moonPhase = E.rng.range(-0.9, 0.9);
+      E.moonPhase = moonPhaseNow();
       makeStars();
       if (E.still) drawStill();
     },

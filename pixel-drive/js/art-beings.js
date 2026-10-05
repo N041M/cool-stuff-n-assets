@@ -10,8 +10,8 @@
 
   // ------------------------------------------------------------- people ---
   // People on the roadside are 11 px tall, with 3 empty rows above the head
-  // for raised arms. Keys: t top, a sleeve, x armband, p trousers or shorts,
-  // l bare leg, o sock, b shoe, c card, n notebook, f flag, F flag second
+  // for raised arms. Keys: t top, a sleeve, x armband on the upper arm, p
+  // trousers or shorts, l the knee and shin, o sock, b shoe, c card, n notebook, f flag, F flag second
   // colour, w white collar. The head is 3 px: h the top of the head, k the
   // back of the head, s the face, e an eye, m the upper lip. Around it, L is
   // long hair or a headscarf beside the face, M the same over the shoulders
@@ -20,71 +20,71 @@
   const P = {
     stand: [
       "......", "......", "......",
-      "..hhhB", "..kes.", "..ksm.", "..Mt..", "..tat.", "..tat.", "..tss.", "..pp..", "..pp..", "..pp..", "..bb..",
+      "..hhhB", "..kes.", "..ksm.", "..Mt..", "..txt.", "..tat.", "..tss.", "..pp..", "..ll..", "..oo..", "..bb..",
     ],
     walk1: [
       "......", "......", "......",
-      "..hhhB", "..kes.", "..ksm.", "..Mt..", ".atta.", ".stt.s", "..tt..", "..pp..", ".p..p.", ".p..p.", ".b...b",
+      "..hhhB", "..kes.", "..ksm.", "..Mt..", ".attx.", ".stt.s", "..tt..", "..pp..", ".l..l.", ".o..o.", ".b...b",
     ],
     walk2: [
       "......", "......", "......",
-      "..hhhB", "..kes.", "..ksm.", "..Mt..", "..tat.", "..tat.", "..tss.", "..pp..", "..pp..", "..p.p.", "..bbb.",
+      "..hhhB", "..kes.", "..ksm.", "..Mt..", "..txt.", "..tat.", "..tss.", "..pp..", "..ll..", "..o.o.", "..bbb.",
     ],
     walk3: [
       "......", "......", "......",
-      "..hhhB", "..kes.", "..ksm.", "..Mt..", ".atta.", "s.tts.", "..tt..", "..pp..", ".p..p.", "p...p.", "b...b.",
+      "..hhhB", "..kes.", "..ksm.", "..Mt..", ".attx.", "s.tts.", "..tt..", "..pp..", ".l..l.", "o...o.", "b...b.",
     ],
     run1: [
       "......", "......", "......",
-      "...hhh", "...kes", "...ksm", "..Mt..", ".atta.", "s.tt.s", "..tt..", "..pp..", ".p..p.", "p....p", "b.....",
+      "...hhh", "...kes", "...ksm", "..Mt..", ".attx.", "s.tt.s", "..tt..", "..pp..", ".l..l.", "o....o", "b.....",
     ],
     run2: [
       "......", "......", "......",
-      "..hhhB", "..kes.", "..ksm.", "..Mt..", "..tat.", "..tat.", "..tss.", "..pp..", "..pp..", "..pp..", "..bb..",
+      "..hhhB", "..kes.", "..ksm.", "..Mt..", "..txt.", "..tat.", "..tss.", "..pp..", "..ll..", "..oo..", "..bb..",
     ],
     run3: [
       "......", "......", "......",
-      "...hhh", "...kes", "...ksm", "..Mt..", ".atta.", ".stts.", "..tt..", "..pp..", ".p..p.", ".p...p", "b....b",
+      "...hhh", "...kes", "...ksm", "..Mt..", ".attx.", ".stts.", "..tt..", "..pp..", ".l..l.", ".o...o", "b....b",
     ],
     whistle: [
       "......", "......", "......",
-      "..hhhB", "..kes.", "..ksss", "..Mta.", "..ta..", "..tt..", "..tt..", "..pp..", "..pp..", "..pp..", "..bb..",
+      "..hhhB", "..kes.", "..ksss", "..Mta.", "..tx..", "..tt..", "..tt..", "..pp..", "..ll..", "..oo..", "..bb..",
     ],
     point: [
       "......", "......", "......",
-      "..hhhB", "..kes.", "..ksm.", "..Mt..", "..taaa", "..tt.s", "..tt..", "..pp..", "..pp..", "..pp..", "..bb..",
+      "..hhhB", "..kes.", "..ksm.", "..Mt..", "..txaa", "..tt.s", "..tt..", "..pp..", "..ll..", "..oo..", "..bb..",
     ],
     pointDown: [
       "......", "......", "......",
-      "..hhhB", "..kes.", "..ksm.", "..Mt..", "..ta..", "..tta.", "..tt.a", "..pp..s", "..pp..", "..pp..", "..bb..",
+      "..hhhB", "..kes.", "..ksm.", "..Mt..", "..tx..", "..tta.", "..tt.a", "..pp..s", "..ll..", "..oo..", "..bb..",
     ],
     armUp: [
-      "...s..", "...a..", "...a..",
-      "..hah.", "..kes.", "..ksm.", "..Mt..", "..tt..", "..tt..", "..tt..", "..pp..", "..pp..", "..pp..", "..bb..",
+      "...s..", "...a..", "...x..",
+      "..hah.", "..kes.", "..ksm.", "..Mt..", "..tt..", "..tt..", "..tt..", "..pp..", "..ll..", "..oo..", "..bb..",
     ],
     card: [
-      "...c..", "...c..", "...a..",
-      "..hah.", "..kes.", "..ksm.", "..Mt..", "..tt..", "..tt..", "..tt..", "..pp..", "..pp..", "..pp..", "..bb..",
+      "...c..", "...c..", "...x..",
+      "..hah.", "..kes.", "..ksm.", "..Mt..", "..tt..", "..tt..", "..tt..", "..pp..", "..ll..", "..oo..", "..bb..",
     ],
     notebook: [
       "......", "......", "......",
-      "..hhhB", "..khs.", "..kss.", "..Mt..", "..tas.", "..tnn.", "..tt..", "..pp..", "..pp..", "..pp..", "..bb..",
+      "..hhhB", "..khs.", "..kss.", "..Mt..", "..txs.", "..tnn.", "..tt..", "..pp..", "..ll..", "..oo..", "..bb..",
     ],
     watch: [
       "......", "......", "......",
-      "..hhhB", "..khs.", "..kss.", "..Mt..", "..taa.", "..tt..", "..tt..", "..pp..", "..pp..", "..pp..", "..bb..",
+      "..hhhB", "..khs.", "..kss.", "..Mt..", "..txa.", "..tt..", "..tt..", "..pp..", "..ll..", "..oo..", "..bb..",
     ],
     flagUp: [
-      "..fF..", "..Ff..", "...a..",
-      "..hah.", "..kes.", "..ksm.", "..Mt..", "..tt..", "..tt..", "..tt..", "..pp..", "..pp..", "..pp..", "..bb..",
+      "..fF..", "..Ff..", "...x..",
+      "..hah.", "..kes.", "..ksm.", "..Mt..", "..tt..", "..tt..", "..tt..", "..pp..", "..ll..", "..oo..", "..bb..",
     ],
     flagDown: [
       "......", "......", "......",
-      "..hhhB", "..kes.", "..ksm.", "..Mt..", "..tat.", "..tat.", "..tsfF", "..ppFf", "..pp..", "..pp..", "..bb..",
+      "..hhhB", "..kes.", "..ksm.", "..Mt..", "..txt.", "..tat.", "..tsfF", "..ppFf", "..ll..", "..oo..", "..bb..",
     ],
     kick: [
       "......", "......", "......",
-      "..hhhB", "..kes.", "..ksm.", "..Mt..", ".atta.", "s.tt..", "..tt..", "..pp..", "..p.p.", ".p...pp", ".b.....",
+      "..hhhB", "..kes.", "..ksm.", "..Mt..", ".attx.", "s.tt..", "..tt..", "..pp..", "..l.l.", ".o...oo", ".b.....",
     ],
     front: [
       ".....", ".....", ".....",
@@ -104,7 +104,9 @@
     "...........", ".sa.........", "hsttttppllob", "ksttttppllob",
   ];
 
-  // Colour sets for a person. `kit` is a football kit. `head` is the style
+  // Colour sets for a person. A football kit gives `socks`, and its wearer
+  // has shorts with bare knees. Everyone else wears trousers to the shoe.
+  // `head` is the style
   // of the head: "short", "long", "bald", "cap" or "scarf". `cap` is the
   // colour of a cap or a headscarf, and `tache` gives a moustache.
   function personKeys(o) {
@@ -112,7 +114,7 @@
     const style = o.head || "short", cap = o.cap || M.clothN;
     const k = {
       t: top, a: o.sleeve || top, x: o.band || o.sleeve || top, S: skin, s: skin,
-      p: o.legs || M.clothN, l: skin, o: o.socks || o.legs || M.clothN, b: o.shoes || M.black,
+      p: o.legs || M.clothN, l: o.socks ? skin : o.legs || M.clothN, o: o.socks || o.legs || M.clothN, b: o.shoes || M.black,
       c: M.signYellow, n: M.white, f: M.signYellow, F: M.signRed, w: M.white,
       // Eyes are darker skin, and very dark on dark skin.
       e: skin === M.skinB ? M.hairK : M.skinB, m: o.tache ? hair : skin,

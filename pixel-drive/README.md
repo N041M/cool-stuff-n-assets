@@ -1,6 +1,6 @@
 # Pixel drive
 
-This is an endless drive drawn as pixel art. A rally car drives a route that is generated as it goes, through cities, highways, a bridge, the coast, a desert, a rally stage, farmland, villages, forest, mountain passes and a winter valley. The time of day runs on continuously, with a whole day every 10 minutes, and the weather drifts toward the climate of each place. The car overtakes slower traffic, weaves through a sprint on the highway and meets oncoming cars. Trains, boats, planes and birds pass now and then. The route also holds a village football pitch, the Ještěd tower above Liberec and, at night, a UFO.
+This is an endless drive drawn as pixel art. A rally car drives a route that is generated as it goes, through cities, highways, a bridge, the coast, a desert, a rally stage, farmland, villages, forest, mountain passes and a winter valley. The time of day runs on continuously, with a whole day every 10 minutes, and the weather drifts toward the climate of each place. The moon shows its real phase for the date. The car overtakes slower traffic, weaves through a sprint on the highway and meets oncoming cars. Trains, boats, planes and birds pass now and then. The route also holds a village football pitch, the Ještěd tower above Liberec and, at night, a UFO.
 
 The rules the drive follows are in [docs/drive-rules.md](docs/drive-rules.md). Every change to the drive should be checked against them.
 

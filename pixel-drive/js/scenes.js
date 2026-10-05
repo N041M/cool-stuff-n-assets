@@ -70,6 +70,13 @@
   Spectator.prototype.draw = function (E) {
     E.drawSpr(this.pose === "cheer" ? this.f.cheer : this.f.front, this.plane, this.u, this.y);
   };
+  // Spectators at the football pitch. They watch the match and cheer now and
+  // then, but not at passing cars.
+  function Fan(frames, u, y, rng) {
+    Spectator.call(this, frames, u, y, rng);
+  }
+  Fan.prototype = Object.create(Spectator.prototype);
+  Fan.prototype.update = Stander.prototype.update;
   objects.spectators = function (rng) {
     const n = rng.int(3, 6);
     const acts = [];
@@ -295,7 +302,14 @@
     spr.rect(20, cy - chh + 5, 8, 6, M.glass);
     spr.light(20, cy - chh + 5, 8, 6, "win", lid + 51);
     spr.rect(32, cy - 12, 6, 12, M.woodD);
-    spr.hline(4, 16, cy + 1, M.wood);
+    // Two wooden benches against the clubhouse. Each has a seat and a
+    // backrest held by two legs.
+    for (const bx of [3, 17]) {
+      spr.hline(bx, bx + 10, cy - 3, M.wood);
+      spr.hline(bx, bx + 10, cy - 5, M.woodD);
+      spr.vline(bx + 1, cy - 5, cy, M.woodD);
+      spr.vline(bx + 9, cy - 5, cy, M.woodD);
+    }
     // The scoreboard: black boards under DOMÁCÍ and HOSTÉ on two posts.
     const sbx = px0 + PITCH_W - board - 6, sby = ry - 30;
     spr.rect(sbx, sby, board, 18, M.signInk);
@@ -304,7 +318,15 @@
     spr.vline(sbx + 4, sby + 18, ry - 1, M.woodD);
     spr.vline(sbx + board - 5, sby + 18, ry - 1, M.woodD);
     const match = new Match(rng, { px0: px0, ry: ry, sb: { x: sbx, y: sby, w: board }, first: o.first, silence: o.silence, W: W });
-    return { spr: spr, actors: [match], nosnowLines: true };
+    // Spectators lean on the railing in small groups, clear of the scoreboard
+    // posts. They are drawn before the match, so the players stand in front.
+    const fans = [];
+    for (let x = px0 + rng.int(4, 14); x < px0 + PITCH_W - 8; x += rng.int(10, 26)) {
+      if (x > sbx - 6 && x < sbx + board + 2) continue;
+      const n = rng.int(1, 3);
+      for (let i = 0; i < n; i++) fans.push(new Fan(art.randomPerson(rng), x + i * 5, ry - b - 1, rng.fork(x * 7 + i)));
+    }
+    return { spr: spr, actors: fans.concat([match]), nosnowLines: true };
   };
 
   // The match on the pitch. Positions are in pitch coordinates: x along the
