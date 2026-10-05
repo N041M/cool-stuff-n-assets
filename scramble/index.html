@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Text scramble</title>
+  <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="demo.css">
+  <script defer src="scramble.js"></script>
+  <script defer src="demo.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="bar">
+      <a class="back" href="../" aria-label="All demos">← <span>All demos</span></a>
+      <h1 class="brand" data-scramble>scramble.js</h1>
+      <nav class="nav" aria-label="Sections">
+        <a href="#click" data-scramble><span lang="en">Click</span><span lang="cs">Klik</span></a>
+        <a href="#scroll" data-scramble><span lang="en">Scroll</span><span lang="cs">Posun</span></a>
+        <a href="#stream" data-scramble><span lang="en">Stream</span><span lang="cs">Proud</span></a>
+      </nav>
+      <div class="seg" role="group" aria-label="Language">
+        <button type="button" data-set-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-set-lang="cs" aria-pressed="false">CZ</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <p class="lede"><span class="hl" lang="en">The bar resolved when the page loaded.</span><span class="hl" lang="cs">Lišta se rozluštila při načtení stránky.</span></p>
+      <button type="button" class="btn" data-replay=".top [data-scramble], .hero [data-scramble]"><span lang="en">Run again</span><span lang="cs">Znovu</span></button>
+    </section>
+
+    <section class="section" id="click">
+      <div class="panel">
+        <p class="labels" data-scramble><span>2026</span><span lang="en">Click any label</span><span lang="cs">Klikněte na popisek</span><span>v1.0</span><span lang="en">Plain JavaScript</span><span lang="cs">Čistý JavaScript</span></p>
+        <p class="mail-row">
+          <span class="mail">hello@example.com</span>
+          <button type="button" class="copy" data-copy="hello@example.com" data-scramble>
+            <span class="copy-idle"><span lang="en">Copy</span><span lang="cs">Kopírovat</span></span>
+            <span class="copy-done"><span lang="en">Copied</span><span lang="cs">Zkopírováno</span></span>
+          </button>
+        </p>
+      </div>
+    </section>
+
+    <section class="section" id="scroll">
+      <div class="panel">
+        <ol class="timeline">
+          <li><span class="date" data-scramble><span lang="en">Feb – Jul 2025</span><span lang="cs">únor – červenec 2025</span></span><span lang="en">Each label resolves the first time it scrolls into view.</span><span lang="cs">Každý popisek se rozluští, když poprvé přijede na obrazovku.</span></li>
+          <li><span class="date" data-scramble><span lang="en">2022 – present</span><span lang="cs">2022 – dosud</span></span><span lang="en">Labels in one block start 40 ms apart.</span><span lang="cs">Popisky v jednom bloku začínají 40 ms po sobě.</span></li>
+          <li><span class="date" data-scramble><span>2021, 2022 (2×), 2024</span></span><span lang="en">Spaces never scramble, so the shape of each word holds still.</span><span lang="cs">Mezery se nemíchají, takže tvar slov zůstává.</span></li>
+        </ol>
+        <button type="button" class="btn" data-replay="#scroll .timeline [data-scramble]"><span lang="en">Run again</span><span lang="cs">Znovu</span></button>
+      </div>
+    </section>
+
+    <section class="section" id="stream">
+      <div class="panel">
+        <p class="reply" data-reply aria-live="polite"></p>
+        <button type="button" class="btn" data-stream data-scramble><span lang="en">Reveal</span><span lang="cs">Odhalit</span></button>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

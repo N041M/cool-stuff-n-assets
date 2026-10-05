@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>STL models</title>
+  <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="demo.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three/three.module.js",
+        "three/addons/": "./vendor/three/addons/"
+      }
+    }
+  </script>
+  <script type="module" src="demo.js"></script>
+</head>
+<body>
+  <header class="bar">
+    <a class="back" href="../" aria-label="All demos">← <span>All demos</span></a>
+    <h1 class="brand">STL models</h1>
+    <div class="seg" role="group" aria-label="Theme">
+      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+      <button type="button" data-set-theme="system" aria-pressed="true">Auto</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro">
+      <p class="lede"><span class="hl">Nine generated models for 3D printing. Drag a model to turn it, and use the wheel or a pinch to zoom.</span></p>
+    </section>
+
+    <div class="viewer">
+      <div class="view">
+        <figure class="stage" data-stage>
+          <canvas data-canvas role="img" aria-label="The picked model"></canvas>
+          <div class="stage-bar">
+            <p class="stage-note"><span>Grid 10 mm</span><span class="status" data-note aria-live="polite">Loading</span></p>
+            <div class="seg" role="group" aria-label="View">
+              <button type="button" data-step="-1" aria-label="Previous model" title="Previous model">&lt;</button>
+              <button type="button" data-step="1" aria-label="Next model" title="Next model">&gt;</button>
+              <button type="button" data-zoom="in" aria-label="Zoom in" title="Zoom in">+</button>
+              <button type="button" data-zoom="out" aria-label="Zoom out" title="Zoom out">-</button>
+              <button type="button" data-turn aria-pressed="false" title="Turn the model slowly">Turn</button>
+              <button type="button" data-reset title="Back to the first view">Reset</button>
+            </div>
+          </div>
+        </figure>
+
+        <div class="readout">
+          <p class="model-name" data-name>Castellan-Pattern Battle Tank</p>
+          <p class="short" data-short>Siege-grade heavy armour with a faceted turret and full track runs.</p>
+          <dl class="stats">
+            <div><dt>Size, x × y × z</dt><dd data-size>–</dd></div>
+            <div><dt>Triangles</dt><dd data-tris>–</dd></div>
+            <div><dt>File</dt><dd><a data-file href="models/castellan-battle-tank.stl" download>castellan-battle-tank.stl</a> <span class="bytes" data-bytes></span></dd></div>
+          </dl>
+        </div>
+      </div>
+
+      <section class="picker" aria-label="Models">
+        <ol class="list">
+          <li data-model="castellan-battle-tank" data-short="Siege-grade heavy armour with a faceted turret and full track runs.">
+            <button type="button" class="pick" aria-pressed="true"><span class="idx">01</span><span class="pick-name">Castellan-Pattern Battle Tank</span><span class="pick-cat">Armour</span></button>
+            <a class="dl" href="models/castellan-battle-tank.stl" download aria-label="STL file, castellan-battle-tank.stl">STL</a>
+          </li>
+          <li data-model="orbital-descent-pod" data-short="Assault lander with armoured petals deployed. A table centrepiece.">
+            <button type="button" class="pick" aria-pressed="false"><span class="idx">02</span><span class="pick-name">Orbital Descent Pod</span><span class="pick-cat">Armour</span></button>
+            <a class="dl" href="models/orbital-descent-pod.stl" download aria-label="STL file, orbital-descent-pod.stl">STL</a>
+          </li>
+          <li data-model="basilica-ruin" data-short="Shattered cathedral wall with a pointed arch and rose windows.">
+            <button type="button" class="pick" aria-pressed="false"><span class="idx">03</span><span class="pick-name">Basilica Ruin — Nave Section</span><span class="pick-cat">Terrain</span></button>
+            <a class="dl" href="models/basilica-ruin.stl" download aria-label="STL file, basilica-ruin.stl">STL</a>
+          </li>
+          <li data-model="siege-barricade-kit" data-short="Tank traps, sandbags, barrels, crates and razor wire.">
+            <button type="button" class="pick" aria-pressed="false"><span class="idx">04</span><span class="pick-name">Siege-Line Barricade Kit</span><span class="pick-cat">Terrain</span></button>
+            <a class="dl" href="models/siege-barricade-kit.stl" download aria-label="STL file, siege-barricade-kit.stl">STL</a>
+          </li>
+          <li data-model="reliquary-shrine" data-short="Arched shrine with a sealed urn, banner and candle clusters.">
+            <button type="button" class="pick" aria-pressed="false"><span class="idx">05</span><span class="pick-name">Reliquary Shrine</span><span class="pick-cat">Terrain</span></button>
+            <a class="dl" href="models/reliquary-shrine.stl" download aria-label="STL file, reliquary-shrine.stl">STL</a>
+          </li>
+          <li data-model="oathbreaker-relic-blade" data-short="Ornate blade driven into a rock plinth, with chains and a wax seal.">
+            <button type="button" class="pick" aria-pressed="false"><span class="idx">06</span><span class="pick-name">Oathbreaker Relic Blade</span><span class="pick-cat">Relics</span></button>
+            <a class="dl" href="models/oathbreaker-relic-blade.stl" download aria-label="STL file, oathbreaker-relic-blade.stl">STL</a>
+          </li>
+          <li data-model="cogitator-terminal" data-short="Gothic data-lectern with keycaps, cabling and a skull finial.">
+            <button type="button" class="pick" aria-pressed="false"><span class="idx">07</span><span class="pick-name">Cogitator Terminal</span><span class="pick-cat">Relics</span></button>
+            <a class="dl" href="models/cogitator-terminal.stl" download aria-label="STL file, cogitator-terminal.stl">STL</a>
+          </li>
+          <li data-model="void-knight-helm-bust" data-short="Armoured helm bust on a turned plinth. Painting showpiece.">
+            <button type="button" class="pick" aria-pressed="false"><span class="idx">08</span><span class="pick-name">Void-Knight Helm Bust</span><span class="pick-cat">Characters</span></button>
+            <a class="dl" href="models/void-knight-helm-bust.stl" download aria-label="STL file, void-knight-helm-bust.stl">STL</a>
+          </li>
+          <li data-model="servo-skull-drone" data-short="Hovering skull drone with a bionic lens and a manipulator arm.">
+            <button type="button" class="pick" aria-pressed="false"><span class="idx">09</span><span class="pick-name">Servo-Skull Drone</span><span class="pick-cat">Characters</span></button>
+            <a class="dl" href="models/servo-skull-drone.stl" download aria-label="STL file, servo-skull-drone.stl">STL</a>
+          </li>
+        </ol>
+      </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <p>Drawn with three.js r186.</p>
+  </footer>
+</body>
+</html>

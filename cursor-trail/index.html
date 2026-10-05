@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cursor trail</title>
+  <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    @font-face {
+      font-family: "Departure Mono";
+      src: url("fonts/DepartureMono-Regular.woff2") format("woff2");
+      font-display: swap;
+    }
+    /* The trail is drawn in --accent. */
+    :root {
+      --bg: #fbfaf8;
+      --fg: #17181b;
+      --muted: #6d6c68;
+      --line: #e5e3de;
+      --soft: #efeeea;
+      --panel: #ffffff;
+      --edge: #17181b;
+      --drop: #d9d6cf;
+      --accent: #c8352b;
+      --on-accent: #fbfaf8;
+      --mono: "Departure Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #131417;
+        --fg: #edece8;
+        --muted: #8e8d88;
+        --line: #2a2b30;
+        --soft: #212227;
+        --panel: #18191c;
+        --edge: #4a4b52;
+        --drop: #2c2d33;
+        --accent: #dc665e;
+        --on-accent: #131417;
+        color-scheme: dark;
+      }
+    }
+    :root[data-theme="dark"] {
+      --bg: #131417;
+      --fg: #edece8;
+      --muted: #8e8d88;
+      --line: #2a2b30;
+      --soft: #212227;
+      --panel: #18191c;
+      --edge: #4a4b52;
+      --drop: #2c2d33;
+      --accent: #dc665e;
+      --on-accent: #131417;
+      color-scheme: dark;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--fg);
+      font: 400 17px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    p { margin: 0; }
+    code { font: 0.92em var(--mono); }
+    main {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 22px;
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: clamp(64px, 16vh, 160px) 16px 80px;
+    }
+    .panel {
+      max-width: 560px;
+      padding: 22px 24px;
+      border: 1px solid var(--edge);
+      background: var(--panel);
+      box-shadow: 5px 5px 0 var(--drop);
+    }
+    .back {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 1;
+      color: var(--muted);
+      font: 16.5px/1 var(--mono);
+      text-decoration: none;
+    }
+    .back:hover { color: var(--fg); }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn, .seg button {
+      appearance: none;
+      border: 1px solid var(--edge);
+      background: var(--panel);
+      color: var(--fg);
+      font: 16.5px/1 var(--mono);
+      cursor: pointer;
+    }
+    .btn { height: 46px; padding: 0 16px; box-shadow: 3px 3px 0 var(--drop); }
+    .btn:hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
+    .seg { display: inline-flex; padding: 2px; border: 1px solid var(--line); background: var(--panel); }
+    .seg button { height: 30px; min-width: 34px; padding: 0 8px; border: 0; font-size: 11px; letter-spacing: 0.08em; }
+    .seg button:hover { background: var(--soft); }
+    .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+  <script defer src="cursor-trail.js"></script>
+</head>
+<body>
+  <a class="back ko" href="../">← All demos</a>
+
+  <main>
+    <div class="panel ko">
+      <p>Click anywhere for a ripple. The trail stays off this panel because it has the class <code>ko</code>.</p>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn" data-sweep>Trail</button>
+      <button type="button" class="btn">Ripple</button>
+      <div class="seg" role="group" aria-label="Theme">
+        <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+        <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+        <button type="button" data-set-theme="system" aria-pressed="true">Auto</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Buttons send a ripple from their middle. A click anywhere else sends one from the
+    // pointer. Trail draws a wave across the window instead, for a screen
+    // with no pointer to move.
+    (function () {
+      var root = document.documentElement;
+      function pulseFrom(el) {
+        var r = el.getBoundingClientRect();
+        window.CursorTrail.pulse(r.left + r.width / 2, r.top + r.height / 2);
+      }
+      function sweep() {
+        var t0 = performance.now();
+        document.dispatchEvent(new PointerEvent("pointerleave"));
+        requestAnimationFrame(function step(now) {
+          var k = Math.min(1, (now - t0) / 1400);
+          var x = innerWidth * (0.08 + 0.84 * k);
+          var y = innerHeight * (0.55 + 0.2 * Math.sin(k * Math.PI * 3));
+          window.dispatchEvent(new PointerEvent("pointermove", { clientX: x, clientY: y }));
+          if (k < 1) requestAnimationFrame(step);
+          else document.dispatchEvent(new PointerEvent("pointerleave"));
+        });
+      }
+      document.addEventListener("click", function (e) {
+        if (!window.CursorTrail) return;
+        var button = e.target instanceof Element && e.target.closest("button");
+        if (button && button.hasAttribute("data-sweep")) sweep();
+        else if (button) pulseFrom(button);
+        else window.CursorTrail.pulse(e.clientX, e.clientY);
+      });
+      document.querySelectorAll("[data-set-theme]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var choice = b.getAttribute("data-set-theme");
+          if (choice === "system") root.removeAttribute("data-theme");
+          else root.setAttribute("data-theme", choice);
+          document.querySelectorAll("[data-set-theme]").forEach(function (o) {
+            o.setAttribute("aria-pressed", String(o === b));
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

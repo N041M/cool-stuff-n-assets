@@ -1,0 +1,177 @@
+/* The globe's styles. */
+
+@font-face {
+  font-family: "Departure Mono";
+  src: url("fonts/DepartureMono-Regular.woff2") format("woff2");
+  font-display: swap;
+}
+
+/* The globe shades its sea and land between the --sea-* and --land-* pairs.
+   Borders are cut out of the land in --panel, the colour of the figure. */
+:root {
+  --bg: #fbfaf8;
+  --fg: #17181b;
+  --muted: #6d6c68;
+  --line: #e5e3de;
+  --soft: #efeeea;
+  --panel: #ffffff;
+  --edge: #17181b;
+  --drop: #d9d6cf;
+  --accent: #c8352b;
+  --on-accent: #fbfaf8;
+  --sea-lit: #f4f2ed;
+  --sea-dark: #b9b5ac;
+  --land-lit: #9b978f;
+  --land-dark: #35363a;
+  --mono: "Departure Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131417;
+    --fg: #edece8;
+    --muted: #8e8d88;
+    --line: #2a2b30;
+    --soft: #212227;
+    --panel: #18191c;
+    --edge: #4a4b52;
+    --drop: #2c2d33;
+    --accent: #dc665e;
+    --on-accent: #131417;
+    --sea-lit: #3a3b41;
+    --sea-dark: #1c1d20;
+    --land-lit: #d8d6d0;
+    --land-dark: #4d4e53;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131417;
+  --fg: #edece8;
+  --muted: #8e8d88;
+  --line: #2a2b30;
+  --soft: #212227;
+  --panel: #18191c;
+  --edge: #4a4b52;
+  --drop: #2c2d33;
+  --accent: #dc665e;
+  --on-accent: #131417;
+  --sea-lit: #3a3b41;
+  --sea-dark: #1c1d20;
+  --land-lit: #d8d6d0;
+  --land-dark: #4d4e53;
+  color-scheme: dark;
+}
+
+/* The figure is framed like a plot, with dotted grid columns behind the
+   drawing. */
+.fig {
+  margin: 0;
+  padding: 14px;
+  background-image:
+    linear-gradient(var(--panel) 50%, transparent 50%),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 100% 4px, 42px 100%;
+  background-position: 0 0, 13px 0;
+}
+.globe-fig {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--edge);
+  background-color: var(--panel);
+  box-shadow: 5px 5px 0 var(--drop);
+}
+
+/* The globe is text in 11px Departure Mono, 7 px wide and 14 px high per
+   cell. It fills the width it is given and redraws to fit after a resize. */
+.plot {
+  max-width: 100%;
+  margin: 0;
+  height: 140px;
+  overflow: hidden;
+  font: 11px/14px var(--mono);
+  white-space: pre;
+  color: var(--fg);
+  user-select: none;
+}
+.plot .a { color: var(--accent); }
+.plot .d { color: var(--muted); }
+.plot .g { color: var(--line); }
+.plot .i { background: var(--fg); color: var(--bg); }
+.plot .ai { background: var(--accent); color: var(--on-accent); }
+
+/* The globe's shading. Sea and land each blend from a lit colour to a shadow
+   colour, and s0–s15 and l0–l15 set how lit a cell is. Sea is drawn as the
+   cell background (sb) or, on the rim, as a glyph (sf). Land is a glyph (lf)
+   or, under a border, the background (lb). */
+.plot .s0 { --s: 0%; }
+.plot .s1 { --s: 7%; }
+.plot .s2 { --s: 13%; }
+.plot .s3 { --s: 20%; }
+.plot .s4 { --s: 27%; }
+.plot .s5 { --s: 33%; }
+.plot .s6 { --s: 40%; }
+.plot .s7 { --s: 47%; }
+.plot .s8 { --s: 53%; }
+.plot .s9 { --s: 60%; }
+.plot .s10 { --s: 67%; }
+.plot .s11 { --s: 73%; }
+.plot .s12 { --s: 80%; }
+.plot .s13 { --s: 87%; }
+.plot .s14 { --s: 93%; }
+.plot .s15 { --s: 100%; }
+.plot .l0 { --l: 0%; }
+.plot .l1 { --l: 7%; }
+.plot .l2 { --l: 13%; }
+.plot .l3 { --l: 20%; }
+.plot .l4 { --l: 27%; }
+.plot .l5 { --l: 33%; }
+.plot .l6 { --l: 40%; }
+.plot .l7 { --l: 47%; }
+.plot .l8 { --l: 53%; }
+.plot .l9 { --l: 60%; }
+.plot .l10 { --l: 67%; }
+.plot .l11 { --l: 73%; }
+.plot .l12 { --l: 80%; }
+.plot .l13 { --l: 87%; }
+.plot .l14 { --l: 93%; }
+.plot .l15 { --l: 100%; }
+.plot .sb { background: color-mix(in srgb, var(--sea-lit) var(--s), var(--sea-dark)); }
+.plot .sf { color: color-mix(in srgb, var(--sea-lit) var(--s), var(--sea-dark)); }
+.plot .lb { background: color-mix(in srgb, var(--land-lit) var(--l), var(--land-dark)); }
+.plot .lf { color: color-mix(in srgb, var(--land-lit) var(--l), var(--land-dark)); }
+.plot .cut { color: var(--panel); }
+.plot .gr { color: color-mix(in srgb, var(--fg) 16%, transparent); }
+.plot .tag { background: var(--panel); }
+
+.globe-fig .plot { height: 322px; cursor: grab; touch-action: pan-y; }
+.globe-fig .plot.grabbing { cursor: grabbing; }
+
+/* The zoom buttons sit on the right of the readings under the globe. */
+.seg {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+.seg button {
+  appearance: none;
+  display: inline-grid;
+  place-items: center;
+  height: 30px;
+  min-width: 34px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  font: 400 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+.seg button:hover { background: var(--soft); }
+.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.globe-zoom { position: absolute; right: 14px; bottom: 14px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

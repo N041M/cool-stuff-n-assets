@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page background</title>
+  <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="demo.css">
+  <script defer src="field.js"></script>
+</head>
+<body>
+  <canvas id="field" aria-hidden="true"></canvas>
+
+  <header class="top">
+    <div class="bar ko">
+      <a class="back" href="../" aria-label="All demos">← <span>All demos</span></a>
+      <h1 class="brand">field.js</h1>
+      <div class="seg" role="group" aria-label="Theme">
+        <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
+        <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
+        <button type="button" data-set-theme="system" aria-pressed="true">Auto</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-inner">
+        <p class="lede"><span class="hl">The plot scrolls at half the speed of the page.</span></p>
+        <button type="button" class="btn ko" data-to-water>Scroll to the water</button>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="panel ko">
+          <p>Traces rise and fall slowly. Heavy dashes and dots appear on them and fade out again every few seconds.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="panel ko">
+          <p>Every element with the class <code>ko</code> is cut out of the field with a ragged margin, so its text stays readable.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="panel ko">
+          <p>The numbered ruler hangs under the top bar. Its ticks line up with the dotted grid columns.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap">
+      <div class="foot-row ko">
+        <p>Water under the footer</p>
+        <p><a href="#">Back to top <span aria-hidden="true">↑</span></a></p>
+      </div>
+    </div>
+    <div class="shore" data-shore aria-hidden="true"></div>
+  </footer>
+
+  <script>
+    // The theme switch. The field reads --bg and --fg and redraws when
+    // data-theme changes.
+    (function () {
+      var root = document.documentElement;
+      document.querySelector("[data-to-water]").addEventListener("click", function () {
+        var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        window.scrollTo({ top: root.scrollHeight, behavior: reduced ? "auto" : "smooth" });
+      });
+      document.querySelectorAll("[data-set-theme]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var choice = b.getAttribute("data-set-theme");
+          if (choice === "system") root.removeAttribute("data-theme");
+          else root.setAttribute("data-theme", choice);
+          document.querySelectorAll("[data-set-theme]").forEach(function (o) {
+            o.setAttribute("aria-pressed", String(o === b));
+          });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

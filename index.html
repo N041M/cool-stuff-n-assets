@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>cool stuff n assets</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --fg: #1f1f1f;
+      --muted: #666666;
+      --line: #e6e6e6;
+      --link: #0b57d0;
+      color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #161616;
+        --fg: #e8e8e8;
+        --muted: #9a9a9a;
+        --line: #2e2e2e;
+        --link: #8ab4f8;
+        color-scheme: dark;
+      }
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    }
+    main { max-width: 640px; margin: 0 auto; padding: 48px 16px; }
+    h1 { margin: 0 0 24px; font-size: 28px; }
+    a { color: var(--link); }
+    ul { margin: 0; padding: 0; list-style: none; }
+    li { padding: 14px 0; border-top: 1px solid var(--line); }
+    li a { font-weight: 600; }
+    li p { margin: 2px 0 0; color: var(--muted); }
+    footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>cool stuff n assets</h1>
+    <ul>
+      <li><a href="pixel-drive/">Pixel drive</a><p>An endless generated drive in pixel art.</p></li>
+      <li><a href="globe/">Globe</a><p>A text globe that can be dragged and zoomed.</p></li>
+      <li><a href="scramble/">Text scramble</a><p>Text that resolves out of random glyphs.</p></li>
+      <li><a href="page-background/">Page background</a><p>The glyph field behind the page, with a plot, a ruler and water.</p></li>
+      <li><a href="cursor-trail/">Cursor trail</a><p>The glyphs the pointer leaves, and the ripple from a click.</p></li>
+      <li><a href="gothic-corridor/">Gothic corridor</a><p>A candlelit hall with a servitor and a censer, rendered live in WebGL2.</p></li>
+      <li><a href="stl-models/">STL models</a><p>Nine generated miniatures that can be turned, zoomed and downloaded.</p></li>
+    </ul>
+    <footer>
+      <a href="https://github.com/N041M/cool-stuff-n-assets">Source on GitHub</a> · <a href="https://github.com/N041M/cool-stuff-n-assets/blob/main/LICENSE">MIT licence</a>
+    </footer>
+  </main>
+</body>
+</html>
