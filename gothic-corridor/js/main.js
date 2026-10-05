@@ -17,5 +17,17 @@ const SHADERS = [
     'grade.glsl',
     'final.frag',
 ];
-const files = Object.fromEntries(await Promise.all(SHADERS.map(async (name) => [name, await (await fetch(`shaders/${name}`)).text()])));
-new Backdrop(document.querySelector('.scene'), files).start();
+const scene = document.querySelector('.scene');
+try {
+    const files = Object.fromEntries(await Promise.all(SHADERS.map(async (name) => {
+        const res = await fetch(`shaders/${name}`);
+        if (!res.ok)
+            throw new Error(`${name}: HTTP ${res.status}`);
+        return [name, await res.text()];
+    })));
+    new Backdrop(scene, files).start();
+}
+catch (err) {
+    console.warn('[backdrop]', err);
+    scene.classList.add('is-still');
+}

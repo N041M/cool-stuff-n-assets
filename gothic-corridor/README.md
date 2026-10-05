@@ -14,7 +14,9 @@ python3 -m http.server
 
 Then open http://localhost:8000/gothic-corridor/. The page fetches its shaders, so it has to come from a server and not straight from the file.
 
-The scene fills the window. It appears once the shaders have compiled and the hall has been baked, which takes about a second on a recent GPU. Then the candles flicker, the censer swings, its smoke rises into the light and dust drifts through the shafts. It stops drawing while the tab is hidden or the scene is scrolled away. When the system asks for reduced motion, it draws one still frame.
+The scene fills the window. Until the shaders have compiled and the hall has been baked, which takes about a second on a recent GPU, the page shows `preview.webp`, and the live scene fades in over it. Then the candles flicker, the censer swings, its smoke rises into the light and dust drifts through the shafts. It stops drawing while the tab is hidden or the scene is scrolled away. When the system asks for reduced motion, it draws one still frame.
+
+When the scene cannot run, the page keeps `preview.webp` and labels it "Still image". That happens when the browser has no WebGL2 or no half-float render targets, when a shader fails to load or compile, or when the GPU drops the context a second time. A phone that is too slow for the bake usually ends up in the last case. The reason is written to the console.
 
 ## How it is drawn
 

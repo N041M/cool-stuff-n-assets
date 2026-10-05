@@ -39,6 +39,8 @@ export class Backdrop {
     /** Set when a frame came due while the GPU was still busy. */
     waited = false;
     judged = { frames: 0, late: 0 };
+    /** How many times the GPU has dropped the context. */
+    losses = 0;
     constructor(host, files) {
         this.host = host;
         this.files = files;
@@ -52,10 +54,15 @@ export class Backdrop {
             this.onScreen = entry.isIntersecting;
             this.wake();
         }).observe(host);
+        // A GPU that is too slow for the bake can drop the context. The scene
+        // gets one more try, and after a second loss the page keeps the still
+        // image.
         this.canvas.addEventListener('webglcontextlost', (e) => {
-            e.preventDefault();
             this.host.classList.remove('is-ready');
             this.renderer = undefined;
+            if (++this.losses > 1)
+                return this.giveUp(new Error('the WebGL context was lost twice'));
+            e.preventDefault();
         });
         this.canvas.addEventListener('webglcontextrestored', () => this.start());
     }
@@ -64,7 +71,7 @@ export class Backdrop {
             this.renderer = new Renderer(this.canvas, readColours(), this.files);
         }
         catch (err) {
-            console.warn('[backdrop]', err);
+            this.giveUp(err);
             return;
         }
         this.resize();
@@ -173,10 +180,15 @@ export class Backdrop {
         }
     }
     fail(err) {
-        console.warn('[backdrop]', err);
-        this.host.classList.remove('is-ready');
         this.renderer?.dispose();
         this.renderer = undefined;
+        this.giveUp(err);
+    }
+    /** Stop trying and leave the still image under the canvas showing. */
+    giveUp(err) {
+        console.warn('[backdrop]', err);
+        this.host.classList.remove('is-ready');
+        this.host.classList.add('is-still');
     }
 }
 /** The accent and the page background from the active palette. */

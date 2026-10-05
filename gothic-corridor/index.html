@@ -20,7 +20,14 @@
     *, *::before, *::after { box-sizing: border-box; }
     html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); }
     body { font: 400 15px/1.5 "Departure Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
-    .scene { position: fixed; inset: 0; overflow: hidden; }
+    /* preview.webp is one frame of this scene. It shows while the scene
+       bakes, and it stays when the scene cannot run on the device. */
+    .scene {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background: var(--bg) url("preview.webp") 70% 50% / cover no-repeat;
+    }
     .backdrop__canvas {
       position: absolute;
       inset: 0;
@@ -41,11 +48,23 @@
       text-decoration: none;
     }
     .back:hover { color: var(--accent); }
+    .still-note {
+      display: none;
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      margin: 0;
+      padding: 4px 10px;
+      background: rgb(9 6 6 / 0.72);
+      font-size: 13px;
+    }
+    .scene.is-still ~ .still-note { display: block; }
   </style>
   <script type="module" src="js/main.js"></script>
 </head>
 <body>
   <div class="scene" aria-hidden="true"></div>
   <a class="back" href="../">← All demos</a>
+  <p class="still-note">Still image</p>
 </body>
 </html>
