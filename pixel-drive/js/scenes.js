@@ -292,8 +292,13 @@
       spr.rect(x - 4, ry - 70, 9, 4, M.metal);
       for (let k = 0; k < 3; k++) spr.light(x - 3 + k * 3, ry - 67, 2, 1, "flood", lid + i * 3 + k);
     }
-    // The clubhouse, with a bench beside it and the scoreboard.
+    // The clubhouse, with benches against it and the scoreboard. It stands at
+    // the depth of the far touchline on a lawn that runs down to the near
+    // edge of the ground, so it does not float above the fields behind.
     const cw = club - 4, chh = 20, cy = b - BAND + 2;
+    for (let y = cy; y <= b; y++) {
+      for (let x = 0; x < px0 - 4; x++) spr.px(x, y, (x * 7 + y * 3) % 11 === 0 ? M.grassD : M.grass);
+    }
     spr.rect(2, cy - chh, cw, chh, M.plasterS);
     spr.vline(1 + cw, cy - chh, cy - 1, M.plinth);
     spr.rect(1, cy - chh - 2, cw + 2, 2, M.roofD);
@@ -315,8 +320,8 @@
     spr.rect(sbx, sby, board, 18, M.signInk);
     spr.text("DOMÁCÍ", sbx + 3, sby + 5, M.white);
     spr.text("HOSTÉ", sbx + board - 3 - K.textWidth("HOSTÉ"), sby + 5, M.white);
-    spr.vline(sbx + 4, sby + 18, ry - 1, M.woodD);
-    spr.vline(sbx + board - 5, sby + 18, ry - 1, M.woodD);
+    spr.vline(sbx + 4, sby + 18, ry, M.woodD);
+    spr.vline(sbx + board - 5, sby + 18, ry, M.woodD);
     const match = new Match(rng, { px0: px0, ry: ry, sb: { x: sbx, y: sby, w: board }, first: o.first, silence: o.silence, W: W });
     // Spectators lean on the railing in small groups, clear of the scoreboard
     // posts. They are drawn before the match, so the players stand in front.
