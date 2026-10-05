@@ -2,11 +2,13 @@
 // the file's Z-up into three.js' Y-up, sets it on a floor of 10 mm squares and
 // shows its size, triangle count and file. Dragging turns the model, and the
 // wheel or a pinch zooms. The model turns slowly on its own unless the system
-// asks for reduced motion. A frame is drawn only while something moves and the
-// stage is on screen.
+// asks for reduced motion. The Plain look is drawn here, and looks.js draws the
+// Phosphor, Wire and X-ray looks. A frame is drawn only while something moves
+// and the stage is on screen.
 import * as THREE from "three";
 import { STLLoader } from "three/addons/loaders/STLLoader.js";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { createLooks } from "./looks.js";
 
 const root = document.documentElement;
 const reducedMQ = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -16,6 +18,8 @@ const stage = document.querySelector("[data-stage]");
 const canvas = document.querySelector("[data-canvas]");
 const note = document.querySelector("[data-note]");
 const turnButton = document.querySelector("[data-turn]");
+const buildButton = document.querySelector("[data-build]");
+const lookButtons = document.querySelectorAll("[data-look]");
 const out = {
   name: document.querySelector("[data-name]"),
   short: document.querySelector("[data-short]"),
@@ -65,6 +69,8 @@ try {
 }
 renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 renderer.setClearColor(0x000000, 0);
+// The crease lines of the other looks are cut at the build height with a clipping plane.
+renderer.localClippingEnabled = true;
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(30, 4 / 3, 0.5, 5000);
@@ -88,6 +94,10 @@ const mesh = new THREE.Mesh(new THREE.BufferGeometry(), material);
 mesh.visible = false;
 scene.add(mesh);
 
+const looks = createLooks(scene);
+let look = "plain";
+let shown = false;
+
 let grid = null;
 let gridSize = 0;
 
@@ -101,8 +111,33 @@ function setMotion() {
   controls.enableDamping = !still;
   controls.autoRotate = !still;
   turnButton.setAttribute("aria-pressed", String(controls.autoRotate));
+  if (still) looks.finish();
   wake();
 }
+
+// Plain is the lit grey model. The other looks are drawn by looks.js.
+function setLook(name) {
+  const fromPlain = look === "plain";
+  look = name;
+  lookButtons.forEach(function (b) {
+    b.setAttribute("aria-pressed", String(b.getAttribute("data-look") === name));
+  });
+  mesh.visible = shown && look === "plain";
+  looks.setLook(look);
+  buildButton.disabled = look === "plain";
+  if (fromPlain && look !== "plain" && !reducedMQ.matches) looks.build();
+  if (grid) buildGrid(gridSize);
+  wake();
+}
+lookButtons.forEach(function (b) {
+  b.addEventListener("click", function () { setLook(b.getAttribute("data-look")); });
+});
+// Build plays the growth again. It plays under reduced motion too, because it
+// runs only when pressed.
+buildButton.addEventListener("click", function () {
+  looks.build();
+  wake();
+});
 
 turnButton.addEventListener("click", function () {
   controls.autoRotate = !controls.autoRotate;
@@ -138,18 +173,20 @@ function css(name) {
 function applyTheme() {
   material.color.set(css("--model"));
   sky.groundColor.set(css("--drop"));
+  looks.setColors(css);
   if (grid) buildGrid(gridSize);
   wake();
 }
 
 // A floor of 10 mm squares under the model, a little wider than its footprint.
+// It takes the colour of the look.
 function buildGrid(size) {
   if (grid) {
     scene.remove(grid);
     grid.geometry.dispose();
     grid.material.dispose();
   }
-  const floor = css("--floor");
+  const floor = css(look === "plain" ? "--floor" : "--ph-floor");
   grid = new THREE.GridHelper(size, size / GRID_STEP, floor, floor);
   grid.position.y = -0.05;
   gridSize = size;
@@ -213,7 +250,9 @@ function pick(i, keepHash) {
     note.textContent = "";
   }, function (err) {
     if (current !== i) return;
+    shown = false;
     mesh.visible = false;
+    looks.setModel(null);
     note.textContent = "Could not load " + model.slug + ".stl";
     console.warn(err);
     wake();
@@ -221,12 +260,17 @@ function pick(i, keepHash) {
 }
 
 // Sets the model on the floor and frames it so its bounding sphere fits the
-// narrower side of the stage.
+// narrower side of the stage. In the looks other than Plain the model grows
+// from the bottom, unless the system asks for reduced motion.
 function show(data) {
   const box = data.geometry.boundingBox;
   const sphere = data.geometry.boundingSphere;
   mesh.geometry = data.geometry;
-  mesh.visible = true;
+  shown = true;
+  mesh.visible = look === "plain";
+  looks.setModel(data);
+  looks.finish();
+  if (!reducedMQ.matches) looks.build();
 
   const span = Math.max(box.max.x - box.min.x, box.max.z - box.min.z);
   buildGrid(Math.ceil(span * 1.5 / (GRID_STEP * 2)) * GRID_STEP * 2);
@@ -253,7 +297,8 @@ function show(data) {
 }
 
 // Drawing. A frame is drawn while the model turns, while it is dragged or
-// settling after a drag, and once after any other change.
+// settling after a drag, while it grows, while the scanlines and scan ring of
+// the other looks move, and once after any other change.
 let frame = 0;
 let last = 0;
 let dragging = false;
@@ -263,8 +308,9 @@ function tick(now) {
   const dt = last ? Math.min((now - last) / 1000, 0.1) : 1 / 60;
   last = now;
   const moved = controls.update(dt);
+  const busy = looks.update(dt, !reducedMQ.matches);
   renderer.render(scene, camera);
-  if (visible && (controls.autoRotate || dragging || moved)) {
+  if (visible && (controls.autoRotate || dragging || moved || busy)) {
     frame = requestAnimationFrame(tick);
   } else {
     frame = 0;

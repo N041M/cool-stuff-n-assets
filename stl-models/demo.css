@@ -1,6 +1,12 @@
 /* The demo page's styles. demo.js reads --model for the model, --floor for the grid under it and
    --drop for the light from below. The canvas is clear, so the stage's
-   --panel shows through it. */
+   --panel shows through it.
+   looks.js reads the --ph-* colours for the Phosphor, Wire and X-ray looks.
+   The model is shaded from --ph-dark to --ph-lit with a --ph-rim edge and
+   --ph-hot highlights. --ph-build is the line at the top of a growing model,
+   --ph-line the crease lines and the scan ring, --ph-wire the lines of Wire,
+   --ph-xray the colour of X-ray, --ph-dim the plinth and --ph-floor the grid.
+   X-ray glows when --panel is dark and is drawn like ink when it is light. */
 
 @font-face {
   font-family: "Departure Mono";
@@ -23,6 +29,16 @@
   --on-accent: #fbfaf8;
   --model: #c9c3b8;
   --floor: #dcd9d2;
+  --ph-dark: #4d130b;
+  --ph-lit: #ff6b52;
+  --ph-rim: #ffd3c8;
+  --ph-hot: #fff1ec;
+  --ph-build: #ff9a3c;
+  --ph-line: #8f2318;
+  --ph-wire: #a8291d;
+  --ph-xray: #b02e20;
+  --ph-dim: #dda59c;
+  --ph-floor: #eedcd7;
   --mono: "Departure Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color-scheme: light;
@@ -43,6 +59,16 @@
     --on-accent: #131417;
     --model: #b6b2aa;
     --floor: #34353b;
+    --ph-dark: #070101;
+    --ph-lit: #ff5a43;
+    --ph-rim: #ffd6ca;
+    --ph-hot: #fff1ec;
+    --ph-build: #fff1ec;
+    --ph-line: #d24433;
+    --ph-wire: #ffd6ca;
+    --ph-xray: #ffd6ca;
+    --ph-dim: #8c2c22;
+    --ph-floor: #3a201d;
     color-scheme: dark;
   }
 }
@@ -61,6 +87,16 @@
   --on-accent: #131417;
   --model: #b6b2aa;
   --floor: #34353b;
+  --ph-dark: #070101;
+  --ph-lit: #ff5a43;
+  --ph-rim: #ffd6ca;
+  --ph-hot: #fff1ec;
+  --ph-build: #fff1ec;
+  --ph-line: #d24433;
+  --ph-wire: #ffd6ca;
+  --ph-xray: #ffd6ca;
+  --ph-dim: #8c2c22;
+  --ph-floor: #3a201d;
   color-scheme: dark;
 }
 
@@ -109,6 +145,8 @@ code { font: 0.92em var(--mono); }
 }
 .seg button:hover { background: var(--soft); }
 .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+.seg button:disabled { color: var(--muted); cursor: default; }
+.seg button:disabled:hover { background: transparent; }
 
 main, .foot { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 16px; }
 
@@ -166,6 +204,8 @@ main, .foot { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 16px; }
   color: var(--muted);
 }
 .stage-note .status { color: var(--accent-ink); }
+/* The row of looks under the controls. */
+.looks-bar { padding-left: 8px; }
 
 .stats dt,
 .pick-cat,

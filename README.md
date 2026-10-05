@@ -10,7 +10,7 @@ The demos are online at https://n041m.github.io/cool-stuff-n-assets/.
 - [`page-background/`](page-background/) is a glyph field drawn behind a page. It draws a ridgeline plot on a dotted grid, a numbered ruler under the top bar and water under the footer.
 - [`cursor-trail/`](cursor-trail/) is a trail of glyphs the pointer leaves, and a ripple sent out from a click. It runs over any page.
 - [`gothic-corridor/`](gothic-corridor/) is a candlelit gothic hall where a servitor swings a censer, raymarched in the browser with WebGL2 from hand-written shaders.
-- [`stl-models/`](stl-models/) holds nine generated STL models of armour, terrain, relics and characters in a gothic sci-fi style. The demo turns each one in 3D and gives its size and triangle count.
+- [`stl-models/`](stl-models/) holds nine generated STL models of armour, terrain, relics and characters in a gothic sci-fi style. The demo turns each one in 3D, draws it in four looks and gives its size and triangle count.
 
 ## Running the demos
 
