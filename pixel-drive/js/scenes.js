@@ -236,12 +236,25 @@
   objects.pitch = function (rng, o, seg) {
     const s = 6;
     const club = 46, board = 60;
-    const W = PITCH_W + club + 8;
+    // The ground narrows toward the far side over TAPER pixels at each end,
+    // so its ends read as flat ground seen at an angle.
+    const TAPER = 10;
+    const px0 = TAPER + club + 6;
+    const W = px0 + PITCH_W + 5 + TAPER;
     const H = 84;
     const spr = new Spr(W, H);
     const b = H - 1;
-    const px0 = club + 6;
-    // The green, mown in stripes, with its lines.
+    // The ground of the whole sports ground, clubhouse included, in the
+    // pitch's green with a few lighter tufts. It runs from the near edge to
+    // the far touchline, and each row reaches a little further out at both
+    // ends than the row behind it.
+    for (let y = b - BAND; y <= b; y++) {
+      const near = (y - (b - BAND)) / BAND;
+      const xa = Math.round(TAPER * (1 - near)) + (rng.chance(0.35) ? 1 : 0);
+      const xb = px0 + PITCH_W + 4 + Math.round(TAPER * near) - (rng.chance(0.35) ? 1 : 0);
+      for (let x = xa; x <= xb; x++) spr.px(x, y, rng.chance(0.05) ? M.pitchGrassL : M.pitchGrass);
+    }
+    // The pitch, mown in stripes, with its lines.
     for (let y = b - BAND; y <= b; y++) {
       for (let x = px0 - 4; x < px0 + PITCH_W + 4; x++) spr.px(x, y, (Math.floor((x - px0) / 20) & 1) ? M.pitchGrass : M.pitchGrassL);
     }
@@ -292,24 +305,21 @@
       spr.rect(x - 4, ry - 70, 9, 4, M.metal);
       for (let k = 0; k < 3; k++) spr.light(x - 3 + k * 3, ry - 67, 2, 1, "flood", lid + i * 3 + k);
     }
-    // The clubhouse, with benches against it and the scoreboard. It stands at
-    // the depth of the far touchline on a lawn that runs down to the near
-    // edge of the ground, so it does not float above the fields behind.
+    // The clubhouse, with benches against it, stands on the ground at the
+    // depth of the far touchline, left of the pitch.
+    const cx = TAPER;
     const cw = club - 4, chh = 20, cy = b - BAND + 2;
-    for (let y = cy; y <= b; y++) {
-      for (let x = 0; x < px0 - 4; x++) spr.px(x, y, (x * 7 + y * 3) % 11 === 0 ? M.grassD : M.grass);
-    }
-    spr.rect(2, cy - chh, cw, chh, M.plasterS);
-    spr.vline(1 + cw, cy - chh, cy - 1, M.plinth);
-    spr.rect(1, cy - chh - 2, cw + 2, 2, M.roofD);
-    spr.rect(6, cy - chh + 5, 8, 6, M.glass);
-    spr.light(6, cy - chh + 5, 8, 6, "win", lid + 50);
-    spr.rect(20, cy - chh + 5, 8, 6, M.glass);
-    spr.light(20, cy - chh + 5, 8, 6, "win", lid + 51);
-    spr.rect(32, cy - 12, 6, 12, M.woodD);
+    spr.rect(cx + 2, cy - chh, cw, chh, M.plasterS);
+    spr.vline(cx + 1 + cw, cy - chh, cy - 1, M.plinth);
+    spr.rect(cx + 1, cy - chh - 2, cw + 2, 2, M.roofD);
+    spr.rect(cx + 6, cy - chh + 5, 8, 6, M.glass);
+    spr.light(cx + 6, cy - chh + 5, 8, 6, "win", lid + 50);
+    spr.rect(cx + 20, cy - chh + 5, 8, 6, M.glass);
+    spr.light(cx + 20, cy - chh + 5, 8, 6, "win", lid + 51);
+    spr.rect(cx + 32, cy - 12, 6, 12, M.woodD);
     // Two wooden benches against the clubhouse. Each has a seat and a
     // backrest held by two legs.
-    for (const bx of [3, 17]) {
+    for (const bx of [cx + 3, cx + 17]) {
       spr.hline(bx, bx + 10, cy - 3, M.wood);
       spr.hline(bx, bx + 10, cy - 5, M.woodD);
       spr.vline(bx + 1, cy - 5, cy, M.woodD);
