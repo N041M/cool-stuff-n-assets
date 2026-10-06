@@ -233,6 +233,20 @@ if (e &gt; 0.06 &amp;&amp; m !== 1 &amp;&amp; !(m === 2 &amp;&amp; RA[idx] &lt; 
 }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
   </li>
 </ol>
+<p class="label">Without a pointer</p>
+<p>On a touch screen there is no pointer to move, so the trail stays dark until something draws it. <code>CursorTrail.stroke(x0, y0, x1, y1)</code> lights the cells along a line in CSS pixels. Call it once a frame with the last point and the new one to draw a stroke of your own. A stroke never joins up with the trail of a real pointer moving at the same time. The Trail button in the frame above draws its wave this way.</p>
+<div class="code"><pre><code>// A wave across the window, drawn over 1.4 s.
+const t0 = performance.now();
+let px = null, py = null;
+requestAnimationFrame(function step(now) {
+  const k = Math.min(1, (now - t0) / 1400);
+  const x = innerWidth * (0.08 + 0.84 * k);
+  const y = innerHeight * (0.55 + 0.2 * Math.sin(k * Math.PI * 3));
+  CursorTrail.stroke(px ?? x, py ?? y, x, y);
+  px = x;
+  py = y;
+  if (k &lt; 1) requestAnimationFrame(step);
+});</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
 </section>
 
 <section class="doc" id="ripple" aria-labelledby="ripple-h">

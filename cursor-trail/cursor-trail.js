@@ -343,8 +343,22 @@
     wake();
   }
 
+  // Charges the cells along a line from (x0, y0) to (x1, y1) in CSS pixels,
+  // in the same 10 px steps as the pointer. A page uses it to draw a trail of
+  // its own, for example on a screen with no pointer. It does not touch the
+  // pointer's last position, so a stroke never joins up with the trail the
+  // real pointer leaves at the same time.
+  function stroke(x0, y0, x1, y1) {
+    if (!started || reduced) return;
+    const dx = x1 - x0, dy = y1 - y0;
+    const steps = Math.min(200, Math.max(1, Math.ceil(Math.hypot(dx, dy) / 10)));
+    for (let i = 0; i <= steps; i++) inject(x0 + (dx * i) / steps, y0 + (dy * i) / steps, 24, 0.9);
+    wake();
+  }
+
   window.CursorTrail = {
     pulse: pulse,
+    stroke: stroke,
     // Looks for .ko elements again, for a page that adds them later.
     refresh: function () {
       if (started) koEls = Array.from(document.querySelectorAll(".ko"));

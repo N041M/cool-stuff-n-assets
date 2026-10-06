@@ -69,7 +69,7 @@ It reads these from the page:
 - The IBM Plex Mono font. The glyphs are set in 11 px type in cells of 7 × 14 px. The trail waits up to 1.5 s for the font to load before it starts, and a page without it gets the system's monospace font.
 - Elements with the class `ko`. The trail stays off them and off about half of a ragged margin around them. A page that adds `.ko` elements later can call `CursorTrail.refresh()`.
 
-The script sets up `window.CursorTrail` with `pulse(x, y)` and `refresh()`. It also sets `window.Field.pulse` unless the page already has one. The drive in `../pixel-drive/` calls it when its car is clicked.
+The script sets up `window.CursorTrail` with `pulse(x, y)`, `stroke(x0, y0, x1, y1)` and `refresh()`. `stroke` lights the cells along a line in CSS pixels, as the pointer does along its path, without joining up with the pointer's own trail. The demo's Trail button draws its wave with it, a short stroke each frame. It also sets `window.Field.pulse` unless the page already has one. The drive in `../pixel-drive/` calls it when its car is clicked.
 
 The trail only draws while something is lit and stops once the last glyph has faded. When the system asks for reduced motion, it draws nothing.
 

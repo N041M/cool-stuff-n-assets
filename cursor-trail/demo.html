@@ -260,16 +260,19 @@
         var r = el.getBoundingClientRect();
         window.CursorTrail.pulse(r.left + r.width / 2, r.top + r.height / 2);
       }
+      // Trail draws a wave across the window with CursorTrail.stroke. Each
+      // wave keeps its own last point, so moving the real pointer during a
+      // wave leaves its own trail and the two never join up.
       function sweep() {
-        var t0 = performance.now();
-        document.dispatchEvent(new PointerEvent("pointerleave"));
+        var t0 = performance.now(), px = null, py = null;
         requestAnimationFrame(function step(now) {
           var k = Math.min(1, (now - t0) / 1400);
           var x = innerWidth * (0.08 + 0.84 * k);
           var y = innerHeight * (0.55 + 0.2 * Math.sin(k * Math.PI * 3));
-          window.dispatchEvent(new PointerEvent("pointermove", { clientX: x, clientY: y }));
+          window.CursorTrail.stroke(px === null ? x : px, py === null ? y : py, x, y);
+          px = x;
+          py = y;
           if (k < 1) requestAnimationFrame(step);
-          else document.dispatchEvent(new PointerEvent("pointerleave"));
         });
       }
       document.addEventListener("click", function (e) {
