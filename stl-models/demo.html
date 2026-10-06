@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>STL models</title>
+  <script>
+    // ?feature=models or ?feature=looks shows one feature of the page on its
+    // own. ?embed hides the bar and the Read me, for showing the page in a
+    // frame on another page. This runs before the page is drawn, so the parts
+    // a view hides never show. demo.css does the hiding and demo.js names the
+    // view in the bar.
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var id = params.get("feature");
+      if (id === "models" || id === "looks") document.documentElement.setAttribute("data-feature", id);
+      if (params.has("embed")) document.documentElement.setAttribute("data-embed", "");
+    })();
+  </script>
+  <link rel="stylesheet" href="demo.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "./vendor/three/three.module.js",
+        "three/addons/": "./vendor/three/addons/"
+      }
+    }
+  </script>
+  <script type="module" src="demo.js"></script>
+  <link rel="stylesheet" href="../assets/code.css">
+  <script defer src="../assets/code.js"></script>
+</head>
+<body>
+  <header class="bar">
+    <a class="back" href="./" aria-label="STL models">← <span>STL models</span></a>
+    <h1 class="brand">STL models</h1>
+    <button type="button" class="btn" data-readme-open aria-controls="readme" aria-expanded="false">Read me</button>
+    <div class="seg theme" role="group" aria-label="Theme">
+      <button type="button" class="btn" data-set-theme="dark" aria-pressed="true">Dark</button>
+      <button type="button" class="btn" data-set-theme="light" aria-pressed="false">Light</button>
+    </div>
+  </header>
+
+  <main>
+    <p class="intro">Nine generated models for 3D printing. Drag a model to turn it, and use the wheel or a pinch to zoom.</p>
+
+    <div class="viewer">
+      <div class="view">
+        <figure class="stage" data-stage>
+          <canvas data-canvas role="img" aria-label="The picked model"></canvas>
+          <div class="stage-bar">
+            <p class="stage-note label"><span>Grid 10 mm</span><span class="status" data-note aria-live="polite">Loading</span></p>
+            <div class="seg view-controls" role="group" aria-label="View">
+              <button type="button" class="btn" data-step="-1" aria-label="Previous model" title="Previous model">&lt;</button>
+              <button type="button" class="btn" data-step="1" aria-label="Next model" title="Next model">&gt;</button>
+              <button type="button" class="btn" data-zoom="in" aria-label="Zoom in" title="Zoom in">+</button>
+              <button type="button" class="btn" data-zoom="out" aria-label="Zoom out" title="Zoom out">&minus;</button>
+              <button type="button" class="btn" data-turn aria-pressed="false" title="Turn the model slowly">Turn</button>
+              <button type="button" class="btn" data-reset title="Back to the first view">Reset</button>
+            </div>
+          </div>
+          <div class="stage-bar looks-bar">
+            <div class="seg" role="group" aria-label="Look">
+              <button type="button" class="btn" data-look="plain" aria-pressed="true">Plain</button>
+              <button type="button" class="btn" data-look="phosphor" aria-pressed="false">Phosphor</button>
+              <button type="button" class="btn" data-look="wire" aria-pressed="false">Wire</button>
+              <button type="button" class="btn" data-look="xray" aria-pressed="false">X-ray</button>
+            </div>
+            <div class="seg">
+              <button type="button" class="btn" data-build title="Grow the model from the bottom" disabled>Build</button>
+            </div>
+          </div>
+        </figure>
+
+        <div class="readout">
+          <p class="model-name" data-name>Castellan-Pattern Battle Tank</p>
+          <dl class="stats kv">
+            <div class="measure"><dt>Size, x × y × z</dt><dd data-size>–</dd></div>
+            <div class="measure"><dt>Triangles</dt><dd data-tris>–</dd></div>
+            <div><dt>File</dt><dd><a data-file href="models/castellan-battle-tank.stl" download>castellan-battle-tank.stl</a> <span class="bytes" data-bytes></span></dd></div>
+          </dl>
+        </div>
+      </div>
+
+      <section class="picker" aria-label="Models">
+        <ol class="list">
+          <li data-model="castellan-battle-tank">
+            <button type="button" class="pick" aria-pressed="true"><span class="idx label">01</span><span class="pick-name">Castellan-Pattern Battle Tank</span><span class="pick-cat label">Armour</span></button>
+            <a class="dl" href="models/castellan-battle-tank.stl" download aria-label="STL file, castellan-battle-tank.stl">STL</a>
+          </li>
+          <li data-model="orbital-descent-pod">
+            <button type="button" class="pick" aria-pressed="false"><span class="idx label">02</span><span class="pick-name">Orbital Descent Pod</span><span class="pick-cat label">Armour</span></button>
+            <a class="dl" href="models/orbital-descent-pod.stl" download aria-label="STL file, orbital-descent-pod.stl">STL</a>
+          </li>
+          <li data-model="basilica-ruin">
+            <button type="button" class="pick" aria-pressed="false"><span class="idx label">03</span><span class="pick-name">Basilica Ruin — Nave Section</span><span class="pick-cat label">Terrain</span></button>
+            <a class="dl" href="models/basilica-ruin.stl" download aria-label="STL file, basilica-ruin.stl">STL</a>
+          </li>
+          <li data-model="siege-barricade-kit">
+            <button type="button" class="pick" aria-pressed="false"><span class="idx label">04</span><span class="pick-name">Siege-Line Barricade Kit</span><span class="pick-cat label">Terrain</span></button>
+            <a class="dl" href="models/siege-barricade-kit.stl" download aria-label="STL file, siege-barricade-kit.stl">STL</a>
+          </li>
+          <li data-model="reliquary-shrine">
+            <button type="button" class="pick" aria-pressed="false"><span class="idx label">05</span><span class="pick-name">Reliquary Shrine</span><span class="pick-cat label">Terrain</span></button>
+            <a class="dl" href="models/reliquary-shrine.stl" download aria-label="STL file, reliquary-shrine.stl">STL</a>
+          </li>
+          <li data-model="oathbreaker-relic-blade">
+            <button type="button" class="pick" aria-pressed="false"><span class="idx label">06</span><span class="pick-name">Oathbreaker Relic Blade</span><span class="pick-cat label">Relics</span></button>
+            <a class="dl" href="models/oathbreaker-relic-blade.stl" download aria-label="STL file, oathbreaker-relic-blade.stl">STL</a>
+          </li>
+          <li data-model="cogitator-terminal">
+            <button type="button" class="pick" aria-pressed="false"><span class="idx label">07</span><span class="pick-name">Cogitator Terminal</span><span class="pick-cat label">Relics</span></button>
+            <a class="dl" href="models/cogitator-terminal.stl" download aria-label="STL file, cogitator-terminal.stl">STL</a>
+          </li>
+          <li data-model="void-knight-helm-bust">
+            <button type="button" class="pick" aria-pressed="false"><span class="idx label">08</span><span class="pick-name">Void-Knight Helm Bust</span><span class="pick-cat label">Characters</span></button>
+            <a class="dl" href="models/void-knight-helm-bust.stl" download aria-label="STL file, void-knight-helm-bust.stl">STL</a>
+          </li>
+          <li data-model="servo-skull-drone">
+            <button type="button" class="pick" aria-pressed="false"><span class="idx label">09</span><span class="pick-name">Servo-Skull Drone</span><span class="pick-cat label">Characters</span></button>
+            <a class="dl" href="models/servo-skull-drone.stl" download aria-label="STL file, servo-skull-drone.stl">STL</a>
+          </li>
+        </ol>
+      </section>
+    </div>
+  </main>
+
+  <footer class="foot">
+    <p>Drawn with three.js r186.</p>
+  </footer>
+
+  <aside class="readme" id="readme" aria-label="Read me" hidden>
+    <div class="readme__head">
+      <span class="label">Read me</span>
+      <button type="button" class="btn" data-readme-close>Close</button>
+    </div>
+    <p>Use it on a shop or project page to let visitors turn and zoom a 3D-printable model before they download the file. The viewer sits in the page's flow and takes the width of the element you put it in. It needs WebGL, and the page must be served by a web server.</p>
+    <p class="label">Add it to your page</p>
+    <ol class="readme__steps">
+      <li>
+        <p>Copy <code>demo.js</code>, <code>looks.js</code>, <code>demo.css</code> and the folders <code>fonts/</code>, <code>vendor/</code> and <code>models/</code> next to your page.</p>
+      </li>
+      <li>
+        <p>Add the import map, the stylesheet and the script to the head. The import map points <code>three</code> at the copy in <code>vendor/three/</code>.</p>
+        <div class="readme__code"><pre><code>&lt;script type="importmap"&gt;
+  {
+    "imports": {
+      "three": "./vendor/three/three.module.js",
+      "three/addons/": "./vendor/three/addons/"
+    }
+  }
+&lt;/script&gt;
+&lt;link rel="stylesheet" href="demo.css"&gt;
+&lt;script type="module" src="demo.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Copy the <code>&lt;main&gt;</code> element of <code>demo.html</code> into the body. Each item in its list is one model, so edit the list to show your own files.</p>
+      </li>
+    </ol>
+    <p class="label">One model on its own</p>
+    <ol class="readme__steps">
+      <li>
+        <p>Copy <code>vendor/three/</code> and one file from <code>models/</code>, and add the import map shown above to the head.</p>
+      </li>
+      <li>
+        <p>Add a canvas and this script to the body. The files are Z-up, so the script turns the model to the Y-up of three.js.</p>
+        <div class="readme__code"><pre><code>&lt;canvas id="model"&gt;&lt;/canvas&gt;
+&lt;script type="module"&gt;
+  import * as THREE from "three";
+  import { STLLoader } from "three/addons/loaders/STLLoader.js";
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+  const canvas = document.getElementById("model");
+  const width = canvas.parentElement.clientWidth;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(width, width * 3 / 4);
+
+  const scene = new THREE.Scene();
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x555555, 2));
+  const camera = new THREE.PerspectiveCamera(30, 4 / 3, 1, 5000);
+  camera.add(new THREE.DirectionalLight(0xffffff, 1.5));
+  scene.add(camera);
+  const controls = new OrbitControls(camera, canvas);
+
+  const geometry = await new STLLoader().loadAsync("models/servo-skull-drone.stl");
+  geometry.rotateX(-Math.PI / 2);
+  geometry.center();
+  geometry.computeBoundingSphere();
+  const material = new THREE.MeshStandardMaterial({ color: 0xb8b4ab, flatShading: true });
+  scene.add(new THREE.Mesh(geometry, material));
+  camera.position.set(0, 0, geometry.boundingSphere.radius * 4);
+
+  renderer.setAnimationLoop(function () {
+    controls.update();
+    renderer.render(scene, camera);
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+    </ol>
+    <p>The full notes are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/stl-models#readme">README</a>.</p>
+  </aside>
+</body>
+</html>

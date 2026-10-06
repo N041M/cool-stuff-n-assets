@@ -4,87 +4,462 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Page background</title>
-  <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="demo.css">
-  <script defer src="field.js"></script>
+  <link rel="preload" href="fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    /* IBM Plex Mono in two weights. Each weight comes as a Latin file and a
+       Latin Extended file, which holds the Czech letters. A browser downloads
+       the second file only when the page uses one of its characters. */
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-400-latin-ext.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-600-latin.woff2") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-600-latin-ext.woff2") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+
+    :root {
+      --bg: #050608;
+      --ink: #eceae4;
+      --ink-2: #a8a9ae;
+      --ink-3: #7a7c83;
+      --ink-4: #33353b;
+      --accent: #f0a14a;
+      --accent-ink: #1a1107;
+      --font: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --fs: 0.8125rem;
+      --fs-sm: 0.6875rem;
+      --lh: 1.25rem;
+      --bar-h: 2.75rem;
+      --gutter: 2rem;
+      color-scheme: dark;
+    }
+    @media (max-width: 45em) { :root { --gutter: 1rem; --bar-h: 2.5rem; } }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-padding-top: calc(var(--bar-h) + var(--lh)); }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 400 var(--fs) / var(--lh) var(--font); font-variant-ligatures: none; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 3px; }
+    a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+    h1, h2, h3 { margin: 0; font-size: inherit; font-weight: 600; }
+    button { font: inherit; color: inherit; }
+    code { font: inherit; color: var(--ink-2); }
+    ::selection { background: var(--accent); color: var(--accent-ink); }
+    :focus-visible { outline: 1px dashed var(--accent); outline-offset: 3px; }
+
+    /* The bar: the way back to the list, the demo's name and the full demo.
+       The page scrolls under it, so it blurs what is behind it. */
+    .bar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 1.75rem; height: var(--bar-h); padding: 0 var(--gutter); border-bottom: 1px solid var(--ink-4); background: linear-gradient(180deg, rgba(5, 6, 8, 0.94), rgba(5, 6, 8, 0.72)); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); font-size: var(--fs-sm); }
+    .back { color: var(--ink-2); text-decoration: none; white-space: nowrap; }
+    .back:hover { color: var(--ink); }
+    .brand { margin: 0 auto 0 0; min-width: 0; overflow: hidden; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+    @media (max-width: 45em) { .bar { gap: 0.75rem; } .back span { display: none; } }
+
+    .btn { display: inline-flex; align-items: center; height: 1.75rem; padding: 0 1ch; border: 1px solid var(--ink-4); border-radius: 0; background: none; color: var(--ink); font: inherit; font-size: var(--fs-sm); white-space: nowrap; text-decoration: none; cursor: pointer; transition: background 0.12s, color 0.12s; }
+    @media (hover: hover) { .btn:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); } }
+    .btn:focus-visible { background: var(--ink); color: var(--bg); }
+
+    .label { color: var(--ink-3); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    main { max-width: 72.5rem; margin: 0 auto; padding: calc(var(--lh) * 3) var(--gutter); }
+    main p { max-width: 64ch; margin: 0 0 var(--lh); color: var(--ink-2); }
+    main p code, main li code, main dd code, main dt code { color: var(--ink); }
+    h1 { margin-bottom: var(--lh); font-size: clamp(1.75rem, 5vw, 3rem); line-height: 1.1; font-weight: 600; letter-spacing: -0.01em; }
+    .intro > p:first-of-type { color: var(--ink); }
+
+    /* The features under the intro: a row of plain links. */
+    .features { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 2.5ch; max-width: none; }
+    .features .label { margin: 0; }
+
+    /* One section per feature, with a rule above it. */
+    .doc { margin-top: calc(var(--lh) * 4); padding-top: calc(var(--lh) * 2); border-top: 1px solid var(--ink-4); }
+    .doc h2 { margin-bottom: var(--lh); font-size: calc(var(--fs) * 1.7); line-height: calc(var(--lh) * 2); font-weight: 600; }
+    main p.label { margin: calc(var(--lh) * 1.5) 0 calc(var(--lh) * 0.5); color: var(--ink-3); }
+
+    .frame { margin: var(--lh) 0; }
+    .frame iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--ink-4); background: var(--bg); }
+    .frame--intro iframe { aspect-ratio: 16 / 10; }
+    .frame figcaption { margin-top: 0.5rem; font-size: var(--fs-sm); color: var(--ink-3); }
+    /* A frame for an effect that waits for the pointer is lower, so it is not
+       mostly empty. */
+    .frame--low iframe { aspect-ratio: 21 / 9; }
+    @media (max-width: 45em) { .frame iframe, .frame--intro iframe { aspect-ratio: 4 / 5; } .frame--low iframe { aspect-ratio: 1 / 1; } }
+
+    .needs { max-width: 64ch; margin: 0 0 var(--lh); padding-left: 2ch; color: var(--ink-2); list-style: square; }
+    .needs li::marker { color: var(--ink-3); }
+    .needs li + li { margin-top: 0.25rem; }
+
+    /* Code blocks, as in the demos' Read me panels. */
+    .file { margin-bottom: 0.5rem; color: var(--ink-3); font-size: var(--fs-sm); }
+    .code { position: relative; margin: 0 0 var(--lh); }
+    .code pre { margin: 0; padding: 1ch 1.5ch; padding-right: 8ch; overflow-x: auto; border: 1px solid var(--ink-4); background: rgba(127, 127, 127, 0.06); font-size: var(--fs-sm); line-height: 1.5; white-space: pre; }
+    .code code { color: var(--ink); }
+    .code .btn { position: absolute; top: 0.5ch; right: 0.5ch; height: 1.5rem; background: var(--bg); }  /* solid, because long lines scroll under it */
+    /* The solid background above would otherwise hide the Copy button's text
+       on hover, where the text takes the page colour. */
+    @media (hover: hover) { .code .btn:hover { background: var(--ink); } }
+    .code .btn:focus-visible { background: var(--ink); }
+
+    .steps { margin: 0 0 var(--lh); padding-left: 3ch; color: var(--ink-2); }
+    .steps li { margin-bottom: var(--lh); }
+    .steps li::marker { color: var(--accent); }
+    .steps p { margin-bottom: calc(var(--lh) * 0.5); }
+    .steps .code { margin-bottom: calc(var(--lh) * 0.5); }
+
+    /* Options: a name column and its meaning. */
+    .kv { max-width: 80ch; margin: 0 0 var(--lh); }
+    .kv div { display: flex; gap: 2ch; padding: 0.375rem 0; border-top: 1px solid var(--ink-4); }
+    .kv div:last-child { border-bottom: 1px solid var(--ink-4); }
+    .kv dt { flex: none; width: 10ch; }
+    .kv dd { margin: 0; color: var(--ink-2); }
+
+    .foot { max-width: 72.5rem; margin: 0 auto; padding: var(--lh) var(--gutter) calc(var(--lh) * 3); }
+    .foot p { max-width: 64ch; margin: 0; padding-top: var(--lh); border-top: 1px solid var(--ink-4); color: var(--ink-3); font-size: var(--fs-sm); }
+    .foot a { color: var(--ink-2); }
+  </style>
+  <link rel="stylesheet" href="../assets/code.css">
+  <script defer src="../assets/code.js"></script>
 </head>
 <body>
-  <canvas id="field" aria-hidden="true"></canvas>
-
-  <header class="top">
-    <div class="bar ko">
-      <a class="back" href="../" aria-label="All demos">← <span>All demos</span></a>
-      <h1 class="brand">field.js</h1>
-      <div class="seg" role="group" aria-label="Theme">
-        <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
-        <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
-        <button type="button" data-set-theme="system" aria-pressed="true">Auto</button>
-      </div>
-    </div>
+  <header class="bar">
+    <a class="back" href="../" aria-label="All demos">← <span>All demos</span></a>
+    <p class="brand">Page background</p>
+    <a class="btn" href="demo.html">Open full screen</a>
   </header>
 
   <main>
-    <section class="hero">
-      <div class="wrap hero-inner">
-        <p class="lede"><span class="hl">The plot scrolls at half the speed of the page.</span></p>
-        <button type="button" class="btn ko" data-to-water>Scroll to the water</button>
-      </div>
-    </section>
+<div class="intro">
+<h1>Page background</h1>
+<p>Use it as an animated background behind a page of text. It draws a slowly moving plot of glyphs on a canvas fixed under your content, scrolls at half the speed of the page and keeps clear of the blocks you mark.</p>
+<figure class="frame frame--intro">
+  <iframe data-src="demo.html?embed" title="Page background" loading="lazy" data-live></iframe>
+  <figcaption><a href="demo.html">Open on its own</a></figcaption>
+</figure>
+</div>
 
-    <section class="section">
-      <div class="wrap">
-        <div class="panel ko">
-          <p>Traces rise and fall slowly. Heavy dashes and dots appear on them and fade out again every few seconds.</p>
-        </div>
-      </div>
-    </section>
+<nav class="features" aria-label="Features">
+  <span class="label">Features</span>
+  <a href="#field">The field</a>
+  <a href="#water">Water</a>
+  <a href="#ko">Cut-outs</a>
+  <a href="#ruler">Ruler</a>
+</nav>
 
-    <section class="section">
-      <div class="wrap">
-        <div class="panel ko">
-          <p>Every element with the class <code>ko</code> is cut out of the field with a ragged margin, so its text stays readable.</p>
-        </div>
-      </div>
-    </section>
+<section class="doc" id="field" aria-labelledby="field-h">
+<h2 id="field-h">The field</h2>
+<p>Use the field as the background of a whole page, behind your text and images. The frame above shows it on a sample page.</p>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li><code>field.js</code>, 20 KB.</li>
+  <li>A <code>&lt;canvas id="field"&gt;</code> fixed behind the page.</li>
+  <li><code>--bg</code> and <code>--fg</code> on <code>:root</code>. The field redraws when <code>data-theme</code> on <code>&lt;html&gt;</code> changes.</li>
+  <li>IBM Plex Mono, if you want the glyphs in that font. Glyphs it lacks, such as the box-drawing lines, come from the system's monospace font.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">field.js</p>
+<div class="code"><pre><code>function draw(t) {
+  const scrollY = window.scrollY || 0;
+  const sceneOff = scrollY * PARALLAX;
+  const rowOff = Math.floor(sceneOff / ch);
+  frac = sceneOff - rowOff * ch;
+  fracD = Math.round(frac * dpr);
+  computeTraces(t, rowOff * ch);
+  buildMask();
 
-    <section class="section">
-      <div class="wrap">
-        <div class="panel ko">
-          <p>The numbered ruler hangs under the top bar. Its ticks line up with the dotted grid columns.</p>
-        </div>
-      </div>
-    </section>
+  // A scrolled grid, a resize or a theme change redraws everything. Otherwise
+  // only cells whose glyph changed are drawn.
+  const full = fullRedraw || rowOff !== lastRowOff || fracD !== lastFracD;
+  fullRedraw = false;
+  lastRowOff = rowOff;
+  lastFracD = fracD;
+  ctx.globalAlpha = 1;
+  if (full) ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let r = 0; r &lt; rows; r++) {
+    const sr = r + rowOff;
+    const sy = (sr + 0.5) * ch;
+    const yD = r * chD - fracD;
+    const base = r * cols;
+    for (let c = 0; c &lt; cols; c++) {
+      const idx = base + c;
+      const m = mask[idx];
+      const x = (c + 0.5) * cw;
+      let code;
+      if (m === 1 || (m === 2 &amp;&amp; RA[idx] &lt; 0.55)) code = -1;
+      else if (sy &gt; seaTop) code = waterCell(x, sy - seaTop, t);
+      else code = plotCell(c, sr, sy, t);
+      if (!full &amp;&amp; code === prevCode[idx]) continue;
+      prevCode[idx] = code;
+      ctx.fillStyle = colors.bg;
+      ctx.fillRect(c * cwD, yD, cwD, chD);
+      if (code &gt;= 0) ctx.drawImage(atlas, (code &gt;&gt; 7) * cwD, (code &amp; 127) * chD, cwD, chD, c * cwD, yD, cwD, chD);
+    }
+  }
+  drawRuler();
+}
+// …
+const n1 = noise3(x / 260, k * 0.61, t * 0.04);
+const n2 = noise3(x / 95, k * 1.37 + 7, t * 0.06);
+const env2 = 0.6 + 0.4 * noise3(x / 700, k * 0.23, 5.5);
+const h = env2 * (0.6 * Math.max(0, n1) + 0.4 * Math.pow(n2 * 0.5 + 0.5, 3));
+traceBuf[n * stride + c] = baseY - amp * h;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p>The field splits the window into cells of 7 × 14 px and draws each cell from an atlas of glyphs in <code>--fg</code> at seven strengths. Each trace starts from a baseline every five rows and is lifted by two layers of 3D simplex noise whose third axis is time. Every frame works out a glyph for each cell and redraws only the cells whose glyph changed. The grid moves at half the scroll speed, and a machine that takes more than 16 ms a frame gets bigger cells.</p>
+<p>When the system asks for reduced motion, the field shows one still moment and redraws it only when the page scrolls or changes.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Copy <code>field.js</code> next to your page.</p>
+  </li>
+  <li>
+    <p>Load it at the end of the head.</p>
+    <div class="code"><pre><code>&lt;script defer src="field.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>Put the canvas first in the body.</p>
+    <div class="code"><pre><code>&lt;canvas id="field" aria-hidden="true"&gt;&lt;/canvas&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>Fix the canvas behind the page and set the two colours the field reads.</p>
+    <div class="code"><pre><code>:root { --bg: #050608; --fg: #eceae4; }
+body { margin: 0; background: var(--bg); color: var(--fg); }
+#field { position: fixed; inset: 0; width: 100%; height: 100vh; pointer-events: none; z-index: 0; }
+main, footer { position: relative; z-index: 1; }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>To set the glyphs in IBM Plex Mono, copy the <code>fonts</code> folder next to your page and add the font to your CSS. The field waits up to 1.5 s for it before it starts.</p>
+    <div class="code"><pre><code>@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+<p>The cursor trail can run on top of the field. Its <a href="../cursor-trail/#canvas">documentation</a> shows how.</p>
+</section>
+
+<section class="doc" id="water" aria-labelledby="water-h">
+<h2 id="water-h">Water</h2>
+<p>Use the water to end a long page with a footer that sits on a moving sea.</p>
+<figure class="frame">
+  <iframe data-src="demo.html?feature=water&amp;embed" title="Water" loading="lazy" data-live></iframe>
+  <figcaption><a href="demo.html?feature=water">Open on its own</a></figcaption>
+</figure>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>The field, set up as under <a href="#field">The field</a>.</li>
+  <li>An empty element with <code>data-shore</code> after your footer.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">field.js</p>
+<div class="code"><pre><code>// The water reaches the shore spacer exactly when the page is scrolled to
+// the end, and stays below it before that.
+const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+seaTop = shoreEl
+  ? shoreEl.getBoundingClientRect().top + window.scrollY - maxScroll * (1 - PARALLAX)
+  : Infinity;
+// …
+if (m === 1 || (m === 2 &amp;&amp; RA[idx] &lt; 0.55)) code = -1;
+else if (sy &gt; seaTop) code = waterCell(x, sy - seaTop, t);
+// …
+function waterCell(x, dy, t) {
+  const ri = Math.floor(dy / ch);
+  if (ri === 0) {
+    const wc = Math.floor((x + t * 6) / cw);
+    return ((hash2(wc &gt;&gt; 2, 3) &lt; 0.85 ? G_H : G_HH) &lt;&lt; 7) | 1;
+  }
+  const sway = Math.sin(t * 0.9 + ri * 0.7) * cw * 1.2;
+  const wc = Math.floor((x + t * (4 + ri * 2.5) + sway) / cw);
+  const segLen = 2 + ((hash2(ri, 71) * 8) | 0);
+  const hs = hash2(Math.floor(wc / segLen), ri + 131);
+  const dens = Math.min(0.7, 0.16 + ri * 0.05);
+  if (hs &lt; dens) {
+    if (hash2(wc, ri + 7) &lt; 0.03) return (G_SQ &lt;&lt; 7) | 1;
+    return (S.water[((hs / dens) * S.water.length) | 0] &lt;&lt; 7) | (ri &lt; 3 ? 3 : ri &lt; 7 ? 2 : 1);
+  }
+  return -1;
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p>The field finds the element with <code>data-shore</code> and works out where its top will be when the page is scrolled to the end. Every cell below that line draws water, so the water rises into view as the reader reaches the bottom. The top row is a surface line, and the rows under it are runs of swell that drift faster the deeper they are.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Set up the field as under <a href="#field">The field</a>.</p>
+  </li>
+  <li>
+    <p>Put an empty block with <code>data-shore</code> after the footer. Its height sets how much water shows at the end of the page.</p>
+    <div class="code"><pre><code>&lt;div data-shore aria-hidden="true" style="height: 36vh"&gt;&lt;/div&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>If your page changes height without a resize, for example after it loads more content, call this so the field measures the page again.</p>
+    <div class="code"><pre><code>Field.refresh();</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
+
+<section class="doc" id="ko" aria-labelledby="ko-h">
+<h2 id="ko-h">Cut-outs</h2>
+<p>Use the class <code>ko</code> to keep the field off panels, headings and other blocks of text, so they stay readable without a background of their own.</p>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>The field, set up as under <a href="#field">The field</a>.</li>
+  <li>Elements with the class <code>ko</code>.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">field.js</p>
+<div class="code"><pre><code>function buildMask() {
+  mask.fill(0);
+  const padX = cw * 1.5;
+  const padY = ch * 0.6;
+  for (let n = 0; n &lt; koEls.length; n++) {
+    const rects = koEls[n].getClientRects();
+    for (let k = 0; k &lt; rects.length; k++) {
+      const rc = rects[k];
+      if (rc.width === 0 || rc.bottom &lt; -ch || rc.top &gt; vh + ch) continue;
+      const c0 = Math.max(0, Math.floor((rc.left - padX) / cw));
+      const c1 = Math.min(cols - 1, Math.floor((rc.right + padX) / cw));
+      const r0 = Math.max(0, Math.floor((rc.top - padY + frac) / ch));
+      const r1 = Math.min(rows - 1, Math.floor((rc.bottom + padY + frac) / ch));
+      const ic0 = Math.floor(rc.left / cw), ic1 = Math.floor(rc.right / cw);
+      const ir0 = Math.floor((rc.top + frac) / ch), ir1 = Math.floor((rc.bottom + frac) / ch);
+      for (let r = r0; r &lt;= r1; r++) {
+        const inRow = r &gt;= ir0 &amp;&amp; r &lt;= ir1;
+        for (let c = c0; c &lt;= c1; c++) {
+          const idx = r * cols + c;
+          if (inRow &amp;&amp; c &gt;= ic0 &amp;&amp; c &lt;= ic1) mask[idx] = 1;
+          else if (mask[idx] === 0) mask[idx] = 2;
+        }
+      }
+    }
+  }
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p>Before each frame the field reads the boxes of every <code>.ko</code> element. The cells under an element stay empty. About half of the cells in a margin of 1.5 cells round it stay empty too, which gives the edge a ragged look.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Add the class <code>ko</code> to each block of text the field should leave room around.</p>
+    <div class="code"><pre><code>&lt;p class="ko"&gt;Your text.&lt;/p&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>If your page adds or moves <code>.ko</code> elements without a resize, call this afterwards.</p>
+    <div class="code"><pre><code>Field.refresh();</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
+
+<section class="doc" id="ruler" aria-labelledby="ruler-h">
+<h2 id="ruler-h">Ruler</h2>
+<p>Use the ruler to hang a numbered scale under a fixed top bar.</p>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>The field, set up as under <a href="#field">The field</a>.</li>
+  <li>A top bar with the class <code>top</code>. A page without one has no ruler.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">field.js</p>
+<div class="code"><pre><code>barEl = document.querySelector(".top");
+barBottom = barEl ? Math.round(barEl.getBoundingClientRect().bottom) : 0;
+// …
+// A numbered ruler hanging under the top bar. Its ticks line up with the
+// grid's dotted columns.
+function drawRuler() {
+  if (!barEl) return;
+  const yD = Math.round(barBottom * dpr);
+  ctx.fillStyle = colors.bg;
+  ctx.fillRect(0, yD, canvas.width, chD);
+  for (let c = 0; c &lt; cols; c++) {
+    const m = c % GRID;
+    let g = -1;
+    if (m === 0) g = G_TICK;
+    else if (m === 1 || m === 2) g = GI.get(String(Math.floor(c / GRID) + 1).padStart(2, "0")[m - 1]);
+    if (g &gt;= 0) ctx.drawImage(atlas, g * cwD, 3 * chD, cwD, chD, c * cwD, yD, cwD, chD);
+  }
+  const r = Math.floor((barBottom + frac) / ch);
+  for (let c = 0; c &lt; cols &amp;&amp; r &gt;= 0 &amp;&amp; r &lt; rows; c++) prevCode[r * cols + c] = -9;
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p>The field measures the bottom of the <code>.top</code> element when it starts and whenever the page changes size. After the rest of the field it draws one row there, with a tick every six columns and the number of each tick beside it. The ticks line up with the dotted columns of the grid.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Set up the field as under <a href="#field">The field</a>.</p>
+  </li>
+  <li>
+    <p>Give your top bar the class <code>top</code>.</p>
+    <div class="code"><pre><code>&lt;header class="top"&gt;Your name&lt;/header&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>Fix the bar to the top of the window, above the canvas.</p>
+    <div class="code"><pre><code>.top { position: fixed; top: 0; left: 0; right: 0; z-index: 10; background: var(--bg); }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
   </main>
 
   <footer class="foot">
-    <div class="wrap">
-      <div class="foot-row ko">
-        <p>Water under the footer</p>
-        <p><a href="#">Back to top <span aria-hidden="true">↑</span></a></p>
-      </div>
-    </div>
-    <div class="shore" data-shore aria-hidden="true"></div>
+    <p>The full API and every option are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/page-background#readme">README</a>. The code is under the <a href="https://github.com/N041M/cool-stuff-n-assets/blob/main/LICENSE">MIT licence</a>.</p>
   </footer>
 
   <script>
-    // The theme switch. The field reads --bg and --fg and redraws when
-    // data-theme changes.
+    // Copy buttons copy the code block they sit in.
+    document.querySelectorAll("[data-copy-code]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        const text = button.parentElement.querySelector("code").textContent;
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          button.textContent = "Copied";
+          setTimeout(function () { button.textContent = "Copy"; }, 1500);
+        }, function () {});
+      });
+    });
+
+    // A frame with data-src loads when it comes within one screen of the
+    // window, and empties again when it moves further away, because its demo
+    // keeps drawing while it is off screen. The address is replaced so the
+    // frames add nothing to the browser's history.
     (function () {
-      var root = document.documentElement;
-      document.querySelector("[data-to-water]").addEventListener("click", function () {
-        var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        window.scrollTo({ top: root.scrollHeight, behavior: reduced ? "auto" : "smooth" });
-      });
-      document.querySelectorAll("[data-set-theme]").forEach(function (b) {
-        b.addEventListener("click", function () {
-          var choice = b.getAttribute("data-set-theme");
-          if (choice === "system") root.removeAttribute("data-theme");
-          else root.setAttribute("data-theme", choice);
-          document.querySelectorAll("[data-set-theme]").forEach(function (o) {
-            o.setAttribute("aria-pressed", String(o === b));
-          });
+      const frames = document.querySelectorAll("iframe[data-src]");
+      function load(frame, url) {
+        if (frame.dataset.at === url) return;
+        if (!frame.dataset.at && url === "about:blank") return;
+        frame.dataset.at = url;
+        if (frame.contentWindow && frame.hasAttribute("src")) frame.contentWindow.location.replace(url);
+        else frame.src = url;
+      }
+      if (!("IntersectionObserver" in window)) {
+        frames.forEach(function (frame) { frame.src = frame.dataset.src; });
+        return;
+      }
+      const io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          const frame = entry.target;
+          load(frame, entry.isIntersecting ? new URL(frame.dataset.src, location.href).href : "about:blank");
         });
-      });
+      }, { rootMargin: "100% 0px" });
+      frames.forEach(function (frame) { io.observe(frame); });
     })();
   </script>
 </body>

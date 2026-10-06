@@ -1,77 +1,94 @@
-/* The demo page's styles. The field needs the #field rule, --bg and --fg on
-   :root, and Departure Mono. */
+/* The demo page's styles. The field needs the #field rule and --bg and --fg
+   on :root, and it sets its glyphs in IBM Plex Mono when the page loads it. */
 
+/* IBM Plex Mono in two weights. Each weight comes as a Latin file and a Latin
+   Extended file, which holds the Czech letters. A browser downloads the second
+   file only when the page uses one of its characters. */
 @font-face {
-  font-family: "Departure Mono";
-  src: url("fonts/DepartureMono-Regular.woff2") format("woff2");
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
   font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-400-latin-ext.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-600-latin.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-600-latin-ext.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
 :root {
-  --bg: #fbfaf8;
-  --fg: #17181b;
-  --muted: #6d6c68;
-  --line: #e5e3de;
-  --soft: #efeeea;
-  --panel: #ffffff;
-  --bar: #f5f4f0;
-  --edge: #17181b;
-  --drop: #d9d6cf;
-  --accent: #c8352b;
-  --accent-ink: #c8352b;
-  --on-accent: #fbfaf8;
-  --mono: "Departure Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  --gutter: clamp(16px, 4vw, 40px);
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #131417;
-    --fg: #edece8;
-    --muted: #8e8d88;
-    --line: #2a2b30;
-    --soft: #212227;
-    --panel: #18191c;
-    --bar: #18191c;
-    --edge: #4a4b52;
-    --drop: #2c2d33;
-    --accent: #dc665e;
-    --accent-ink: #e8776e;
-    --on-accent: #131417;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #131417;
-  --fg: #edece8;
-  --muted: #8e8d88;
-  --line: #2a2b30;
-  --soft: #212227;
-  --panel: #18191c;
-  --bar: #18191c;
-  --edge: #4a4b52;
-  --drop: #2c2d33;
-  --accent: #dc665e;
-  --accent-ink: #e8776e;
-  --on-accent: #131417;
+  --bg: #050608;
+  --panel: rgba(6, 7, 10, 0.86);
+  --ink: #eceae4;
+  --ink-2: #a8a9ae;
+  --ink-3: #7a7c83;
+  --ink-4: #33353b;
+  --border: #62646b;
+  --accent: #f0a14a;
+  --accent-ink: #1a1107;
+  --fg: var(--ink);
+  --font: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --fs: 0.8125rem;
+  --fs-sm: 0.6875rem;
+  --lh: 1.25rem;
+  --bar-h: 2.75rem;
+  --gutter: 2rem;
   color-scheme: dark;
+}
+@media (max-width: 45em) { :root { --gutter: 1rem; --bar-h: 2.5rem; } }
+:root[data-theme="light"] {
+  --bg: #f4f2ec;
+  --panel: rgba(244, 242, 236, 0.9);
+  --ink: #16171a;
+  --ink-2: #4c4e54;
+  --ink-3: #6b6d73;
+  --ink-4: #cfccc4;
+  --border: #8b8d93;
+  --accent: #b8661a;
+  --accent-ink: #fff8ee;
+  color-scheme: light;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
 body {
   margin: 0;
   background: var(--bg);
-  color: var(--fg);
-  font: 400 17px/1.6 var(--sans);
+  color: var(--ink);
+  font: 400 var(--fs) / var(--lh) var(--font);
+  font-variant-ligatures: none;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
-p, h1, h2 { margin: 0; }
-a { color: inherit; text-underline-offset: 3px; }
-a:hover { color: var(--accent-ink); }
-code { font: 0.92em var(--mono); }
+p { margin: 0; }
+a { color: inherit; text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 3px; }
+a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+h1, h2, h3 { margin: 0; font-size: inherit; font-weight: 600; }
+button { font: inherit; color: inherit; }
+code { font: inherit; color: var(--ink-2); }
+::selection { background: var(--accent); color: var(--accent-ink); }
+:focus-visible { outline: 1px dashed var(--accent); outline-offset: 3px; }
+[hidden] { display: none !important; }
 
 /* The field is a fixed canvas behind the page. */
 #field {
@@ -85,97 +102,118 @@ code { font: 0.92em var(--mono); }
   z-index: 0;
 }
 .top, main, .foot { position: relative; z-index: 1; }
+html { scroll-behavior: smooth; }
 
-.wrap { width: 100%; max-width: 900px; margin: 0 auto; padding: 0 var(--gutter); }
+.wrap { width: 100%; max-width: 56.25rem; margin: 0 auto; padding: 0 var(--gutter); }
 
 /* The field's ruler hangs just below this bar. */
 .top { position: fixed; top: 0; left: 0; right: 0; z-index: 10; }
 .bar {
   display: flex;
   align-items: center;
-  height: 56px;
-  padding: 0 12px 0 16px;
-  border-bottom: 1px solid var(--line);
-  background: var(--bar);
+  gap: 1.75rem;
+  height: var(--bar-h);
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--ink-4);
+  background: linear-gradient(180deg, rgba(5, 6, 8, 0.94), rgba(5, 6, 8, 0.72));
+  font-size: var(--fs-sm);
 }
-.brand { margin: 0 auto 0 0; font: 16.5px/1 var(--mono); }
-.back { padding: 10px 14px 10px 0; color: var(--muted); font: 16.5px/1 var(--mono); text-decoration: none; }
-@media (max-width: 560px) { .back { padding-right: 4px; } .back span { display: none; } }
-.seg {
-  display: inline-flex;
-  padding: 2px;
-  border: 1px solid var(--line);
-  background: var(--panel);
-}
-.seg button {
-  appearance: none;
-  height: 30px;
-  min-width: 34px;
-  padding: 0 8px;
-  border: 0;
-  background: transparent;
-  color: var(--fg);
-  font: 400 11px/1 var(--mono);
-  letter-spacing: 0.08em;
-  cursor: pointer;
-}
-.seg button:hover { background: var(--soft); }
-.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
+:root[data-theme="light"] .bar { background: linear-gradient(180deg, rgba(244, 242, 236, 0.96), rgba(244, 242, 236, 0.8)); }
+.back { color: var(--ink-2); text-decoration: none; white-space: nowrap; }
+.back:hover { color: var(--ink); }
+/* On a phone narrower than 375 px the name gives up its last letters so the
+   buttons keep their room. */
+.brand { margin: 0 auto 0 0; min-width: 0; overflow: hidden; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+.brand a { text-decoration: none; }
+@media (max-width: 45em) { .bar { gap: 0.75rem; } .back span { display: none; } }
 
-/* The text at the top sits on strips of the page colour, and the
-   field stays visible around them. */
+.btn {
+  height: 1.75rem;
+  padding: 0 1ch;
+  border: 1px solid var(--ink-4);
+  border-radius: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+@media (hover: hover) { .btn:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); } }
+.btn:focus-visible { background: var(--ink); color: var(--bg); }
+.btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.btn[aria-pressed="false"] { color: var(--ink-3); }
+
+.seg { display: inline-flex; gap: 0.5ch; }
+
+.label { color: var(--ink-3); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* The button sits near the top of the page, and the field stays visible
+   around it. */
 .hero {
   min-height: 100vh;
-  display: flex;
-  align-items: flex-start;
-  padding: clamp(104px, 17vh, 190px) 0 120px;
-}
-.hero-inner { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
-.btn {
-  appearance: none;
-  height: 46px;
-  padding: 0 16px;
-  border: 1px solid var(--edge);
-  background: var(--panel);
-  box-shadow: 3px 3px 0 var(--drop);
-  color: var(--fg);
-  font: 16.5px/1 var(--mono);
-  cursor: pointer;
-}
-.btn:hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-.lede { max-width: 58ch; }
-.lede .hl {
-  padding: 0.3em 0.6em 0.3em 0.7em;
-  background: var(--bg);
-  box-shadow: inset 3px 0 0 var(--accent);
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
+  padding: calc(var(--bar-h) + clamp(3rem, 12vh, 8rem)) 0 7.5rem;
 }
 
-.section { padding: 72px 0; }
+.section { padding: 4.5rem 0; }
 .panel {
-  max-width: 560px;
-  padding: 22px 24px;
-  border: 1px solid var(--edge);
+  max-width: 60ch;
+  padding: var(--lh) 3ch;
+  border: 1px solid var(--ink-4);
   background: var(--panel);
-  box-shadow: 5px 5px 0 var(--drop);
+  color: var(--ink-2);
 }
+.panel code { color: var(--ink); }
 
-.foot { padding-top: 24px; }
+.foot { padding-top: 1.5rem; }
 .foot-row {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
-  padding: 16px 0;
-  border-top: 1px solid var(--line);
-  font: 400 11px/1.3 var(--mono);
-  letter-spacing: 0.12em;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--ink-4);
+  background: var(--bg);
+  color: var(--ink-3);
+  font-size: var(--fs-sm);
   text-transform: uppercase;
-  color: var(--muted);
+  letter-spacing: 0.06em;
 }
 .foot-row a { text-decoration: none; }
 /* The field's water shows in this empty space under the footer. */
 .shore { height: 36vh; }
+
+/* The water view has no content above the footer. The footer sits at the
+   bottom of the window and the water fills the space under it. */
+:root[data-feature="water"] body { display: flex; flex-direction: column; min-height: 100vh; }
+:root[data-feature="water"] .foot { margin-top: auto; }
+
+/* ?embed shows the page without its bar and Read me, for a frame on the
+   documentation page. The ruler then hangs from the top of the frame. */
+:root[data-embed] .top,
+:root[data-embed] .readme { display: none !important; }
+:root[data-embed] .hero { padding-top: clamp(3rem, 12vh, 8rem); }
+
+/* The Read me panel. */
+.readme { position: fixed; top: var(--bar-h); right: 0; bottom: 0; z-index: 30; width: min(52ch, 100%); overflow-y: auto; overscroll-behavior: contain; padding: var(--lh) 3ch calc(var(--lh) * 2); border-left: 1px solid var(--ink-4); background: var(--bg); color: var(--ink-2); }
+.readme[hidden] { display: none; }
+.readme__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--lh); }
+.readme p { margin: 0 0 var(--lh); }
+.readme .label { margin: calc(var(--lh) * 1.5) 0 calc(var(--lh) * 0.5); }
+.readme__head .label { margin: 0; }
+.readme__steps { margin: 0 0 var(--lh); padding-left: 3ch; }
+.readme__steps li { margin-bottom: var(--lh); }
+.readme__steps li::marker { color: var(--accent); }
+.readme__steps p { margin-bottom: calc(var(--lh) * 0.5); }
+.readme code { color: var(--ink); }
+.readme__code { position: relative; }
+.readme__code pre { margin: 0; padding: 1ch 1.5ch; padding-right: 8ch; overflow-x: auto; border: 1px solid var(--ink-4); background: rgba(127, 127, 127, 0.06); font-size: var(--fs-sm); line-height: 1.5; white-space: pre; }
+.readme__code .btn { position: absolute; top: 0.5ch; right: 0.5ch; height: 1.5rem; background: var(--bg); }  /* solid, because long lines scroll under it */
+/* The solid background above would otherwise hide the Copy button's text on
+   hover, where the text takes the page colour. */
+@media (hover: hover) { .readme__code .btn:hover { background: var(--ink); } }
+.readme__code .btn:focus-visible { background: var(--ink); }
+@media (max-width: 45em) { .readme { width: 100%; border-left: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }

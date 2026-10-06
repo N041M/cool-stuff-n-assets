@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Globe</title>
+  <script>
+    // ?embed shows only the globe, for a frame on the documentation page.
+    // ?lang=cs opens the page in Czech and ?theme=light in the light colours.
+    (function () {
+      var q = new URLSearchParams(location.search), root = document.documentElement;
+      if (q.has("embed")) root.setAttribute("data-embed", "");
+      if (q.get("lang") === "cs") root.lang = "cs";
+      if (q.get("theme") === "light") root.setAttribute("data-theme", "light");
+    })();
+  </script>
+  <link rel="preload" href="fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="globe.css">
+  <style>
+    /* The demo page around the globe. globe.css holds the fonts, the
+       colours, the buttons and the globe's own styles. */
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 400 var(--fs) / var(--lh) var(--font); font-variant-ligatures: none; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 3px; }
+    a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+    h1, h2, h3 { margin: 0; font-size: inherit; font-weight: 600; }
+    button { font: inherit; color: inherit; }
+    code { font: inherit; color: var(--ink-2); }
+    ::selection { background: var(--accent); color: var(--accent-ink); }
+    :focus-visible { outline: 1px dashed var(--accent); outline-offset: 3px; }
+
+    /* The status bar: back link, demo name, then the controls at the right. */
+    .bar { display: flex; align-items: center; gap: 1.75rem; height: var(--bar-h); padding: 0 var(--gutter); border-bottom: 1px solid var(--ink-4); background: linear-gradient(180deg, rgba(5, 6, 8, 0.94), rgba(5, 6, 8, 0.72)); font-size: var(--fs-sm); }
+    :root[data-theme="light"] .bar { background: linear-gradient(180deg, rgba(244, 242, 236, 0.96), rgba(244, 242, 236, 0.8)); }
+    .back { color: var(--ink-2); text-decoration: none; white-space: nowrap; }
+    .back:hover { color: var(--ink); }
+    .brand { margin: 0 auto 0 0; font-weight: 600; white-space: nowrap; }
+    @media (max-width: 45em) { .bar { gap: 0.75rem; } .back span { display: none; } }
+
+    main { width: 100%; max-width: 40rem; margin: 0 auto; padding: calc(var(--lh) * 2) var(--gutter); }
+
+    .label { color: var(--ink-3); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* The Read me panel. */
+    .readme { position: fixed; top: var(--bar-h); right: 0; bottom: 0; z-index: 30; width: min(52ch, 100%); overflow-y: auto; overscroll-behavior: contain; padding: var(--lh) 3ch calc(var(--lh) * 2); border-left: 1px solid var(--ink-4); background: var(--bg); color: var(--ink-2); }
+    .readme[hidden] { display: none; }
+    .readme__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--lh); }
+    .readme p { margin: 0 0 var(--lh); }
+    .readme .label { margin: calc(var(--lh) * 1.5) 0 calc(var(--lh) * 0.5); }
+    .readme__head .label { margin: 0; }
+    .readme__steps { margin: 0 0 var(--lh); padding-left: 3ch; }
+    .readme__steps li { margin-bottom: var(--lh); }
+    .readme__steps li::marker { color: var(--accent); }
+    .readme__steps p { margin-bottom: calc(var(--lh) * 0.5); }
+    .readme code { color: var(--ink); }
+    .readme__code { position: relative; }
+    .readme__code pre { margin: 0; padding: 1ch 1.5ch; padding-right: 8ch; overflow-x: auto; border: 1px solid var(--ink-4); background: rgba(127, 127, 127, 0.06); font-size: var(--fs-sm); line-height: 1.5; white-space: pre; }
+    .readme__code .btn { position: absolute; top: 0.5ch; right: 0.5ch; height: 1.5rem; background: var(--bg); }
+    .readme__code .btn:hover, .readme__code .btn:focus-visible { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+    @media (max-width: 45em) { .readme { width: 100%; border-left: 0; } }
+
+    /* ?embed: only the globe, filling the frame. */
+    [data-embed] .bar, [data-embed] .readme { display: none; }
+    [data-embed] main { max-width: none; padding: 0; }
+    [data-embed] .globe-fig { border: 0; }
+    [data-embed] .globe-fig .plot { height: calc(100vh - var(--lh) * 2); }
+  </style>
+  <script defer src="globe.js"></script>
+  <link rel="stylesheet" href="../assets/code.css">
+  <script defer src="../assets/code.js"></script>
+</head>
+<body>
+  <header class="bar">
+    <a class="back" href="./" aria-label="Globe">← <span>Globe</span></a>
+    <span class="brand">Globe</span>
+    <button type="button" class="btn" data-readme-open aria-controls="readme" aria-expanded="false">Read me</button>
+    <div class="seg" role="group" aria-label="Language">
+      <button type="button" class="btn" data-set-lang="en" aria-pressed="true">EN</button>
+      <button type="button" class="btn" data-set-lang="cs" aria-pressed="false">CZ</button>
+    </div>
+    <div class="seg" role="group" aria-label="Theme">
+      <button type="button" class="btn" data-set-theme="dark" aria-pressed="true">Dark</button>
+      <button type="button" class="btn" data-set-theme="light" aria-pressed="false">Light</button>
+    </div>
+  </header>
+
+  <main>
+    <figure class="fig globe-fig">
+      <pre class="plot" data-figure="globe" data-world="data/world" aria-hidden="true"></pre>
+      <div class="seg globe-zoom" role="group" aria-label="Globe">
+        <button type="button" class="btn" data-globe="in" aria-label="Zoom in" title="Zoom in">+</button>
+        <button type="button" class="btn" data-globe="out" aria-label="Zoom out" title="Zoom out">-</button>
+        <button type="button" class="btn" data-globe="home" aria-label="Show Jablonec nad Nisou" title="Show Jablonec nad Nisou">JBC</button>
+      </div>
+    </figure>
+  </main>
+
+  <aside class="readme" id="readme" aria-label="Read me" hidden>
+    <div class="readme__head">
+      <span class="label">Read me</span>
+      <button type="button" class="btn" data-readme-close>Close</button>
+    </div>
+    <p>Use it to show where you are, for example on a contact or about page. It sits in the page's flow as a figure and fills the width of its column. Visitors can turn it and zoom in as far as single countries.</p>
+    <p class="label">Add it to your page</p>
+    <ol class="readme__steps">
+      <li>
+        <p>Copy <code>globe.js</code>, <code>globe.css</code> and the <code>data/</code> and <code>fonts/</code> folders next to your page.</p>
+      </li>
+      <li>
+        <p>Load them in the head.</p>
+        <div class="readme__code"><pre><code>&lt;link rel="stylesheet" href="globe.css"&gt;
+&lt;script defer src="globe.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Put the globe and its zoom buttons where it should appear.</p>
+        <div class="readme__code"><pre><code>&lt;figure class="fig globe-fig"&gt;
+  &lt;pre class="plot" data-figure="globe" data-world="data/world" aria-hidden="true"&gt;&lt;/pre&gt;
+  &lt;div class="seg globe-zoom" role="group" aria-label="Globe"&gt;
+    &lt;button type="button" class="btn" data-globe="in" aria-label="Zoom in"&gt;+&lt;/button&gt;
+    &lt;button type="button" class="btn" data-globe="out" aria-label="Zoom out"&gt;-&lt;/button&gt;
+    &lt;button type="button" class="btn" data-globe="home" aria-label="Show Jablonec nad Nisou"&gt;JBC&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/figure&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>To mark another place, change <code>HOME</code> near the top of <code>globe.js</code> and the label of the third button.</p>
+      </li>
+      <li>
+        <p>Open the page from a web server, for example <code>python3 -m http.server</code> in its folder.</p>
+      </li>
+    </ol>
+    <p>The full notes, options and API are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/globe#readme">README</a>.</p>
+  </aside>
+
+  <script>
+    // Language and theme switches for trying the globe. The globe reads the
+    // language from <html lang> and redraws on a "langchange" event.
+    (function () {
+      var root = document.documentElement;
+      function press(attr, value) {
+        document.querySelectorAll("[" + attr + "]").forEach(function (b) {
+          b.setAttribute("aria-pressed", String(b.getAttribute(attr) === value));
+        });
+      }
+      press("data-set-lang", root.lang);
+      press("data-set-theme", root.getAttribute("data-theme"));
+      document.querySelectorAll("[data-set-lang]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          root.lang = b.getAttribute("data-set-lang");
+          press("data-set-lang", root.lang);
+          document.dispatchEvent(new CustomEvent("langchange", { detail: root.lang }));
+        });
+      });
+      document.querySelectorAll("[data-set-theme]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var choice = b.getAttribute("data-set-theme");
+          root.setAttribute("data-theme", choice);
+          press("data-set-theme", choice);
+        });
+      });
+
+      // ?home flies the globe to the marked place as soon as it has been drawn.
+      if (new URLSearchParams(location.search).has("home")) {
+        var plot = document.querySelector('[data-figure="globe"]');
+        var drawn = new MutationObserver(function () {
+          drawn.disconnect();
+          document.querySelector('[data-globe="home"]').click();
+        });
+        drawn.observe(plot, { childList: true });
+      }
+    })();
+
+    // The Read me panel: open and close it, close it with Escape, and copy a
+    // code block to the clipboard.
+    (function () {
+      const panel = document.getElementById("readme");
+      const open = document.querySelector("[data-readme-open]");
+      if (!panel || !open) return;
+      function show(on) {
+        panel.hidden = !on;
+        open.setAttribute("aria-expanded", String(on));
+        if (on) panel.querySelector("[data-readme-close]").focus();
+        else open.focus();
+      }
+      open.addEventListener("click", function () { show(panel.hidden); });
+      panel.querySelector("[data-readme-close]").addEventListener("click", function () { show(false); });
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !panel.hidden) show(false); });
+      panel.querySelectorAll("[data-copy-code]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          const text = button.parentElement.querySelector("code").textContent;
+          if (!navigator.clipboard) return;
+          navigator.clipboard.writeText(text).then(function () {
+            button.textContent = "Copied";
+            setTimeout(function () { button.textContent = "Copy"; }, 1500);
+          }, function () {});
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

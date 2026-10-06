@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pixel drive</title>
+  <script>
+    // ?embed shows only the drive, for a frame on the documentation page.
+    // demo.css hides the bar and the Read me, and demo.js folds the setup.
+    if (new URLSearchParams(location.search).has("embed")) document.documentElement.setAttribute("data-embed", "");
+  </script>
+  <link rel="preload" href="fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="demo.css">
+  <script defer src="js/core.js"></script>
+  <script defer src="js/art-nature.js"></script>
+  <script defer src="js/art-built.js"></script>
+  <script defer src="js/art-beings.js"></script>
+  <script defer src="js/world.js"></script>
+  <script defer src="js/weather.js"></script>
+  <script defer src="js/scenes.js"></script>
+  <script defer src="js/ascii.js"></script>
+  <script defer src="js/engine.js"></script>
+  <script defer src="demo.js"></script>
+  <link rel="stylesheet" href="../assets/code.css">
+  <script defer src="../assets/code.js"></script>
+</head>
+<body>
+  <canvas id="drive" aria-hidden="true"></canvas>
+
+  <header class="top">
+    <div class="bar">
+      <a class="back" href="./" aria-label="Pixel drive">← <span>Pixel drive</span></a>
+      <h1 class="brand" data-brand>Pixel drive</h1>
+      <button type="button" class="btn" data-readme-open aria-controls="readme" aria-expanded="false">Read me</button>
+      <button type="button" class="btn" data-hop data-view hidden>Hop</button>
+      <button type="button" class="btn" data-shoo data-view hidden>Send away</button>
+      <div class="seg" role="group" aria-label="Theme" data-full>
+        <button type="button" class="btn" data-set-theme="dark" aria-pressed="true">Dark</button>
+        <button type="button" class="btn" data-set-theme="light" aria-pressed="false">Light</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" data-hero>
+      <div class="hero-inner">
+        <form class="panel" data-jump data-full>
+          <div class="panel-head">
+            <span class="label speed-label">Speed</span>
+            <div class="seg speed" role="group" aria-label="Speed">
+              <button type="button" class="btn" data-set-rate="1" aria-pressed="true">1×</button>
+              <button type="button" class="btn" data-set-rate="2" aria-pressed="false">2×</button>
+              <button type="button" class="btn" data-set-rate="4" aria-pressed="false">4×</button>
+              <button type="button" class="btn" data-set-rate="8" aria-pressed="false">8×</button>
+            </div>
+            <button type="button" class="btn" data-hop>Hop</button>
+            <button type="button" class="btn" data-shoo hidden>Send away</button>
+            <button type="button" class="btn" data-toggle-setup aria-expanded="true" aria-controls="setup">Hide setup</button>
+          </div>
+          <div class="setup" id="setup">
+          <div class="fields">
+            <label>
+              <span class="label">Place</span>
+              <select name="place">
+                <option value="">Any</option>
+                <option value="city">City</option>
+                <option value="highway">Highway</option>
+                <option value="bridge">Bridge</option>
+                <option value="shore">Coast</option>
+                <option value="desert">Desert</option>
+                <option value="rally">Rally stage</option>
+                <option value="country">Farmland</option>
+                <option value="village">Village</option>
+                <option value="forest">Forest</option>
+                <option value="mountains">Mountain pass</option>
+                <option value="winter">Winter valley</option>
+              </select>
+            </label>
+            <label>
+              <span class="label">Time</span>
+              <select name="hour">
+                <option value="">Now</option>
+                <option value="6">06:00</option>
+                <option value="9">09:00</option>
+                <option value="12">12:00</option>
+                <option value="16">16:00</option>
+                <option value="19.5">19:30</option>
+                <option value="23">23:00</option>
+              </select>
+            </label>
+            <label>
+              <span class="label">Weather</span>
+              <select name="weather">
+                <option value="">Changing</option>
+                <option value="clear">Clear</option>
+                <option value="cloudy">Cloudy</option>
+                <option value="rain">Rain</option>
+                <option value="snow">Snow</option>
+                <option value="fog">Fog</option>
+              </select>
+            </label>
+            <button type="submit" class="btn btn--solid">Go</button>
+          </div>
+          <div class="scenes">
+            <span class="label">Look</span>
+            <div class="seg" role="group" aria-label="Look">
+              <button type="button" class="btn" data-set-style="pixel" aria-pressed="true">Pixel</button>
+              <button type="button" class="btn" data-set-style="ascii" aria-pressed="false">ASCII</button>
+            </div>
+          </div>
+          <div class="scenes">
+            <span class="label">Scenes</span>
+            <button type="button" class="btn" data-scene="pitch">Football pitch</button>
+            <button type="button" class="btn" data-scene="jested">Ještěd</button>
+            <button type="button" class="btn" data-scene="ufo">UFO</button>
+          </div>
+          <p class="status">
+            <span class="label">Seed <span data-seed>–</span></span>
+            <a class="label" href="?" data-link>Link</a>
+            <button type="button" class="btn" data-new>New route</button>
+          </p>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <aside class="readme" id="readme" aria-label="Read me" hidden>
+    <div class="readme__head">
+      <span class="label">Read me</span>
+      <button type="button" class="btn" data-readme-close>Close</button>
+    </div>
+    <p>Use it as a moving scene at the top of a landing page or a personal site. It draws on a canvas fixed under your content and fades into your page colour at the bottom. The drive needs no libraries.</p>
+    <p class="label">Add it to your page</p>
+    <ol class="readme__steps">
+      <li>
+        <p>Copy the <code>js</code> folder next to your page.</p>
+      </li>
+      <li>
+        <p>Load the nine scripts at the end of the head, in this order.</p>
+        <div class="readme__code"><pre><code>&lt;script defer src="js/core.js"&gt;&lt;/script&gt;
+&lt;script defer src="js/art-nature.js"&gt;&lt;/script&gt;
+&lt;script defer src="js/art-built.js"&gt;&lt;/script&gt;
+&lt;script defer src="js/art-beings.js"&gt;&lt;/script&gt;
+&lt;script defer src="js/world.js"&gt;&lt;/script&gt;
+&lt;script defer src="js/weather.js"&gt;&lt;/script&gt;
+&lt;script defer src="js/scenes.js"&gt;&lt;/script&gt;
+&lt;script defer src="js/ascii.js"&gt;&lt;/script&gt;
+&lt;script defer src="js/engine.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Put the canvas first in the body.</p>
+        <div class="readme__code"><pre><code>&lt;canvas id="drive" aria-hidden="true"&gt;&lt;/canvas&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Fix the canvas behind the page and set the colours the drive reads. The car takes <code>--accent</code>. Write all three as six-digit hex colours.</p>
+        <div class="readme__code"><pre><code>:root { --bg: #050608; --fg: #eceae4; --accent: #f0a14a; }
+body { margin: 0; background: var(--bg); }
+#drive { position: fixed; inset: 0; width: 100%; height: 100vh; pointer-events: none; z-index: 0; }
+main { position: relative; z-index: 1; }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+    </ol>
+    <p>The full notes, options and API are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/pixel-drive#readme">README</a>.</p>
+  </aside>
+</body>
+</html>

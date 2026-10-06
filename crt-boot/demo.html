@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CRT boot</title>
+  <script>
+    // ?feature=on, ?feature=off or ?feature=degauss shows one feature of the
+    // page on its own. ?embed hides the back link, the name and the Read me,
+    // for showing the page in a frame on another page. This runs before the
+    // page is drawn, so the parts a view hides never show. demo.css does the
+    // hiding and js/main.js sets the view up.
+    (function () {
+      var params = new URLSearchParams(location.search);
+      var id = params.get("feature");
+      if (id === "on" || id === "off" || id === "degauss") document.documentElement.setAttribute("data-feature", id);
+      if (params.has("embed")) document.documentElement.setAttribute("data-embed", "");
+    })();
+  </script>
+  <link rel="stylesheet" href="crt.css">
+  <link rel="stylesheet" href="term.css">
+  <link rel="stylesheet" href="demo.css">
+  <script type="module" src="js/main.js"></script>
+  <link rel="stylesheet" href="../assets/code.css">
+  <script defer src="../assets/code.js"></script>
+</head>
+<body>
+  <header class="bar">
+    <a class="back" href="./" aria-label="CRT boot">← <span>CRT boot</span></a>
+    <h1 class="brand">CRT boot</h1>
+    <button type="button" class="btn" data-readme-open aria-controls="readme" aria-expanded="false">Read me</button>
+    <div class="seg" role="group" aria-label="Screen">
+      <button type="button" class="btn" data-power-on>Power on</button>
+      <button type="button" class="btn" data-power-off aria-disabled="true">Power off</button>
+      <button type="button" class="btn" data-degauss>Degauss</button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="slot">
+      <div class="crt" data-state="standby"></div>
+    </div>
+  </main>
+
+  <aside class="readme" id="readme" aria-label="Read me" hidden>
+    <div class="readme__head">
+      <span class="label">Read me</span>
+      <button type="button" class="btn" data-readme-close>Close</button>
+    </div>
+    <p>Use it as an intro or a splash screen on a retro or terminal-themed site. The glass waits in a box you size on the page, and it grows to fill the window when it powers on. The page must be served by a web server.</p>
+    <p class="label">Add it to your page</p>
+    <ol class="readme__steps">
+      <li>
+        <p>Copy <code>crt.css</code>, <code>term.css</code> and the folders <code>fonts/</code> and <code>js/</code> next to your page.</p>
+      </li>
+      <li>
+        <p>In the head, give the slot the glass waits in a size and <code>position: relative</code>, and load the two stylesheets.</p>
+        <div class="readme__code"><pre><code>&lt;style&gt;
+  .crt-slot { position: relative; width: 640px; max-width: 100%; aspect-ratio: 7 / 5; }
+&lt;/style&gt;
+&lt;link rel="stylesheet" href="crt.css"&gt;
+&lt;link rel="stylesheet" href="term.css"&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Put the glass in its slot in the body. If your page has a fixed bar at the top, set <code>--crt-top</code> to its height so the full glass starts below it.</p>
+        <div class="readme__code"><pre><code>&lt;div class="crt-slot"&gt;
+  &lt;div class="crt"&gt;&lt;/div&gt;
+&lt;/div&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Build the screen in a module script and power it on. <code>screen.powerOff()</code> and <code>screen.degauss()</code> switch it off and bend the picture.</p>
+        <div class="readme__code"><pre><code>&lt;script type="module"&gt;
+  import { Screen } from './js/screen.js';
+
+  const screen = new Screen(document.querySelector('.crt'));
+  screen.powerOn();
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+    </ol>
+    <p>The full notes, options and API are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/crt-boot#readme">README</a>.</p>
+  </aside>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Spacecraft</title>
+  <link rel="preload" href="fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script>
+    // ?embed shows the picture and its own controls without the bar and the
+    // Read me, for a frame on the documentation page.
+    if (new URLSearchParams(location.search).has("embed")) document.documentElement.setAttribute("data-embed", "");
+  </script>
+  <link rel="stylesheet" href="demo.css">
+  <script defer src="../glyph-renderer/glyph-renderer.js"></script>
+  <script defer src="spacecraft.js"></script>
+  <script defer src="spacecraft-glyphs.js"></script>
+  <script defer src="demo.js"></script>
+  <link rel="stylesheet" href="../../assets/code.css">
+  <script defer src="../../assets/code.js"></script>
+</head>
+<body>
+  <canvas id="craft" role="img" aria-labelledby="name"></canvas>
+
+  <header class="bar">
+    <a class="back" href="../" aria-label="Solar system">← <span>Solar system</span></a>
+    <h1 class="brand">Spacecraft</h1>
+    <button type="button" class="btn" data-readme-open aria-controls="readme" aria-expanded="false">Read me</button>
+    <div class="nav" role="group" aria-label="Model">
+      <button type="button" class="btn" data-step="-1">Previous</button>
+      <button type="button" class="btn" data-step="1">Next</button>
+    </div>
+  </header>
+
+  <p class="label name" id="name" aria-live="polite">Voyager</p>
+
+  <aside class="readme" id="readme" aria-label="Read me" hidden>
+    <div class="readme__head">
+      <span class="label">Read me</span>
+      <button type="button" class="btn" data-readme-close>Close</button>
+    </div>
+    <p>Use it to show a spacecraft at its real size on a page about space missions. The models are geometry with a ray function, so you can draw them in text characters with the glyph renderer or with your own drawing code.</p>
+    <p class="label">Add it to your page</p>
+    <ol class="readme__steps">
+      <li>
+        <p>Copy <code>spacecraft.js</code> and <code>spacecraft-glyphs.js</code> next to your page, and <code>glyph-renderer.js</code> from the <code>glyph-renderer</code> folder.</p>
+      </li>
+      <li>
+        <p>Add a canvas with a dark background and load the three scripts at the end of the body, in this order.</p>
+        <div class="readme__code"><pre><code>&lt;canvas id="craft" style="background:#050608"&gt;&lt;/canvas&gt;
+&lt;script src="glyph-renderer.js"&gt;&lt;/script&gt;
+&lt;script src="spacecraft.js"&gt;&lt;/script&gt;
+&lt;script src="spacecraft-glyphs.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Make a renderer, add a model to it and draw. <code>frame</code> turns the model and <code>light</code> points to the Sun, both as seen from the camera. This draws JWST with the Sun below its sunshield.</p>
+        <div class="readme__code"><pre><code>&lt;script&gt;
+  const g = GlyphRenderer.create(document.getElementById('craft'));
+  g.resize(360, 360, devicePixelRatio, 10);
+  const M = Spacecraft.models.jwst;
+  g.clear();
+  Spacecraft.draw(g, {
+    model: M, x: g.W / 2, y: g.H / 2, metres: 2.4 * M.r / g.H,
+    frame: { N: [0, 0.8, 0.6], Q: [0.6, -0.48, 0.64], E: [0.8, 0.36, -0.48] },
+    light: [0.3, -0.8, -0.52]
+  });
+  g.compose();
+  g.present();
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+    </ol>
+    <p class="label">Use the core alone</p>
+    <p><code>spacecraft.js</code> on its own gives the models and a ray function for your own drawing code. Copy only that file. This draws Voyager on a 2D canvas with one ray a pixel, lit from the upper right.</p>
+    <div class="readme__code"><pre><code>&lt;canvas id="craft" width="200" height="200" style="background:#000"&gt;&lt;/canvas&gt;
+&lt;script src="spacecraft.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const M = Spacecraft.models.voyager, out = [0, 0, 0];
+  const g = document.getElementById('craft').getContext('2d');
+  for (let py = 0; py &lt; 200; py++) for (let px = 0; px &lt; 200; px++) {
+    const cover = Spacecraft.ray(M, [(px - 100) / 6, (100 - py) / 6, 0], [0, 0, 1], [0.5, 0.3, 0.81], 1 / 6, out);
+    if (cover &gt; 0) {
+      g.fillStyle = `rgb(${out.map((v) =&gt; Math.min(255, v / cover * 255)).join()})`;
+      g.fillRect(px, py, 1, 1);
+    }
+  }
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+    <p>The full notes, options and API are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/solar-system/spacecraft#readme">README</a>.</p>
+  </aside>
+</body>
+</html>

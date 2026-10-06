@@ -46,14 +46,15 @@
     return hash2((a | 0) + Math.imul(c | 0, 1442695041), (b | 0) ^ Math.imul(c | 0, -2048144777));
   }
 
-  // Every glyph here exists in Departure Mono. The atlas has the glyphs in
-  // three rows of the accent colour at falling opacity. A cell's code is its
-  // glyph index shifted left by 2, or'd with its row.
+  // Every glyph here is in IBM Plex Mono. The atlas has the glyphs in three
+  // rows of the accent colour at falling opacity. A cell's code is its glyph
+  // index shifted left by 2, or'd with its row.
   const GLYPHS = Array.from("<>/\\|-=+*#%&");
   const LEVELS = [1, 0.62, 0.34];
 
-  // Cells are 7 × 14 CSS px, the advance and line height of 11px Departure
-  // Mono. A window with more than MAX_CELLS of them gets bigger cells.
+  // Cells are 7 × 14 CSS px, and the glyphs are set in them in 11px IBM Plex
+  // Mono, whose advance is 6.6 px. A window with more than MAX_CELLS cells
+  // gets bigger cells and bigger type.
   const MAX_CELLS = 17000;
   const FPS = 30;
 
@@ -83,7 +84,7 @@
     atlas.width = GLYPHS.length * cwD;
     atlas.height = LEVELS.length * chD;
     const a = atlas.getContext("2d");
-    a.font = fontPx * dpr + 'px "Departure Mono", ui-monospace, Menlo, monospace';
+    a.font = fontPx * dpr + 'px "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace';
     a.textBaseline = "alphabetic";
     a.fillStyle = colors.accent;
     const baseline = Math.round(fontPx * dpr);
@@ -103,8 +104,8 @@
     let scale = 1;
     for (;;) {
       fontPx = 11 * scale;
-      cwD = Math.max(1, Math.round(((fontPx * 350) / 550) * dpr));
-      chD = Math.max(1, Math.round(((fontPx * 700) / 550) * dpr));
+      cwD = Math.max(1, Math.round(((fontPx * 7) / 11) * dpr));
+      chD = Math.max(1, Math.round(((fontPx * 14) / 11) * dpr));
       cols = Math.ceil(canvas.width / cwD);
       rows = Math.ceil(canvas.height / chD) + 1;
       if (cols * rows <= MAX_CELLS || scale >= 2) break;
@@ -354,7 +355,7 @@
   if (!window.Field || !window.Field.pulse) window.Field = Object.assign(window.Field || {}, { pulse: pulse });
 
   const fontReady = document.fonts && document.fonts.load
-    ? document.fonts.load('11px "Departure Mono"')
+    ? document.fonts.load('11px "IBM Plex Mono"')
     : Promise.resolve();
   Promise.race([fontReady, new Promise(function (r) { setTimeout(r, 1500); })]).then(start, start);
 })();

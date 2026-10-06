@@ -2761,6 +2761,8 @@
     engine: E,
   };
 
-  const fontReady = document.fonts && document.fonts.load ? document.fonts.load('11px "Departure Mono"') : Promise.resolve();
+  // The drive waits for IBM Plex Mono before it starts, because the character
+  // look builds its glyphs once. "Č" loads the file with the Czech letters too.
+  const fontReady = document.fonts && document.fonts.load ? document.fonts.load('11px "IBM Plex Mono"', "AČ") : Promise.resolve();
   Promise.race([fontReady, new Promise(function (r) { setTimeout(r, 1500); })]).then(start, start);
 })();

@@ -10,52 +10,76 @@ From the root of this repository:
 python3 -m http.server
 ```
 
-Then open http://localhost:8000/solar-system/.
+Then open http://localhost:8000/solar-system/ for the documentation page, or http://localhost:8000/solar-system/demo.html for the explorer.
 
-The sky fills the window and opens on Saturn. The page is dark in both system themes, because the sky is drawn as light on black. When the system asks for reduced motion, the camera jumps to each body instead of flying, the stars stop twinkling and the bodies turn only at their real rate.
+The documentation page shows the explorer in a frame and then each feature it is built from, with a small live demo, the code that makes it work and the steps to add it to another page.
+
+In the explorer, the sky fills the window and opens on Saturn. The page is dark whatever the system theme is, because the sky is drawn as light on black. When the system asks for reduced motion, the camera jumps to each body instead of flying, the stars stop twinkling and the bodies turn only at their real rate.
 
 ## Controls
 
 Every gesture also has a button, so the explorer works with touch alone.
 
 - **Bodies** opens the list of everything there is to fly to: the Sun, the planets with their moons under them, Pluto, Halley's Comet, the stars, the nebulae, the galactic centre and the spacecraft, then the whole system and the whole galaxy.
-- **Info** shows or hides the panel about the body in focus. The panel gives its distances, size, day and year, and a few lines about it. Its close button hides it too.
+- **Info** shows or hides the panel about the body in focus. The panel lists its distances, size, day and year. Its Close button hides it too.
 - **−** and **+** zoom out and in. The mouse wheel, a pinch and a one-finger swipe up or down zoom as well. Zooming in near a body hands it the focus.
 - The two curved arrows turn the view left and right. A sideways drag or swipe turns it too, and a quick swipe keeps it turning for a moment.
 - The straight arrows tilt the view up and down. A vertical mouse drag or two fingers moving up and down together tilt it too.
 - Holding a zoom, turn or tilt button repeats it.
 - **«** and **»** step the clock's rate, from a month a second backwards to a month a second forwards. The pause button stops the clock and starts it again. **Now** brings the clock back to the present at real speed.
-- A click or a tap on a body flies to it and opens the info panel. Close to a planet or a moon, its landing sites are marked, and a click on one describes it in the panel.
+- **WebGL** and **Canvas 2D** choose what draws the characters. WebGL is the default, and Canvas 2D is the renderer that browsers without WebGL get. The picture is the same on both, and the camera, the body in focus and the clock carry on across a switch. Where the browser has no WebGL, the WebGL button is greyed out.
+- A click or a tap on a body flies to it and opens the info panel. Close to a planet or a moon, its landing sites are marked, and a click on one lists its date, who sent it and where it is in the panel.
 
-The top bar shows the time on the clock in UTC and its rate: Live, Paused or a rate such as +1 day/s.
+The top bar shows the time on the clock in UTC and its rate, which reads Live, Paused or a rate such as +1 day/s. Its Read me button opens the steps for putting the explorer, or one of its parts, on another page.
 
-On a keyboard, the up and down arrows zoom and the left and right arrows turn. Keys 0 to 8 fly to the Sun and the planets, M flies to the Moon and Home shows the whole system. Esc closes the body list on a small screen, then a landing site, then the info panel.
+On a keyboard, the up and down arrows zoom and the left and right arrows turn. Keys 0 to 8 fly to the Sun and the planets, M flies to the Moon and Home shows the whole system. Esc closes the Read me panel while it is open. Otherwise it closes the body list on a small screen, then a landing site, then the info panel.
 
 The tab's icon is the body in focus, ray-cast from the explorer's camera and framed by corner brackets in the body's colour. In a background tab it is drawn again once a minute. Browsers that keep the first icon they load, such as Safari, show the plain icon in the page's head.
 
+## Views
+
+- Add `?focus=mars` to the address of `demo.html` to open on Mars, or on any other body by its key.
+- Add `?feature=flights` to show only the body list and the buttons that zoom, turn and tilt.
+- Add `?feature=rings` to show Saturn in June 2017, when its rings were tilted furthest toward the Sun, with only the buttons that zoom, turn and tilt.
+- Add `?feature=eclipse` to run the total eclipse of the Moon of 7 September 2025 at a minute a second, over and over, with only the clock's buttons.
+- Add `?feature=renderer` to show only the WebGL and Canvas 2D switch.
+- Add `?embed` to show the sky and its controls without the bar and the Read me, as the documentation page does in its frames. It combines with the others, as in `demo.html?feature=rings&embed`. In a frame the sky stops drawing while the frame is off screen. The wheel there scrolls the page round the frame, and it zooms only with Ctrl or Cmd held.
+
+The feature views have no info panel. The explorer's name in their bar links to the whole explorer.
+
+Each part's own demo page accepts `?embed` as well, and keeps only its own buttons.
+
 ## How it is drawn
 
-1. **Positions.** `js/ephemeris.js` works out where every body is and how it is turned at the moment on the clock, in heliocentric ecliptic coordinates (J2000).
-2. **Maps.** `js/surfaces.js` generates each body's map the first time it is needed. A small map is made at once, and the full-size one is refined a few rows per frame while the body is large on the screen.
-3. **Samples.** Each character cell is sampled at six points (2 × 3). The bodies are ray-cast as ellipsoids with their rings, ring shadows, the shadows of their moons and eclipses. The spacecraft are small models ray-cast at their real size, and the black hole bends each ray that passes it. Orbits, the asteroid and Kuiper belts, the comet's tails, the Sun's glow, the galaxy and the nebulae are drawn into the same samples.
-4. **Glyphs.** Each cell takes the glyph whose shape best matches its six samples where it holds an edge, or a glyph from a density ramp where it is smooth, tinted from a palette of hues and saturations. The grid is drawn with WebGL, or on a 2D canvas where WebGL is missing.
+The explorer is built from the components in its subfolders.
+
+1. **Positions.** `planet-positions/` works out where every body is and how it is turned at the moment on the clock, in heliocentric ecliptic coordinates (J2000).
+2. **Maps.** `planet-surfaces/` generates each body's map the first time it is needed. A small map is made at once, and the full-size one is refined a few rows per frame while the body is large on the screen.
+3. **Samples.** Each character cell is sampled at six points (2 × 3). `js/orrery.js` ray-casts the bodies as ellipsoids with their rings, ring shadows, the shadows of their moons and eclipses, and draws the orbits, the asteroid and Kuiper belts and the Sun's glow into the same samples. The spacecraft (`spacecraft/`), the comet's coma and tails (`comet/`), the galaxy, the nebulae and the black hole (`deep-sky/`), and the background stars and the other galaxies (`night-sky/`) are drawn into them by their own components.
+4. **Glyphs.** `glyph-renderer/` gives each cell the glyph whose shape best matches its six samples where it holds an edge, or a glyph from a density ramp where it is smooth, tinted from a palette of hues and saturations. The grid is drawn with WebGL, or on a 2D canvas where WebGL is missing or the Canvas 2D button is pressed.
 5. **Labels.** The names, distances and corner brackets are drawn on a second canvas, on a grid of their own.
 
 Whatever stays the same while a body spins is cached for each view, so a still camera costs one texture lookup per sample. While the camera moves, a large body is sampled at three of the six points and drawn in full once the camera stops. A flight follows van Wijk and Nuij's path for zooming and panning at once (2003).
 
-The planets' orbits hold from 1800 to 2050. The clock can run past those years, and the planets then drift from their real places.
-
 ## Files
 
-- `index.html`, `demo.css` and `demo.js` are the page, its styles and its controls: the gestures, the buttons, the body list, the info panel, the clock and the tab's icon.
-- `js/ephemeris.js` holds the orbits and rotations and works out positions.
-- `js/earth-map.js` is the Earth's land, sea and ice, 1024 × 512, run-length encoded.
-- `js/surfaces.js` generates the maps, the rings, the spacecraft models and the points of the galaxy and the nebulae.
-- `js/bodies.js` holds the names, labels, periods, notes and landing sites.
-- `js/orrery.js` is the renderer and the camera.
-- `tools/earth-mask.js` rebuilds `js/earth-map.js` from a Natural Earth raster with Node: `node tools/earth-mask.js world.png`.
+- `index.html` is the documentation page.
+- `demo.html`, `demo.css` and `demo.js` are the explorer's page, its styles and its controls: the gestures, the buttons, the body list, the info panel, the clock, the tab's icon and the views.
+- `js/bodies.js` holds the names, labels, periods and landing sites.
+- `fonts/` holds IBM Plex Mono for the page and the characters.
+- `js/orrery.js` is the explorer's engine: the bodies, the camera and its flights, the HUD, picking, the tab's icon and the loop.
 
-The scripts load in the order `index.html` gives, as classic scripts.
+The page loads these components from its subfolders, as classic scripts, before `js/bodies.js`, `js/orrery.js` and `demo.js`. Each subfolder also has a small demo page of its own and a README with its API, and each one can be copied into another project without the explorer:
+
+| Folder | What the explorer takes from it |
+|--------|---------------------------------|
+| `planet-positions/` | `ephemeris.js`: where every body is, and how it is turned |
+| `planet-surfaces/` | `earth-map.js` and `surfaces.js`: the maps, the rings and the Earth's clouds |
+| `glyph-renderer/` | `glyph-renderer.js`: the character grid |
+| `night-sky/` | `night-sky.js` and `night-sky-glyphs.js`: the background stars and the other galaxies |
+| `deep-sky/` | `deep-sky.js` and `deep-sky-glyphs.js`: the galaxy, the nebulae and the black hole |
+| `comet/` | `comet.js` and `comet-glyphs.js`: Halley's coma and tails |
+| `spacecraft/` | `spacecraft.js` and `spacecraft-glyphs.js`: the spacecraft models |
 
 ## Orrery
 
@@ -72,6 +96,7 @@ The scripts load in the order `index.html` gives, as classic scripts.
 | `reducedMotion` | `true` makes flights instant and stops the twinkle and the time-lapse spin |
 | `insets`        | `[top, bottom, right]`, the CSS pixels the page's controls cover |
 | `time`          | A moment to start at, in ms since 1970 |
+| `renderer`      | `'2d'` draws the characters on a 2D canvas instead of with WebGL |
 
 After that:
 
@@ -83,22 +108,15 @@ After that:
 - `icon(canvas, options)` draws the body in focus into a small square canvas.
 - `onFocus(fn)` is called with the key of each new body in focus.
 - `setLabels`, `setColours`, `setSites` and `setAccent` give the HUD its names, each body's colour, the landing sites and the accent.
-- `setInsets(top, bottom, right)`, `setCovered(boxes)` and `setGutter(px)` tell the renderer where the page's controls are. `frameFocus()` frames the body in focus again at once, for after those change.
+- `setInsets(top, bottom, right)`, `setCovered(boxes)` and `setGutter(px)` tell the explorer where the page's controls are. `frameFocus()` frames the body in focus again at once, for after those change.
 - `setReducedMotion(on)` and `remeasure()` follow the system setting and a font that loads late.
+- `setPaused(on)` stops the drawing while `on` is true, for a page that scrolls the sky out of view. `paused` reads it.
+- `setRenderer(kind)` draws the characters with WebGL (`'webgl'`) or on a 2D canvas (`'2d'`). A new canvas with the same id and attributes takes the old one's place, and the old canvas's WebGL context is released at once. It returns the renderer in use, which stays `'2d'` where the browser has no WebGL. `renderer` reads which one is in use.
+- `BODIES` holds every body by key, with its radius in km, its kind and class, and what it goes round.
 
 ## Data
 
-- The planets: JPL's "Keplerian Elements for Approximate Positions of the Major Planets" (E. M. Standish).
-- The Moon: Meeus's truncation of ELP-2000/82, from *Astronomical Algorithms*.
-- The poles and rotation of the bodies: the IAU WGCCRE reports.
-- ΔT: Espenak and Meeus (NASA, 2006).
-- Halley's Comet: orbital elements from the Minor Planet Center.
-- The stars: Hipparcos (van Leeuwen 2007) and Gaia DR3, by way of SIMBAD.
-- The galaxy's arms and the Sun's place in it: Reid et al. (2019, ApJ 885, 131).
-- Sagittarius A* and S2: ICRF3 (Gordon, de Witt and Jacobs 2023, AJ 165, 49), the GRAVITY Collaboration (2020, A&A 636, L5 and 2022, A&A 657, L12) and the Event Horizon Telescope Collaboration (2022, ApJL 930, L12).
-- The Earth's land and ice: [Natural Earth](https://www.naturalearthdata.com), which is in the public domain.
-
-The other papers the numbers come from are cited in the comments beside them.
+The catalogues and papers the positions, maps and models come from are listed in each component's README.
 
 ## Font
 

@@ -1,271 +1,274 @@
-/* The demo page's styles. demo.js reads --model for the model, --floor for the grid under it and
-   --drop for the light from below. The canvas is clear, so the stage's
-   --panel shows through it.
+/* The demo page's styles. demo.js reads --model for the model, --floor for
+   the grid under it and --drop for the light from below. The canvas is clear,
+   so the stage's --panel shows through it.
    looks.js reads the --ph-* colours for the Phosphor, Wire and X-ray looks.
    The model is shaded from --ph-dark to --ph-lit with a --ph-rim edge and
    --ph-hot highlights. --ph-build is the line at the top of a growing model,
    --ph-line the crease lines and the scan ring, --ph-wire the lines of Wire,
    --ph-xray the colour of X-ray, --ph-dim the plinth and --ph-floor the grid.
-   X-ray glows when --panel is dark and is drawn like ink when it is light. */
+   X-ray glows when --bg is dark and is drawn like ink when it is light. */
 
+/* IBM Plex Mono in two weights. Each weight comes as a Latin file and a Latin
+   Extended file, which holds the Czech letters. A browser downloads the
+   second file only when the page uses one of its characters. */
 @font-face {
-  font-family: "Departure Mono";
-  src: url("fonts/DepartureMono-Regular.woff2") format("woff2");
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
   font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-400-latin-ext.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-600-latin.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-600-latin-ext.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
+/* The page opens dark. The theme switch sets data-theme="light". */
 :root {
-  --bg: #fbfaf8;
-  --fg: #17181b;
-  --muted: #6d6c68;
-  --line: #e5e3de;
-  --soft: #efeeea;
-  --panel: #ffffff;
-  --bar: #f5f4f0;
-  --edge: #17181b;
-  --drop: #d9d6cf;
-  --accent: #c8352b;
-  --accent-ink: #c8352b;
-  --on-accent: #fbfaf8;
-  --model: #c9c3b8;
-  --floor: #dcd9d2;
-  --ph-dark: #4d130b;
-  --ph-lit: #ff6b52;
-  --ph-rim: #ffd3c8;
-  --ph-hot: #fff1ec;
-  --ph-build: #ff9a3c;
-  --ph-line: #8f2318;
-  --ph-wire: #a8291d;
-  --ph-xray: #b02e20;
-  --ph-dim: #dda59c;
-  --ph-floor: #eedcd7;
-  --mono: "Departure Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #131417;
-    --fg: #edece8;
-    --muted: #8e8d88;
-    --line: #2a2b30;
-    --soft: #212227;
-    --panel: #18191c;
-    --bar: #18191c;
-    --edge: #4a4b52;
-    --drop: #2c2d33;
-    --accent: #dc665e;
-    --accent-ink: #e8776e;
-    --on-accent: #131417;
-    --model: #b6b2aa;
-    --floor: #34353b;
-    --ph-dark: #070101;
-    --ph-lit: #ff5a43;
-    --ph-rim: #ffd6ca;
-    --ph-hot: #fff1ec;
-    --ph-build: #fff1ec;
-    --ph-line: #d24433;
-    --ph-wire: #ffd6ca;
-    --ph-xray: #ffd6ca;
-    --ph-dim: #8c2c22;
-    --ph-floor: #3a201d;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #131417;
-  --fg: #edece8;
-  --muted: #8e8d88;
-  --line: #2a2b30;
-  --soft: #212227;
-  --panel: #18191c;
-  --bar: #18191c;
-  --edge: #4a4b52;
+  --bg: #050608;
+  --panel: rgba(6, 7, 10, 0.86);
+  --ink: #eceae4;
+  --ink-2: #a8a9ae;
+  --ink-3: #7a7c83;
+  --ink-4: #33353b;
+  --border: #62646b;
+  --accent: #f0a14a;
+  --accent-ink: #1a1107;
+  --fg: var(--ink);
+  --font: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --fs: 0.8125rem;
+  --fs-sm: 0.6875rem;
+  --lh: 1.25rem;
+  --bar-h: 2.75rem;
+  --gutter: 2rem;
+
+  --model: #b8b4ab;
+  --floor: #26282d;
   --drop: #2c2d33;
-  --accent: #dc665e;
-  --accent-ink: #e8776e;
-  --on-accent: #131417;
-  --model: #b6b2aa;
-  --floor: #34353b;
-  --ph-dark: #070101;
-  --ph-lit: #ff5a43;
-  --ph-rim: #ffd6ca;
-  --ph-hot: #fff1ec;
-  --ph-build: #fff1ec;
-  --ph-line: #d24433;
-  --ph-wire: #ffd6ca;
-  --ph-xray: #ffd6ca;
-  --ph-dim: #8c2c22;
-  --ph-floor: #3a201d;
+  /* The looks are drawn in the amber of an amber-phosphor tube. */
+  --ph-dark: #080401;
+  --ph-lit: #ffa035;
+  --ph-rim: #ffdcae;
+  --ph-hot: #fff4e4;
+  --ph-build: #fff4e4;
+  --ph-line: #d27a22;
+  --ph-wire: #ffdcae;
+  --ph-xray: #ffdcae;
+  --ph-dim: #8a541a;
+  --ph-floor: #2f2213;
   color-scheme: dark;
+}
+@media (max-width: 45em) { :root { --gutter: 1rem; --bar-h: 2.5rem; } }
+:root[data-theme="light"] {
+  --bg: #f4f2ec;
+  --panel: rgba(244, 242, 236, 0.9);
+  --ink: #16171a;
+  --ink-2: #4c4e54;
+  --ink-3: #6b6d73;
+  --ink-4: #cfccc4;
+  --border: #8b8d93;
+  --accent: #b8661a;
+  --accent-ink: #fff8ee;
+
+  --model: #c9c4b9;
+  --floor: #d9d6ce;
+  --drop: #d9d6cf;
+  --ph-dark: #4a2505;
+  --ph-lit: #ff9c38;
+  --ph-rim: #ffe0bc;
+  --ph-hot: #fff6ea;
+  --ph-build: #e8801f;
+  --ph-line: #8c4a0e;
+  --ph-wire: #7a3f08;
+  --ph-xray: #a85a12;
+  --ph-dim: #d9b386;
+  --ph-floor: #e9dcc8;
+  color-scheme: light;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--fg);
-  font: 400 17px/1.6 var(--sans);
-  -webkit-font-smoothing: antialiased;
-}
-p, h1, h2, dl, dd { margin: 0; }
-a { color: inherit; text-underline-offset: 3px; }
-a:hover { color: var(--accent-ink); }
-code { font: 0.92em var(--mono); }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 var(--fs) / var(--lh) var(--font); font-variant-ligatures: none; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 3px; }
+a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+h1, h2, h3 { margin: 0; font-size: inherit; font-weight: 600; }
+p, dl, dd { margin: 0; }
+button { font: inherit; color: inherit; }
+code { font: inherit; color: var(--ink-2); }
+::selection { background: var(--accent); color: var(--accent-ink); }
+:focus-visible { outline: 1px dashed var(--accent); outline-offset: 3px; }
 
-.bar {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  height: 56px;
-  padding: 0 12px 0 16px;
-  border-bottom: 1px solid var(--line);
-  background: var(--bar);
-}
-.brand { margin: 0 auto 0 0; font: 16.5px/1 var(--mono); }
-.back { padding: 10px 14px 10px 0; color: var(--muted); font: 16.5px/1 var(--mono); text-decoration: none; }
-@media (max-width: 560px) { .back { padding-right: 4px; } .back span { display: none; } }
-.seg {
-  display: inline-flex;
-  padding: 2px;
-  border: 1px solid var(--line);
-  background: var(--panel);
-}
-.seg button {
-  appearance: none;
-  height: 30px;
-  min-width: 34px;
-  padding: 0 8px;
-  border: 0;
-  background: transparent;
-  color: var(--fg);
-  font: 400 11px/1 var(--mono);
-  letter-spacing: 0.08em;
-  cursor: pointer;
-}
-.seg button:hover { background: var(--soft); }
-.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
-.seg button:disabled { color: var(--muted); cursor: default; }
-.seg button:disabled:hover { background: transparent; }
+/* The status bar: back link, demo name, then Read me and the theme switch.
+   It stays at the top so the Read me panel hangs from it. */
+.bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 1.75rem; height: var(--bar-h); padding: 0 var(--gutter); border-bottom: 1px solid var(--ink-4); background: linear-gradient(180deg, rgba(5, 6, 8, 0.94), rgba(5, 6, 8, 0.72)); font-size: var(--fs-sm); }
+:root[data-theme="light"] .bar { background: linear-gradient(180deg, rgba(244, 242, 236, 0.96), rgba(244, 242, 236, 0.8)); }
+.back { color: var(--ink-2); text-decoration: none; white-space: nowrap; }
+.back:hover { color: var(--ink); }
+.brand { margin: 0 auto 0 0; font-weight: 600; white-space: nowrap; }
+.brand a { text-decoration: none; }
+@media (max-width: 45em) { .bar { gap: 0.75rem; } .back span { display: none; } }
 
-main, .foot { width: 100%; max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+/* Buttons: text in a thin box that inverts on hover. */
+.btn { height: 1.75rem; padding: 0 1ch; border: 1px solid var(--ink-4); border-radius: 0; background: none; color: var(--ink); font: inherit; font-size: var(--fs-sm); white-space: nowrap; cursor: pointer; transition: background 0.12s, color 0.12s; }
+@media (hover: hover) { .btn:hover:not(:disabled) { background: var(--ink); border-color: var(--ink); color: var(--bg); } }
+.btn:focus-visible { background: var(--ink); color: var(--bg); }
+.btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.btn[aria-pressed="false"] { color: var(--ink-3); }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 0.5ch; }
 
-.intro {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 18px;
-  padding: clamp(40px, 8vh, 80px) 0 40px;
-}
-.lede { max-width: 60ch; }
-.lede .hl { display: block; padding: 0.3em 0.6em 0.3em 0.7em; box-shadow: inset 3px 0 0 var(--accent); }
+.label { color: var(--ink-3); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.kv { margin: 0; }
+.kv div { display: flex; gap: 1ch; }
+.kv dt { flex: none; width: 16ch; color: var(--ink-3); text-transform: uppercase; }
+.kv dd { min-width: 0; margin: 0; color: var(--ink); font-variant-numeric: tabular-nums; }
+
+main, .foot { width: 100%; max-width: 72.5rem; margin: 0 auto; padding: 0 var(--gutter); }
+
+.intro { max-width: 60ch; padding: calc(var(--lh) * 2) 0 var(--lh); color: var(--ink-2); }
 
 /* The stage and its readout on the left, the list of models on the right.
    They stack on narrow screens. */
 .viewer {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 340px;
-  gap: 40px;
+  grid-template-columns: minmax(0, 1fr) 44ch;
+  gap: calc(var(--lh) * 2) 5ch;
   align-items: start;
-  padding-bottom: 80px;
+  padding-bottom: calc(var(--lh) * 3);
 }
-@media (max-width: 900px) { .viewer { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 56em) { .viewer { grid-template-columns: minmax(0, 1fr); } }
 
-.stage {
-  position: relative;
-  margin: 0;
-  border: 1px solid var(--edge);
-  background: var(--panel);
-  box-shadow: 5px 5px 0 var(--drop);
-}
-.stage canvas {
-  display: block;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  touch-action: none;
-}
-@media (max-width: 560px) { .stage canvas { aspect-ratio: 1; } }
+.stage { position: relative; margin: 0; border: 1px solid var(--ink-4); background: var(--panel); }
+.stage canvas { display: block; width: 100%; aspect-ratio: 4 / 3; touch-action: none; }
+@media (max-width: 35em) { .stage canvas { aspect-ratio: 1; } }
 .stage-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 8px 12px;
-  padding: 8px 8px 8px 14px;
-  border-top: 1px solid var(--line);
+  gap: 0.5rem 2ch;
+  padding: 0.5rem;
+  border-top: 1px solid var(--ink-4);
 }
-.stage-note {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 14px;
-  font: 400 11px/1.3 var(--mono);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.stage-note .status { color: var(--accent-ink); }
-/* The row of looks under the controls. */
-.looks-bar { padding-left: 8px; }
+.stage-note { display: flex; flex-wrap: wrap; gap: 0 2ch; padding-left: 1ch; }
+.stage-note .status { color: var(--accent); }
+/* The one-character buttons are as wide as they are tall. */
+.stage .btn { min-width: 1.75rem; }
 
-.stats dt,
-.pick-cat,
-.idx {
-  font: 400 11px/1.3 var(--mono);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
+.readout { padding-top: var(--lh); }
+.model-name { font-weight: 600; }
+.stats { margin-top: var(--lh); padding-top: var(--lh); border-top: 1px solid var(--ink-4); }
+.stats dd { display: flex; flex-wrap: wrap; gap: 0 1ch; }
+.stats .bytes { color: var(--ink-3); white-space: nowrap; }
 
-.readout { padding-top: 36px; }
-.model-name { margin-bottom: 8px; font: 400 20px/1.25 var(--mono); }
-.short { max-width: 60ch; margin-bottom: 22px; color: var(--muted); }
-.stats {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px 48px;
-  padding-top: 14px;
-  border-top: 1px solid var(--line);
-}
-.stats dd { margin-top: 4px; font: 15px/1.4 var(--mono); }
-.stats dd a { white-space: nowrap; }
-.stats .bytes { color: var(--muted); white-space: nowrap; }
-
-.list { margin: 0; padding: 0; list-style: none; border-bottom: 1px solid var(--line); }
-.list li { display: flex; align-items: stretch; border-top: 1px solid var(--line); }
+.list { margin: 0; padding: 0; list-style: none; border-bottom: 1px solid var(--ink-4); }
+.list li { display: flex; align-items: stretch; border-top: 1px solid var(--ink-4); }
 .pick {
-  appearance: none;
   display: grid;
-  grid-template-columns: 26px minmax(0, 1fr);
-  gap: 2px 8px;
+  grid-template-columns: 4ch minmax(0, 1fr);
   flex: 1;
   min-width: 0;
-  padding: 11px 10px 10px 12px;
+  padding: 0.5rem 1ch;
   border: 0;
-  background: transparent;
-  color: var(--fg);
-  font: 15px/1.3 var(--mono);
+  border-radius: 0;
+  background: none;
+  color: var(--ink-2);
   text-align: left;
   cursor: pointer;
 }
-.pick .idx { padding-top: 3px; }
+.pick .idx { grid-row: span 2; }
 .pick-cat { grid-column: 2; }
-.pick:hover { background: var(--soft); }
-.list li:has(> .pick[aria-pressed="true"]) { background: var(--soft); box-shadow: inset 3px 0 0 var(--accent); }
-.pick[aria-pressed="true"] .idx { color: var(--accent-ink); }
-.dl {
-  display: flex;
-  align-items: center;
-  padding: 0 10px;
-  font: 400 11px/1 var(--mono);
-  letter-spacing: 0.08em;
-  color: var(--muted);
+.pick:hover { color: var(--ink); }
+.pick[aria-pressed="true"],
+.pick[aria-pressed="true"] .idx { color: var(--accent); }
+.dl { display: flex; align-items: center; padding: 0 1ch; color: var(--ink-3); font-size: var(--fs-sm); letter-spacing: 0.06em; }
+
+.foot { padding-bottom: calc(var(--lh) * 2); color: var(--ink-3); font-size: var(--fs-sm); }
+.foot p { padding-top: var(--lh); border-top: 1px solid var(--ink-4); }
+
+/* Single-feature views. The script in the head of demo.html sets
+   data-feature for ?feature=models, which shows the viewer with the model's
+   name and file, and for ?feature=looks, which shows one model in the four
+   looks. Each view hides the rest of the page and centres the stage. */
+:root[data-feature] .intro,
+:root[data-feature] .theme,
+:root[data-feature] .picker,
+:root[data-feature] .foot { display: none; }
+:root[data-feature] main { padding-top: var(--lh); }
+:root[data-feature] .viewer { grid-template-columns: minmax(0, 1fr); padding-bottom: calc(var(--lh) * 2); }
+:root[data-feature] .view { width: min(100%, 60rem, calc((100vh - var(--bar-h) - 12rem) * 4 / 3)); margin: 0 auto; }
+@media (max-width: 35em) { :root[data-feature] .view { width: 100%; } }
+:root[data-feature="models"] .looks-bar,
+:root[data-feature="models"] [data-turn],
+:root[data-feature="models"] .measure,
+:root[data-feature="looks"] .view-controls,
+:root[data-feature="looks"] .readout { display: none; }
+
+/* In a frame, with ?embed. The script in the head of demo.html sets
+   data-embed, which hides the bar, the Read me, the intro and the footer. A
+   single-feature view fills the frame. The full page fills a wide frame, with
+   the list of models scrolling beside the stage, and scrolls in a narrow one. */
+:root[data-embed] .bar,
+:root[data-embed] .readme,
+:root[data-embed] .intro,
+:root[data-embed] .foot { display: none; }
+:root[data-embed] main { max-width: none; padding: 1rem; }
+:root[data-embed] .viewer { padding-bottom: 0; }
+:root[data-embed] .readout { padding-top: 0.75rem; }
+:root[data-embed] .stats { margin-top: 0.5rem; padding-top: 0.5rem; }
+:root[data-embed][data-feature] .view { width: 100%; }
+:root[data-embed][data-feature] main { height: 100vh; height: 100dvh; }
+:root[data-embed][data-feature] .viewer { height: 100%; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+:root[data-embed][data-feature] .view { display: flex; flex-direction: column; min-height: 0; }
+:root[data-embed][data-feature] .stage { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+:root[data-embed][data-feature] .stage canvas { flex: 1; min-height: 0; aspect-ratio: auto; }
+@media (min-width: 56em) {
+  :root[data-embed] main { height: 100vh; height: 100dvh; }
+  :root[data-embed] .viewer { height: 100%; grid-template-rows: minmax(0, 1fr); align-items: stretch; }
+  :root[data-embed] .view { display: flex; flex-direction: column; min-height: 0; }
+  :root[data-embed] .stage { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  :root[data-embed] .stage canvas { flex: 1; min-height: 0; aspect-ratio: auto; }
+  :root[data-embed] .picker { min-height: 0; overflow-y: auto; }
 }
-.dl:hover { background: var(--accent); color: var(--on-accent); }
 
-.foot { padding-top: 16px; padding-bottom: 32px; border-top: 1px solid var(--line); font: 11px/1.5 var(--mono); color: var(--muted); }
-.foot code { font: inherit; }
-
-:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+/* The Read me panel. */
+.readme { position: fixed; top: var(--bar-h); right: 0; bottom: 0; z-index: 30; width: min(52ch, 100%); overflow-y: auto; overscroll-behavior: contain; padding: var(--lh) 3ch calc(var(--lh) * 2); border-left: 1px solid var(--ink-4); background: var(--bg); color: var(--ink-2); }
+.readme[hidden] { display: none; }
+.readme__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--lh); }
+.readme p { margin: 0 0 var(--lh); }
+.readme .label { margin: calc(var(--lh) * 1.5) 0 calc(var(--lh) * 0.5); }
+.readme__head .label { margin: 0; }
+.readme__steps { margin: 0 0 var(--lh); padding-left: 3ch; }
+.readme__steps li { margin-bottom: var(--lh); }
+.readme__steps li::marker { color: var(--accent); }
+.readme__steps p { margin-bottom: calc(var(--lh) * 0.5); }
+.readme code { color: var(--ink); }
+.readme__code { position: relative; }
+.readme__code pre { margin: 0; padding: 1ch 1.5ch; padding-right: 8ch; overflow-x: auto; border: 1px solid var(--ink-4); background: rgba(127, 127, 127, 0.06); font-size: var(--fs-sm); line-height: 1.5; white-space: pre; }
+.readme__code .btn { position: absolute; top: 0.5ch; right: 0.5ch; height: 1.5rem; background: var(--bg); }
+.readme__code .btn:hover, .readme__code .btn:focus-visible { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+@media (max-width: 45em) { .readme { width: 100%; border-left: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

@@ -4,172 +4,444 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Cursor trail</title>
-  <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
   <style>
+    /* IBM Plex Mono in two weights. Each weight comes as a Latin file and a
+       Latin Extended file, which holds the Czech letters. A browser downloads
+       the second file only when the page uses one of its characters. */
     @font-face {
-      font-family: "Departure Mono";
-      src: url("fonts/DepartureMono-Regular.woff2") format("woff2");
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
       font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
     }
-    /* The trail is drawn in --accent. */
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-400-latin-ext.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-600-latin.woff2") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-600-latin-ext.woff2") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+
     :root {
-      --bg: #fbfaf8;
-      --fg: #17181b;
-      --muted: #6d6c68;
-      --line: #e5e3de;
-      --soft: #efeeea;
-      --panel: #ffffff;
-      --edge: #17181b;
-      --drop: #d9d6cf;
-      --accent: #c8352b;
-      --on-accent: #fbfaf8;
-      --mono: "Departure Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-      color-scheme: light;
-    }
-    @media (prefers-color-scheme: dark) {
-      :root:not([data-theme="light"]) {
-        --bg: #131417;
-        --fg: #edece8;
-        --muted: #8e8d88;
-        --line: #2a2b30;
-        --soft: #212227;
-        --panel: #18191c;
-        --edge: #4a4b52;
-        --drop: #2c2d33;
-        --accent: #dc665e;
-        --on-accent: #131417;
-        color-scheme: dark;
-      }
-    }
-    :root[data-theme="dark"] {
-      --bg: #131417;
-      --fg: #edece8;
-      --muted: #8e8d88;
-      --line: #2a2b30;
-      --soft: #212227;
-      --panel: #18191c;
-      --edge: #4a4b52;
-      --drop: #2c2d33;
-      --accent: #dc665e;
-      --on-accent: #131417;
+      --bg: #050608;
+      --ink: #eceae4;
+      --ink-2: #a8a9ae;
+      --ink-3: #7a7c83;
+      --ink-4: #33353b;
+      --accent: #f0a14a;
+      --accent-ink: #1a1107;
+      --font: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --fs: 0.8125rem;
+      --fs-sm: 0.6875rem;
+      --lh: 1.25rem;
+      --bar-h: 2.75rem;
+      --gutter: 2rem;
       color-scheme: dark;
     }
+    @media (max-width: 45em) { :root { --gutter: 1rem; --bar-h: 2.5rem; } }
+
     *, *::before, *::after { box-sizing: border-box; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: var(--bg);
-      color: var(--fg);
-      font: 400 17px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-      -webkit-font-smoothing: antialiased;
-    }
-    p { margin: 0; }
-    code { font: 0.92em var(--mono); }
-    main {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 22px;
-      width: 100%;
-      max-width: 900px;
-      margin: 0 auto;
-      padding: clamp(64px, 16vh, 160px) 16px 80px;
-    }
-    .panel {
-      max-width: 560px;
-      padding: 22px 24px;
-      border: 1px solid var(--edge);
-      background: var(--panel);
-      box-shadow: 5px 5px 0 var(--drop);
-    }
-    .back {
-      position: fixed;
-      top: 16px;
-      left: 16px;
-      z-index: 1;
-      color: var(--muted);
-      font: 16.5px/1 var(--mono);
-      text-decoration: none;
-    }
-    .back:hover { color: var(--fg); }
-    .actions { display: flex; flex-wrap: wrap; gap: 10px; }
-    .btn, .seg button {
-      appearance: none;
-      border: 1px solid var(--edge);
-      background: var(--panel);
-      color: var(--fg);
-      font: 16.5px/1 var(--mono);
-      cursor: pointer;
-    }
-    .btn { height: 46px; padding: 0 16px; box-shadow: 3px 3px 0 var(--drop); }
-    .btn:hover { background: var(--accent); border-color: var(--accent); color: var(--on-accent); }
-    .seg { display: inline-flex; padding: 2px; border: 1px solid var(--line); background: var(--panel); }
-    .seg button { height: 30px; min-width: 34px; padding: 0 8px; border: 0; font-size: 11px; letter-spacing: 0.08em; }
-    .seg button:hover { background: var(--soft); }
-    .seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation: none !important; transition: none !important; }
-    }
+    html { scroll-padding-top: calc(var(--bar-h) + var(--lh)); }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 400 var(--fs) / var(--lh) var(--font); font-variant-ligatures: none; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 3px; }
+    a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+    h1, h2, h3 { margin: 0; font-size: inherit; font-weight: 600; }
+    button { font: inherit; color: inherit; }
+    code { font: inherit; color: var(--ink-2); }
+    ::selection { background: var(--accent); color: var(--accent-ink); }
+    :focus-visible { outline: 1px dashed var(--accent); outline-offset: 3px; }
+
+    /* The bar: the way back to the list, the demo's name and the full demo.
+       The page scrolls under it, so it blurs what is behind it. */
+    .bar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 1.75rem; height: var(--bar-h); padding: 0 var(--gutter); border-bottom: 1px solid var(--ink-4); background: linear-gradient(180deg, rgba(5, 6, 8, 0.94), rgba(5, 6, 8, 0.72)); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); font-size: var(--fs-sm); }
+    .back { color: var(--ink-2); text-decoration: none; white-space: nowrap; }
+    .back:hover { color: var(--ink); }
+    .brand { margin: 0 auto 0 0; min-width: 0; overflow: hidden; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+    @media (max-width: 45em) { .bar { gap: 0.75rem; } .back span { display: none; } }
+
+    .btn { display: inline-flex; align-items: center; height: 1.75rem; padding: 0 1ch; border: 1px solid var(--ink-4); border-radius: 0; background: none; color: var(--ink); font: inherit; font-size: var(--fs-sm); white-space: nowrap; text-decoration: none; cursor: pointer; transition: background 0.12s, color 0.12s; }
+    @media (hover: hover) { .btn:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); } }
+    .btn:focus-visible { background: var(--ink); color: var(--bg); }
+
+    .label { color: var(--ink-3); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    main { max-width: 72.5rem; margin: 0 auto; padding: calc(var(--lh) * 3) var(--gutter); }
+    main p { max-width: 64ch; margin: 0 0 var(--lh); color: var(--ink-2); }
+    main p code, main li code, main dd code, main dt code { color: var(--ink); }
+    h1 { margin-bottom: var(--lh); font-size: clamp(1.75rem, 5vw, 3rem); line-height: 1.1; font-weight: 600; letter-spacing: -0.01em; }
+    .intro > p:first-of-type { color: var(--ink); }
+
+    /* The features under the intro: a row of plain links. */
+    .features { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 2.5ch; max-width: none; }
+    .features .label { margin: 0; }
+
+    /* One section per feature, with a rule above it. */
+    .doc { margin-top: calc(var(--lh) * 4); padding-top: calc(var(--lh) * 2); border-top: 1px solid var(--ink-4); }
+    .doc h2 { margin-bottom: var(--lh); font-size: calc(var(--fs) * 1.7); line-height: calc(var(--lh) * 2); font-weight: 600; }
+    main p.label { margin: calc(var(--lh) * 1.5) 0 calc(var(--lh) * 0.5); color: var(--ink-3); }
+
+    .frame { margin: var(--lh) 0; }
+    .frame iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--ink-4); background: var(--bg); }
+    .frame--intro iframe { aspect-ratio: 16 / 10; }
+    .frame figcaption { margin-top: 0.5rem; font-size: var(--fs-sm); color: var(--ink-3); }
+    /* A frame for an effect that waits for the pointer is lower, so it is not
+       mostly empty. */
+    .frame--low iframe { aspect-ratio: 21 / 9; }
+    @media (max-width: 45em) { .frame iframe, .frame--intro iframe { aspect-ratio: 4 / 5; } .frame--low iframe { aspect-ratio: 1 / 1; } }
+
+    .needs { max-width: 64ch; margin: 0 0 var(--lh); padding-left: 2ch; color: var(--ink-2); list-style: square; }
+    .needs li::marker { color: var(--ink-3); }
+    .needs li + li { margin-top: 0.25rem; }
+
+    /* Code blocks, as in the demos' Read me panels. */
+    .file { margin-bottom: 0.5rem; color: var(--ink-3); font-size: var(--fs-sm); }
+    .code { position: relative; margin: 0 0 var(--lh); }
+    .code pre { margin: 0; padding: 1ch 1.5ch; padding-right: 8ch; overflow-x: auto; border: 1px solid var(--ink-4); background: rgba(127, 127, 127, 0.06); font-size: var(--fs-sm); line-height: 1.5; white-space: pre; }
+    .code code { color: var(--ink); }
+    .code .btn { position: absolute; top: 0.5ch; right: 0.5ch; height: 1.5rem; background: var(--bg); }  /* solid, because long lines scroll under it */
+    /* The solid background above would otherwise hide the Copy button's text
+       on hover, where the text takes the page colour. */
+    @media (hover: hover) { .code .btn:hover { background: var(--ink); } }
+    .code .btn:focus-visible { background: var(--ink); }
+
+    .steps { margin: 0 0 var(--lh); padding-left: 3ch; color: var(--ink-2); }
+    .steps li { margin-bottom: var(--lh); }
+    .steps li::marker { color: var(--accent); }
+    .steps p { margin-bottom: calc(var(--lh) * 0.5); }
+    .steps .code { margin-bottom: calc(var(--lh) * 0.5); }
+
+    /* Options: a name column and its meaning. */
+    .kv { max-width: 80ch; margin: 0 0 var(--lh); }
+    .kv div { display: flex; gap: 2ch; padding: 0.375rem 0; border-top: 1px solid var(--ink-4); }
+    .kv div:last-child { border-bottom: 1px solid var(--ink-4); }
+    .kv dt { flex: none; width: 10ch; }
+    .kv dd { margin: 0; color: var(--ink-2); }
+
+    .foot { max-width: 72.5rem; margin: 0 auto; padding: var(--lh) var(--gutter) calc(var(--lh) * 3); }
+    .foot p { max-width: 64ch; margin: 0; padding-top: var(--lh); border-top: 1px solid var(--ink-4); color: var(--ink-3); font-size: var(--fs-sm); }
+    .foot a { color: var(--ink-2); }
   </style>
-  <script defer src="cursor-trail.js"></script>
+  <link rel="stylesheet" href="../assets/code.css">
+  <script defer src="../assets/code.js"></script>
 </head>
 <body>
-  <a class="back ko" href="../">← All demos</a>
+  <header class="bar">
+    <a class="back" href="../" aria-label="All demos">← <span>All demos</span></a>
+    <p class="brand">Cursor trail</p>
+    <a class="btn" href="demo.html">Open full screen</a>
+  </header>
 
   <main>
-    <div class="panel ko">
-      <p>Click anywhere for a ripple. The trail stays off this panel because it has the class <code>ko</code>.</p>
-    </div>
-    <div class="actions">
-      <button type="button" class="btn" data-sweep>Trail</button>
-      <button type="button" class="btn">Ripple</button>
-      <div class="seg" role="group" aria-label="Theme">
-        <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
-        <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
-        <button type="button" data-set-theme="system" aria-pressed="true">Auto</button>
-      </div>
-    </div>
+<div class="intro">
+<h1>Cursor trail</h1>
+<p>Use it to give your page a pointer that leaves a short trail of glyphs, and to answer clicks with a ripple. It draws on a canvas of its own over the page and lets every click through.</p>
+<figure class="frame frame--intro frame--low">
+  <iframe src="demo.html?embed" title="Cursor trail" loading="lazy" data-live></iframe>
+  <figcaption><a href="demo.html">Open on its own</a></figcaption>
+</figure>
+</div>
+
+<nav class="features" aria-label="Features">
+  <span class="label">Features</span>
+  <a href="#trail">Trail</a>
+  <a href="#ripple">Ripple</a>
+  <a href="#ko">Keep it off your text</a>
+  <a href="#canvas">Your own canvas</a>
+</nav>
+
+<section class="doc" id="trail" aria-labelledby="trail-h">
+<h2 id="trail-h">Trail</h2>
+<p>Use the trail to give the pointer a little life on a page with plenty of empty space. Move the pointer over the frame, or press Trail to send a wave across it.</p>
+<figure class="frame frame--low">
+  <iframe src="demo.html?feature=trail&amp;embed" title="Trail" loading="lazy" data-live></iframe>
+  <figcaption><a href="demo.html?feature=trail">Open on its own</a></figcaption>
+</figure>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li><code>cursor-trail.js</code>, 13 KB.</li>
+  <li><code>--accent</code> on <code>:root</code> for the colour of the glyphs. The trail picks up a change of <code>data-theme</code> on <code>&lt;html&gt;</code>.</li>
+  <li>IBM Plex Mono, if you want the glyphs in that font. Without it they use the system's monospace font.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">cursor-trail.js</p>
+<div class="code"><pre><code>// The pointer charges every cell along its path, in steps of 10 px, so a
+// fast stroke leaves an unbroken trail.
+let lastPX = null, lastPY = null;
+window.addEventListener("pointermove", function (e) {
+  if (!started || reduced) return;
+  const x = e.clientX, y = e.clientY;
+  if (lastPX === null) inject(x, y, 24, 0.9);
+  else {
+    const dx = x - lastPX, dy = y - lastPY;
+    const steps = Math.min(12, Math.ceil(Math.hypot(dx, dy) / 10));
+    for (let i = 1; i &lt;= steps; i++) inject(lastPX + (dx * i) / steps, lastPY + (dy * i) / steps, 24, 0.9);
+  }
+  lastPX = x;
+  lastPY = y;
+  wake();
+}, { passive: true });
+// …
+const decay = Math.pow(0.87, dt * 30);
+for (let i = 0; i &lt; N; i++) if (E[i] &gt; 0.001) E[i] *= decay; else E[i] = 0;
+// …
+if (e &gt; 0.06 &amp;&amp; m !== 1 &amp;&amp; !(m === 2 &amp;&amp; RA[idx] &lt; 0.55)) {
+  const g = (hash3(c, r, Math.floor(t * 14 + RA[idx] * 10)) * GLYPHS.length) | 0;
+  code = (g &lt;&lt; 2) | (e &gt; 0.55 ? 0 : e &gt; 0.28 ? 1 : 2);
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p>The trail splits the window into cells of 7 × 14 px. Each pointer move charges the cells within 24 px of its path, in steps of 10 px. Every charge falls to 87% each thirtieth of a second, and a cell shows a random glyph while its charge is above 0.06. The drawing loop stops when the last glyph has faded, and nothing is drawn when the system asks for reduced motion.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Copy <code>cursor-trail.js</code> next to your page.</p>
+  </li>
+  <li>
+    <p>Load it at the end of the head.</p>
+    <div class="code"><pre><code>&lt;script defer src="cursor-trail.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>Set the colour of the glyphs.</p>
+    <div class="code"><pre><code>:root { --accent: #f0a14a; }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>To set the glyphs in IBM Plex Mono, copy the <code>fonts</code> folder next to your page and add the font to your CSS. The trail waits up to 1.5 s for it before it starts.</p>
+    <div class="code"><pre><code>@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
+
+<section class="doc" id="ripple" aria-labelledby="ripple-h">
+<h2 id="ripple-h">Ripple</h2>
+<p>Use the ripple to answer a click with a ring of glyphs that spreads across the page. Click anywhere in the frame, or press Ripple.</p>
+<figure class="frame frame--low">
+  <iframe src="demo.html?feature=ripple&amp;embed" title="Ripple" loading="lazy" data-live></iframe>
+  <figcaption><a href="demo.html?feature=ripple">Open on its own</a></figcaption>
+</figure>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li><code>cursor-trail.js</code>, set up as under <a href="#trail">Trail</a>.</li>
+  <li>A click listener that calls <code>CursorTrail.pulse(x, y)</code>.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">cursor-trail.js</p>
+<div class="code"><pre><code>// A pulse is a ring that grows at 950 px a second and fades out over 1.4 s.
+function applyPulses(t) {
+  for (let p = pulses.length - 1; p &gt;= 0; p--) {
+    const pulse = pulses[p];
+    const age = t - pulse.t0;
+    if (age &gt; 1.4) {
+      pulses.splice(p, 1);
+      continue;
+    }
+    const R = age * 950;
+    const strength = 0.95 * (1 - age / 1.4);
+    for (let r = 0; r &lt; rows; r++) {
+      const dy = (r + 0.5) * ch - frac - pulse.y;
+      for (let c = 0; c &lt; cols; c++) {
+        const d = Math.abs(Math.hypot((c + 0.5) * cw - pulse.x, dy) - R);
+        if (d &lt; 34) {
+          const idx = r * cols + c;
+          const v = strength * (1 - d / 34);
+          if (v &gt; E[idx]) E[idx] = v;
+        }
+      }
+    }
+  }
+}
+// …
+function pulse(x, y) {
+  if (!started || reduced) return;
+  pulses.push({ x: x, y: y, t0: performance.now() / 1000 });
+  wake();
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p><code>CursorTrail.pulse(x, y)</code> adds a ring at a point on the screen. The ring grows at 950 px a second and fades out over 1.4 s. Each frame it charges the cells within 34 px of its edge, so it lights up in the same glyphs as the trail. The script does not listen for clicks itself, so your page chooses which clicks send a ripple.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Add the trail as in steps 1 to 3 under <a href="#trail">Trail</a>.</p>
+  </li>
+  <li>
+    <p>Send a ripple from each click, at the end of the body.</p>
+    <div class="code"><pre><code>&lt;script&gt;
+  document.addEventListener("click", function (e) {
+    if (window.CursorTrail) CursorTrail.pulse(e.clientX, e.clientY);
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>To show the ripple without the trail, stop pointer moves before the trail sees them. This also stops every other <code>pointermove</code> listener on your page.</p>
+    <div class="code"><pre><code>&lt;script&gt;
+  window.addEventListener("pointermove", function (e) { e.stopImmediatePropagation(); }, true);
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
+
+<section class="doc" id="ko" aria-labelledby="ko-h">
+<h2 id="ko-h">Keep it off your text</h2>
+<p>Use the class <code>ko</code> to keep the trail and the ripple off headings, buttons and blocks of text, so they stay readable.</p>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>Elements with the class <code>ko</code>.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">cursor-trail.js</p>
+<div class="code"><pre><code>// A .ko element's own cells are 1 and a ragged margin around it is 2. The
+// trail never shows on 1 and shows on about half the cells of 2.
+function buildMask() {
+  mask.fill(0);
+  const padX = cw * 1.5;
+  const padY = ch * 0.6;
+  for (let n = 0; n &lt; koEls.length; n++) {
+    const rects = koEls[n].getClientRects();
+    for (let k = 0; k &lt; rects.length; k++) {
+      const rc = rects[k];
+      if (rc.width === 0 || rc.bottom &lt; -ch || rc.top &gt; vh + ch) continue;
+      const c0 = Math.max(0, Math.floor((rc.left - padX) / cw));
+      const c1 = Math.min(cols - 1, Math.floor((rc.right + padX) / cw));
+      const r0 = Math.max(0, Math.floor((rc.top - padY + frac) / ch));
+      const r1 = Math.min(rows - 1, Math.floor((rc.bottom + padY + frac) / ch));
+      const ic0 = Math.floor(rc.left / cw), ic1 = Math.floor(rc.right / cw);
+      const ir0 = Math.floor((rc.top + frac) / ch), ir1 = Math.floor((rc.bottom + frac) / ch);
+      for (let r = r0; r &lt;= r1; r++) {
+        const inRow = r &gt;= ir0 &amp;&amp; r &lt;= ir1;
+        for (let c = c0; c &lt;= c1; c++) {
+          const idx = r * cols + c;
+          if (inRow &amp;&amp; c &gt;= ic0 &amp;&amp; c &lt;= ic1) mask[idx] = 1;
+          else if (mask[idx] === 0) mask[idx] = 2;
+        }
+      }
+    }
+  }
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p>Before each frame the trail reads the boxes of every <code>.ko</code> element. The cells under an element stay empty. About half of the cells in a margin of 1.5 cells round it stay empty too, which gives the edge a ragged look.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Add the class <code>ko</code> to each element the trail should stay off.</p>
+    <div class="code"><pre><code>&lt;h1 class="ko"&gt;Your name&lt;/h1&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>If your page adds <code>.ko</code> elements after it has loaded, call this afterwards so the trail finds them.</p>
+    <div class="code"><pre><code>CursorTrail.refresh();</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
+
+<section class="doc" id="canvas" aria-labelledby="canvas-h">
+<h2 id="canvas-h">Your own canvas</h2>
+<p>Use a canvas of your own to draw the trail behind your content, or to run it over a background that scrolls, such as the <a href="../page-background/">page background</a>.</p>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>A <code>&lt;canvas id="trail"&gt;</code> in the body.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">cursor-trail.js</p>
+<div class="code"><pre><code>let canvas = document.getElementById("trail");
+if (!canvas) {
+  canvas = document.createElement("canvas");
+  canvas.id = "trail";
+  canvas.setAttribute("aria-hidden", "true");
+  canvas.style.cssText = "position:fixed;inset:0;width:100%;height:100vh;height:100lvh;display:block;pointer-events:none;z-index:2147483000";
+  (document.body || root).appendChild(canvas);
+}
+// …
+const parallax = Number(canvas.getAttribute("data-parallax")) || 0;
+const fill = canvas.getAttribute("data-fill") === "true";
+// …
+const off = (window.scrollY || 0) * parallax;
+// …
+if (fill) {
+  ctx.fillStyle = colors.bg;
+  ctx.fillRect(c * cwD, yD, cwD, chD);
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p>The script draws on the element with the id <code>trail</code>, and it adds its own canvas over the page only when there is none. <code>data-parallax</code> is the share of the page scroll the grid of cells moves with, and it is 0 unless you set it. <code>data-fill="true"</code> paints each lit cell in <code>--bg</code> before its glyph, so the trail covers whatever is under it.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Put the canvas first in the body.</p>
+    <div class="code"><pre><code>&lt;canvas id="trail" aria-hidden="true"&gt;&lt;/canvas&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>Fix it behind your content.</p>
+    <div class="code"><pre><code>#trail { position: fixed; inset: 0; width: 100%; height: 100vh; pointer-events: none; z-index: 0; }
+main { position: relative; z-index: 1; }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>Over the page background, put the trail's canvas after the field's and give it both attributes. Its cells then line up with the field's and cover them.</p>
+    <div class="code"><pre><code>&lt;canvas id="field" aria-hidden="true"&gt;&lt;/canvas&gt;
+&lt;canvas id="trail" aria-hidden="true" data-parallax="0.5" data-fill="true"&gt;&lt;/canvas&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
   </main>
 
+  <footer class="foot">
+    <p>The full API and every option are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/cursor-trail#readme">README</a>. The code is under the <a href="https://github.com/N041M/cool-stuff-n-assets/blob/main/LICENSE">MIT licence</a>.</p>
+  </footer>
+
   <script>
-    // Buttons send a ripple from their middle. A click anywhere else sends one from the
-    // pointer. Trail draws a wave across the window instead, for a screen
-    // with no pointer to move.
+    // Copy buttons copy the code block they sit in.
+    document.querySelectorAll("[data-copy-code]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        const text = button.parentElement.querySelector("code").textContent;
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          button.textContent = "Copied";
+          setTimeout(function () { button.textContent = "Copy"; }, 1500);
+        }, function () {});
+      });
+    });
+
+    // A frame with data-src loads when it comes within one screen of the
+    // window, and empties again when it moves further away, because its demo
+    // keeps drawing while it is off screen. The address is replaced so the
+    // frames add nothing to the browser's history.
     (function () {
-      var root = document.documentElement;
-      function pulseFrom(el) {
-        var r = el.getBoundingClientRect();
-        window.CursorTrail.pulse(r.left + r.width / 2, r.top + r.height / 2);
+      const frames = document.querySelectorAll("iframe[data-src]");
+      function load(frame, url) {
+        if (frame.dataset.at === url) return;
+        if (!frame.dataset.at && url === "about:blank") return;
+        frame.dataset.at = url;
+        if (frame.contentWindow && frame.hasAttribute("src")) frame.contentWindow.location.replace(url);
+        else frame.src = url;
       }
-      function sweep() {
-        var t0 = performance.now();
-        document.dispatchEvent(new PointerEvent("pointerleave"));
-        requestAnimationFrame(function step(now) {
-          var k = Math.min(1, (now - t0) / 1400);
-          var x = innerWidth * (0.08 + 0.84 * k);
-          var y = innerHeight * (0.55 + 0.2 * Math.sin(k * Math.PI * 3));
-          window.dispatchEvent(new PointerEvent("pointermove", { clientX: x, clientY: y }));
-          if (k < 1) requestAnimationFrame(step);
-          else document.dispatchEvent(new PointerEvent("pointerleave"));
-        });
+      if (!("IntersectionObserver" in window)) {
+        frames.forEach(function (frame) { frame.src = frame.dataset.src; });
+        return;
       }
-      document.addEventListener("click", function (e) {
-        if (!window.CursorTrail) return;
-        var button = e.target instanceof Element && e.target.closest("button");
-        if (button && button.hasAttribute("data-sweep")) sweep();
-        else if (button) pulseFrom(button);
-        else window.CursorTrail.pulse(e.clientX, e.clientY);
-      });
-      document.querySelectorAll("[data-set-theme]").forEach(function (b) {
-        b.addEventListener("click", function () {
-          var choice = b.getAttribute("data-set-theme");
-          if (choice === "system") root.removeAttribute("data-theme");
-          else root.setAttribute("data-theme", choice);
-          document.querySelectorAll("[data-set-theme]").forEach(function (o) {
-            o.setAttribute("aria-pressed", String(o === b));
-          });
+      const io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          const frame = entry.target;
+          load(frame, entry.isIntersecting ? new URL(frame.dataset.src, location.href).href : "about:blank");
         });
-      });
+      }, { rootMargin: "100% 0px" });
+      frames.forEach(function (frame) { io.observe(frame); });
     })();
   </script>
 </body>

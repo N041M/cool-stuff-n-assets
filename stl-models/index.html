@@ -4,118 +4,497 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>STL models</title>
-  <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="demo.css">
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "./vendor/three/three.module.js",
-        "three/addons/": "./vendor/three/addons/"
-      }
-    }
+  <script>
+    // ?embed hides the bar, for showing the page in a frame.
+    if (new URLSearchParams(location.search).has("embed")) document.documentElement.setAttribute("data-embed", "");
   </script>
-  <script type="module" src="demo.js"></script>
+  <style>
+    /* The documentation page. It has the look of the demo pages and is dark
+       only. */
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-400-latin-ext.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-600-latin.woff2") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-600-latin-ext.woff2") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+
+    :root {
+      --bg: #050608;
+      --ink: #eceae4;
+      --ink-2: #a8a9ae;
+      --ink-3: #7a7c83;
+      --ink-4: #33353b;
+      --accent: #f0a14a;
+      --accent-ink: #1a1107;
+      --font: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --fs: 0.8125rem;
+      --fs-sm: 0.6875rem;
+      --lh: 1.25rem;
+      --bar-h: 2.75rem;
+      --gutter: 2rem;
+      color-scheme: dark;
+    }
+    @media (max-width: 45em) { :root { --gutter: 1rem; --bar-h: 2.5rem; } }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 400 var(--fs) / var(--lh) var(--font); font-variant-ligatures: none; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 3px; }
+    a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+    h1, h2, h3 { margin: 0; font-size: inherit; font-weight: 600; }
+    button { font: inherit; color: inherit; }
+    code { font: inherit; color: var(--ink-2); }
+    ::selection { background: var(--accent); color: var(--accent-ink); }
+    :focus-visible { outline: 1px dashed var(--accent); outline-offset: 3px; }
+
+    /* The status bar: back link, demo name and a link to the full demo. */
+    .bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 1.75rem; height: var(--bar-h); padding: 0 var(--gutter); border-bottom: 1px solid var(--ink-4); background: linear-gradient(180deg, rgba(5, 6, 8, 0.94), rgba(5, 6, 8, 0.72)); font-size: var(--fs-sm); }
+    .back { color: var(--ink-2); text-decoration: none; white-space: nowrap; }
+    .back:hover { color: var(--ink); }
+    .brand { min-width: 0; margin: 0 auto 0 0; overflow: hidden; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+    @media (max-width: 45em) { .bar { gap: 0.75rem; } .back span { display: none; } }
+    :root[data-embed] .bar { display: none; }
+
+    .btn { display: inline-flex; align-items: center; height: 1.75rem; padding: 0 1ch; border: 1px solid var(--ink-4); border-radius: 0; background: none; color: var(--ink); font: inherit; font-size: var(--fs-sm); text-decoration: none; white-space: nowrap; cursor: pointer; transition: background 0.12s, color 0.12s; }
+    @media (hover: hover) { .btn:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); } }
+    .btn:focus-visible { background: var(--ink); color: var(--bg); }
+
+    .label { color: var(--ink-3); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    main { max-width: 72.5rem; margin: 0 auto; padding: calc(var(--lh) * 3) var(--gutter); }
+    main p, main ul, main ol { max-width: 64ch; margin: 0 0 var(--lh); color: var(--ink-2); }
+    main .steps { max-width: none; }
+    main code { color: var(--ink); }
+    h1 { margin-bottom: var(--lh); font-size: clamp(1.75rem, 5vw, 3rem); line-height: 1.1; font-weight: 600; letter-spacing: -0.01em; }
+    h2 { margin-bottom: calc(var(--lh) * 0.5); font-size: calc(var(--fs) * 1.7); line-height: calc(var(--lh) * 2); font-weight: 600; }
+    .doc { margin-top: calc(var(--lh) * 4); padding-top: calc(var(--lh) * 1.5); border-top: 1px solid var(--ink-4); }
+    h2[id] { scroll-margin-top: calc(var(--bar-h) + var(--lh) * 1.5); }
+    main p.label { margin: calc(var(--lh) * 1.5) 0 calc(var(--lh) * 0.5); color: var(--ink-3); }
+    main ul { padding-left: 3ch; }
+    main ul li::marker { color: var(--ink-3); }
+
+    /* The links to the sections, in a row that wraps on a phone. */
+    .features { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 2.5ch; }
+    .features .label { margin-right: 1ch; }
+
+    /* A live demo in a frame. */
+    .frame { margin: var(--lh) 0; }
+    .frame iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--ink-4); background: var(--bg); }
+    .frame figcaption { margin-top: 0.5rem; font-size: var(--fs-sm); color: var(--ink-3); }
+    .frame--intro iframe { aspect-ratio: 16 / 10; }
+    @media (max-width: 45em) {
+      .frame iframe { aspect-ratio: 4 / 5; }
+      .frame--intro iframe { aspect-ratio: 3 / 4; }
+    }
+
+    /* Numbered steps and code blocks, as in the Read me panel of the demo. */
+    .steps { padding-left: 3ch; }
+    .steps li { margin-bottom: var(--lh); }
+    .steps li::marker { color: var(--accent); }
+    .steps p { margin-bottom: calc(var(--lh) * 0.5); }
+    main .file { margin: var(--lh) 0 0.25rem; color: var(--ink-3); font-size: var(--fs-sm); }
+    .code { position: relative; margin-bottom: var(--lh); }
+    .steps .code { margin-bottom: 0; }
+    .steps .code + .code { margin-top: 0.5rem; }
+    .code pre { margin: 0; padding: 1ch 1.5ch; padding-right: 8ch; overflow-x: auto; border: 1px solid var(--ink-4); background: rgba(127, 127, 127, 0.06); font-size: var(--fs-sm); line-height: 1.5; white-space: pre; }
+    .code pre code { color: var(--ink); }
+    .code .btn { position: absolute; top: 0.5ch; right: 0.5ch; height: 1.5rem; background: var(--bg); }
+    .code .btn:hover, .code .btn:focus-visible { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+    .foot { max-width: 72.5rem; margin: 0 auto; padding: 0 var(--gutter) calc(var(--lh) * 2); color: var(--ink-3); font-size: var(--fs-sm); }
+    .foot p { margin: 0; padding-top: var(--lh); border-top: 1px solid var(--ink-4); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; }
+    }
+
+    /* The table of STL files. It scrolls inside itself on a phone. */
+    .table { max-width: 100%; margin-bottom: var(--lh); overflow-x: auto; }
+    .table table { border-collapse: collapse; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .table th { padding: 0 3ch 0.5rem 0; color: var(--ink-3); font-size: var(--fs-sm); font-weight: 400; text-align: left; text-transform: uppercase; letter-spacing: 0.06em; }
+    .table td { padding: 0.375rem 3ch 0.375rem 0; border-top: 1px solid var(--ink-4); color: var(--ink-2); }
+    .table .n { text-align: right; }
+  </style>
+  <link rel="stylesheet" href="../assets/code.css">
+  <script defer src="../assets/code.js"></script>
 </head>
 <body>
   <header class="bar">
     <a class="back" href="../" aria-label="All demos">← <span>All demos</span></a>
-    <h1 class="brand">STL models</h1>
-    <div class="seg" role="group" aria-label="Theme">
-      <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
-      <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
-      <button type="button" data-set-theme="system" aria-pressed="true">Auto</button>
-    </div>
+    <p class="brand">STL models</p>
+    <a class="btn" href="demo.html">Open full screen</a>
   </header>
 
   <main>
-    <section class="intro">
-      <p class="lede"><span class="hl">Nine generated models for 3D printing. Drag a model to turn it, and use the wheel or a pinch to zoom.</span></p>
+    <header>
+      <h1>STL models</h1>
+      <p>Use it to let visitors turn, zoom and download 3D-printable models on a shop or project page. The models are STL files, so you can also print them or load one into a three.js scene of your own.</p>
+      <figure class="frame frame--intro">
+        <iframe src="demo.html?embed" title="STL models" data-live></iframe>
+        <figcaption><a href="demo.html">Open on its own</a></figcaption>
+      </figure>
+      <nav class="features" aria-label="Features">
+        <span class="label">Features</span>
+        <a href="#models">Models</a>
+        <a href="#looks">Looks</a>
+        <a href="#files">The STL files</a>
+      </nav>
+    </header>
+
+    <section class="doc" aria-labelledby="models">
+      <h2 id="models">Models</h2>
+      <p>Use the viewer to show a set of STL files on your page one at a time, with each model's size and a link to its file.</p>
+      <figure class="frame">
+        <iframe data-src="demo.html?feature=models&amp;embed" title="Models" data-live></iframe>
+        <figcaption><a href="demo.html?feature=models">Open on its own</a></figcaption>
+      </figure>
+
+      <p class="label">What you need</p>
+      <ul>
+        <li><code>demo.js</code>, <code>looks.js</code> and <code>demo.css</code>, with the <code>fonts/</code> folder.</li>
+        <li>three.js r186 in <code>vendor/three/</code>, which holds <code>three.module.js</code>, <code>three.core.js</code>, <code>STLLoader.js</code> and <code>OrbitControls.js</code>.</li>
+        <li>Your STL files, or the ones in <code>models/</code>.</li>
+        <li>A browser with WebGL.</li>
+        <li>A web server. The models do not load when the page is opened straight from the file.</li>
+      </ul>
+
+      <p class="label">The code</p>
+      <p class="file">demo.js</p>
+      <div class="code"><pre><code>// Each model is fetched once. Its size is measured in the file's own axes,
+// before it is turned to Y-up.
+const loader = new STLLoader();
+const cache = new Map();
+function load(model) {
+  let pending = cache.get(model.slug);
+  if (!pending) {
+    pending = fetch(model.file).then(function (res) {
+      if (!res.ok) throw new Error(res.status + " " + res.statusText);
+      return res.arrayBuffer();
+    }).then(function (buffer) {
+      const geometry = loader.parse(buffer);
+      geometry.computeBoundingBox();
+      const size = geometry.boundingBox.getSize(new THREE.Vector3());
+      geometry.rotateX(-Math.PI / 2);
+      geometry.computeBoundingBox();
+      geometry.computeBoundingSphere();
+      return {
+        geometry: geometry,
+        size: size,
+        triangles: geometry.getAttribute("position").count / 3,
+        bytes: buffer.byteLength,
+      };
+    });
+    pending.catch(function () { cache.delete(model.slug); });
+    cache.set(model.slug, pending);
+  }
+  return pending;
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p><code>load()</code> fetches each file once and parses it with <code>STLLoader</code>. It measures the model in the file's own axes and then gives it a quarter turn about x, because the files are Z-up and three.js is Y-up.</p>
+      <p class="file">demo.js</p>
+      <div class="code"><pre><code>document.querySelector("[data-reset]").addEventListener("click", function () {
+  controls.reset();
+  wake();
+});
+// Each press of + or - zooms as far as a few notches of the wheel.
+document.querySelectorAll("[data-zoom]").forEach(function (b) {
+  b.addEventListener("click", function () {
+    if (b.getAttribute("data-zoom") === "in") controls.dollyIn(0.8);
+    else controls.dollyOut(0.8);
+    wake();
+  });
+});
+document.querySelectorAll("[data-step]").forEach(function (b) {
+  b.addEventListener("click", function () {
+    const n = MODELS.length;
+    pick((current + Number(b.getAttribute("data-step")) + n) % n);
+  });
+});</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>Reset sends the camera back to the view that <code>show()</code> saved for the model. The + and − buttons zoom with <code>OrbitControls</code> the way the mouse wheel does.</p>
+
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Copy <code>demo.js</code>, <code>looks.js</code>, <code>demo.css</code> and the folders <code>fonts/</code>, <code>vendor/</code> and <code>models/</code> next to your page.</p>
+        </li>
+        <li>
+          <p>Add the import map, the stylesheet and the script to the head. The import map points <code>three</code> at the copy in <code>vendor/three/</code>.</p>
+          <div class="code"><pre><code>&lt;script type="importmap"&gt;
+  {
+    "imports": {
+      "three": "./vendor/three/three.module.js",
+      "three/addons/": "./vendor/three/addons/"
+    }
+  }
+&lt;/script&gt;
+&lt;link rel="stylesheet" href="demo.css"&gt;
+&lt;script type="module" src="demo.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Copy the <code>&lt;main&gt;</code> element of <code>demo.html</code> into the body. Each item in its list is one model, so edit the list to show your own files. <code>demo.js</code> takes the model's id from <code>data-model</code>, its name from <code>.pick-name</code> and its file from the link.</p>
+          <div class="code"><pre><code>&lt;li data-model="servo-skull-drone"&gt;
+  &lt;button type="button" class="pick" aria-pressed="false"&gt;&lt;span class="idx label"&gt;09&lt;/span&gt;&lt;span class="pick-name"&gt;Servo-Skull Drone&lt;/span&gt;&lt;span class="pick-cat label"&gt;Characters&lt;/span&gt;&lt;/button&gt;
+  &lt;a class="dl" href="models/servo-skull-drone.stl" download aria-label="STL file, servo-skull-drone.stl"&gt;STL&lt;/a&gt;
+&lt;/li&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
     </section>
 
-    <div class="viewer">
-      <div class="view">
-        <figure class="stage" data-stage>
-          <canvas data-canvas role="img" aria-label="The picked model"></canvas>
-          <div class="stage-bar">
-            <p class="stage-note"><span>Grid 10 mm</span><span class="status" data-note aria-live="polite">Loading</span></p>
-            <div class="seg" role="group" aria-label="View">
-              <button type="button" data-step="-1" aria-label="Previous model" title="Previous model">&lt;</button>
-              <button type="button" data-step="1" aria-label="Next model" title="Next model">&gt;</button>
-              <button type="button" data-zoom="in" aria-label="Zoom in" title="Zoom in">+</button>
-              <button type="button" data-zoom="out" aria-label="Zoom out" title="Zoom out">-</button>
-              <button type="button" data-turn aria-pressed="false" title="Turn the model slowly">Turn</button>
-              <button type="button" data-reset title="Back to the first view">Reset</button>
-            </div>
-          </div>
-          <div class="stage-bar looks-bar">
-            <div class="seg" role="group" aria-label="Look">
-              <button type="button" data-look="plain" aria-pressed="true">Plain</button>
-              <button type="button" data-look="phosphor" aria-pressed="false">Phosphor</button>
-              <button type="button" data-look="wire" aria-pressed="false">Wire</button>
-              <button type="button" data-look="xray" aria-pressed="false">X-ray</button>
-            </div>
-            <div class="seg">
-              <button type="button" data-build title="Grow the model from the bottom" disabled>Build</button>
-            </div>
-          </div>
-        </figure>
+    <section class="doc" aria-labelledby="looks">
+      <h2 id="looks">Looks</h2>
+      <p>Use the looks to show a model in the amber of an old tube screen, on a page with a retro or sci-fi style. They work on any model in a three.js scene.</p>
+      <figure class="frame">
+        <iframe data-src="demo.html?feature=looks&amp;embed" title="Looks" data-live></iframe>
+        <figcaption><a href="demo.html?feature=looks">Open on its own</a></figcaption>
+      </figure>
 
-        <div class="readout">
-          <p class="model-name" data-name>Castellan-Pattern Battle Tank</p>
-          <p class="short" data-short>Siege-grade heavy armour with a faceted turret and full track runs.</p>
-          <dl class="stats">
-            <div><dt>Size, x × y × z</dt><dd data-size>–</dd></div>
-            <div><dt>Triangles</dt><dd data-tris>–</dd></div>
-            <div><dt>File</dt><dd><a data-file href="models/castellan-battle-tank.stl" download>castellan-battle-tank.stl</a> <span class="bytes" data-bytes></span></dd></div>
-          </dl>
-        </div>
+      <p class="label">What you need</p>
+      <ul>
+        <li><code>looks.js</code>, and three.js r186 from <code>vendor/three/</code>.</li>
+        <li>The <code>--ph-*</code> colours from <code>demo.css</code>.</li>
+        <li>A browser with WebGL.</li>
+      </ul>
+
+      <p class="label">The code</p>
+      <p class="file">looks.js</p>
+      <div class="code"><pre><code>void main() {
+  // Nothing above the build height is drawn yet.
+  if (vH &gt; uReveal) discard;
+
+  vec3 n = normalize(vNormalV);
+  if (!gl_FrontFacing) n = -n;
+  vec3 v = normalize(-vViewPos);
+
+  // A key light, a soft fill and some light from above, all fixed to the
+  // camera. The shade is pulled part of the way to six flat bands, and then
+  // squared so the bands stay apart once the colour is brightened for the
+  // screen.
+  vec3 keyDir = normalize(vec3(0.45, 0.75, 0.55));
+  vec3 fillDir = normalize(vec3(-0.75, 0.15, 0.35));
+  float key = max(dot(n, keyDir), 0.0);
+  float fill = max(dot(n, fillDir), 0.0);
+  float hemi = 0.5 + 0.5 * n.y;
+  float shade = key * 0.72 + fill * 0.16 + hemi * 0.2;
+  shade = mix(shade, floor(shade * 6.0 + 0.5) / 6.0, 0.5);
+  shade *= shade;
+
+  vec3 halfDir = normalize(keyDir + v);
+  float spec = pow(max(dot(n, halfDir), 0.0), 42.0);
+  float fres = pow(1.0 - clamp(dot(n, v), 0.0, 1.0), 3.6);
+  vec3 col = mix(uDark, uLit, clamp(shade, 0.0, 1.1));
+  col += uHot * spec * 0.5;
+  col += uRim * fres * 0.4;
+
+  // Scanlines. They crawl upward while uTime runs.
+  float scan = 1.0 - uScan * (0.5 + 0.5 * sin(gl_FragCoord.y * 1.35 - uTime * 5.0));
+  col *= scan;
+
+  float alpha = 1.0;
+  if (uXray &gt; 0.5) {
+    float body = (0.05 + fres * 1.1) * uAmount;
+    col = uRim * scan * mix(1.0, body, uGlow);
+    alpha = clamp(body, 0.0, 1.0);
+  }
+
+  // The build line is a bright band just under the build height.
+  float edge = (1.0 - smoothstep(0.0, 0.03, uReveal - vH)) * (1.0 - step(0.9999, uReveal));
+  col = mix(col, uBuild, edge);
+  alpha = max(alpha, edge);
+
+  gl_FragColor = vec4(col, alpha);
+  #include &lt;colorspace_fragment&gt;
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>One shader draws all three looks. It leaves out everything above the build height, pulls the shading towards six flat bands and darkens every few rows of pixels for the scanlines. X-ray keeps only the rim light and draws the model see-through.</p>
+
+      <p class="label">Add it to your page</p>
+      <p>The viewer under <a href="#models">Models</a> has the looks already. These steps add them to a three.js scene of your own, starting from the page under <a href="#files">The STL files</a>.</p>
+      <ol class="steps">
+        <li>
+          <p>Copy <code>looks.js</code> next to your page.</p>
+        </li>
+        <li>
+          <p>Add the colours to your stylesheet. <code>looks.js</code> reads them from the page. Set <code>--bg</code> to the colour behind the model.</p>
+          <div class="code"><pre><code>:root {
+  --bg: #050608;
+  --ph-dark: #080401;
+  --ph-lit: #ffa035;
+  --ph-rim: #ffdcae;
+  --ph-hot: #fff4e4;
+  --ph-build: #fff4e4;
+  --ph-line: #d27a22;
+  --ph-wire: #ffdcae;
+  --ph-xray: #ffdcae;
+  --ph-dim: #8a541a;
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Import <code>createLooks</code> at the top of the module script.</p>
+          <div class="code"><pre><code>import { createLooks } from "./looks.js";</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Replace the two lines that make the grey material and add the mesh with these lines. <code>setLook()</code> takes <code>"phosphor"</code>, <code>"wire"</code> or <code>"xray"</code>, and <code>build()</code> grows the model from the bottom.</p>
+          <div class="code"><pre><code>renderer.localClippingEnabled = true;
+const looks = createLooks(scene);
+looks.setColors(function (name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+});
+looks.setModel({ geometry });
+looks.setLook("phosphor");
+looks.build();</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Replace the animation loop with this one, which moves the build and the scanlines on.</p>
+          <div class="code"><pre><code>const timer = new THREE.Timer();
+renderer.setAnimationLoop(function (time) {
+  timer.update(time);
+  controls.update();
+  looks.update(timer.getDelta(), true);
+  renderer.render(scene, camera);
+});</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="doc" aria-labelledby="files">
+      <h2 id="files">The STL files</h2>
+      <p>Use the files on their own to print the models, or to show one of them in a three.js scene of your own.</p>
+      <div class="table">
+        <table>
+          <thead>
+            <tr><th scope="col">File</th><th scope="col">Size, x × y × z</th><th scope="col" class="n">Triangles</th><th scope="col" class="n">File size</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><a href="models/castellan-battle-tank.stl" download>castellan-battle-tank.stl</a></td><td>114.2 × 69.8 × 72.4 mm</td><td class="n">13,976</td><td class="n">682.5 KB</td></tr>
+            <tr><td><a href="models/orbital-descent-pod.stl" download>orbital-descent-pod.stl</a></td><td>89.1 × 85.0 × 84.0 mm</td><td class="n">13,992</td><td class="n">683.3 KB</td></tr>
+            <tr><td><a href="models/basilica-ruin.stl" download>basilica-ruin.stl</a></td><td>122.0 × 40.0 × 112.8 mm</td><td class="n">13,084</td><td class="n">638.9 KB</td></tr>
+            <tr><td><a href="models/siege-barricade-kit.stl" download>siege-barricade-kit.stl</a></td><td>101.4 × 62.1 × 36.5 mm</td><td class="n">11,740</td><td class="n">573.3 KB</td></tr>
+            <tr><td><a href="models/reliquary-shrine.stl" download>reliquary-shrine.stl</a></td><td>60.0 × 61.0 × 95.2 mm</td><td class="n">10,780</td><td class="n">526.4 KB</td></tr>
+            <tr><td><a href="models/oathbreaker-relic-blade.stl" download>oathbreaker-relic-blade.stl</a></td><td>55.9 × 47.7 × 148.3 mm</td><td class="n">8,210</td><td class="n">401.0 KB</td></tr>
+            <tr><td><a href="models/cogitator-terminal.stl" download>cogitator-terminal.stl</a></td><td>70.0 × 56.0 × 85.4 mm</td><td class="n">10,548</td><td class="n">515.1 KB</td></tr>
+            <tr><td><a href="models/void-knight-helm-bust.stl" download>void-knight-helm-bust.stl</a></td><td>49.8 × 43.6 × 76.7 mm</td><td class="n">8,760</td><td class="n">427.8 KB</td></tr>
+            <tr><td><a href="models/servo-skull-drone.stl" download>servo-skull-drone.stl</a></td><td>38.0 × 39.2 × 67.3 mm</td><td class="n">8,044</td><td class="n">392.9 KB</td></tr>
+          </tbody>
+        </table>
       </div>
 
-      <section class="picker" aria-label="Models">
-        <ol class="list">
-          <li data-model="castellan-battle-tank" data-short="Siege-grade heavy armour with a faceted turret and full track runs.">
-            <button type="button" class="pick" aria-pressed="true"><span class="idx">01</span><span class="pick-name">Castellan-Pattern Battle Tank</span><span class="pick-cat">Armour</span></button>
-            <a class="dl" href="models/castellan-battle-tank.stl" download aria-label="STL file, castellan-battle-tank.stl">STL</a>
-          </li>
-          <li data-model="orbital-descent-pod" data-short="Assault lander with armoured petals deployed. A table centrepiece.">
-            <button type="button" class="pick" aria-pressed="false"><span class="idx">02</span><span class="pick-name">Orbital Descent Pod</span><span class="pick-cat">Armour</span></button>
-            <a class="dl" href="models/orbital-descent-pod.stl" download aria-label="STL file, orbital-descent-pod.stl">STL</a>
-          </li>
-          <li data-model="basilica-ruin" data-short="Shattered cathedral wall with a pointed arch and rose windows.">
-            <button type="button" class="pick" aria-pressed="false"><span class="idx">03</span><span class="pick-name">Basilica Ruin — Nave Section</span><span class="pick-cat">Terrain</span></button>
-            <a class="dl" href="models/basilica-ruin.stl" download aria-label="STL file, basilica-ruin.stl">STL</a>
-          </li>
-          <li data-model="siege-barricade-kit" data-short="Tank traps, sandbags, barrels, crates and razor wire.">
-            <button type="button" class="pick" aria-pressed="false"><span class="idx">04</span><span class="pick-name">Siege-Line Barricade Kit</span><span class="pick-cat">Terrain</span></button>
-            <a class="dl" href="models/siege-barricade-kit.stl" download aria-label="STL file, siege-barricade-kit.stl">STL</a>
-          </li>
-          <li data-model="reliquary-shrine" data-short="Arched shrine with a sealed urn, banner and candle clusters.">
-            <button type="button" class="pick" aria-pressed="false"><span class="idx">05</span><span class="pick-name">Reliquary Shrine</span><span class="pick-cat">Terrain</span></button>
-            <a class="dl" href="models/reliquary-shrine.stl" download aria-label="STL file, reliquary-shrine.stl">STL</a>
-          </li>
-          <li data-model="oathbreaker-relic-blade" data-short="Ornate blade driven into a rock plinth, with chains and a wax seal.">
-            <button type="button" class="pick" aria-pressed="false"><span class="idx">06</span><span class="pick-name">Oathbreaker Relic Blade</span><span class="pick-cat">Relics</span></button>
-            <a class="dl" href="models/oathbreaker-relic-blade.stl" download aria-label="STL file, oathbreaker-relic-blade.stl">STL</a>
-          </li>
-          <li data-model="cogitator-terminal" data-short="Gothic data-lectern with keycaps, cabling and a skull finial.">
-            <button type="button" class="pick" aria-pressed="false"><span class="idx">07</span><span class="pick-name">Cogitator Terminal</span><span class="pick-cat">Relics</span></button>
-            <a class="dl" href="models/cogitator-terminal.stl" download aria-label="STL file, cogitator-terminal.stl">STL</a>
-          </li>
-          <li data-model="void-knight-helm-bust" data-short="Armoured helm bust on a turned plinth. Painting showpiece.">
-            <button type="button" class="pick" aria-pressed="false"><span class="idx">08</span><span class="pick-name">Void-Knight Helm Bust</span><span class="pick-cat">Characters</span></button>
-            <a class="dl" href="models/void-knight-helm-bust.stl" download aria-label="STL file, void-knight-helm-bust.stl">STL</a>
-          </li>
-          <li data-model="servo-skull-drone" data-short="Hovering skull drone with a bionic lens and a manipulator arm.">
-            <button type="button" class="pick" aria-pressed="false"><span class="idx">09</span><span class="pick-name">Servo-Skull Drone</span><span class="pick-cat">Characters</span></button>
-            <a class="dl" href="models/servo-skull-drone.stl" download aria-label="STL file, servo-skull-drone.stl">STL</a>
-          </li>
-        </ol>
-      </section>
-    </div>
+      <p class="label">The format</p>
+      <ul>
+        <li>The files are binary STL in millimetres, with Z up.</li>
+        <li>Each model is centred on x and y and rests on z = 0. Its front faces −y.</li>
+        <li>Every triangle carries its face normal.</li>
+        <li>Each file holds the whole model in one piece. It is made of closed parts that overlap where they meet, and no part floats.</li>
+        <li>The models have no split parts, magnet sockets or supports.</li>
+      </ul>
+
+      <p class="label">Print it</p>
+      <ol class="steps">
+        <li><p>Download a file from the table.</p></li>
+        <li><p>Open it in your slicer. It comes in at its real size and stands the right way up.</p></li>
+        <li><p>Add supports in the slicer where your printer needs them.</p></li>
+      </ol>
+
+      <p class="label">Show it on your page</p>
+      <p>The page needs WebGL and a web server, as the viewer does.</p>
+      <ol class="steps">
+        <li>
+          <p>Copy <code>vendor/three/</code> and one file from <code>models/</code>, and add the import map from step 2 under <a href="#models">Models</a> to the head.</p>
+        </li>
+        <li>
+          <p>Add a canvas and this script to the body. The files are Z-up, so the script turns the model to the Y-up of three.js.</p>
+          <div class="code"><pre><code>&lt;canvas id="model"&gt;&lt;/canvas&gt;
+&lt;script type="module"&gt;
+  import * as THREE from "three";
+  import { STLLoader } from "three/addons/loaders/STLLoader.js";
+  import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+  const canvas = document.getElementById("model");
+  const width = canvas.parentElement.clientWidth;
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(width, width * 3 / 4);
+
+  const scene = new THREE.Scene();
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x555555, 2));
+  const camera = new THREE.PerspectiveCamera(30, 4 / 3, 1, 5000);
+  camera.add(new THREE.DirectionalLight(0xffffff, 1.5));
+  scene.add(camera);
+  const controls = new OrbitControls(camera, canvas);
+
+  const geometry = await new STLLoader().loadAsync("models/servo-skull-drone.stl");
+  geometry.rotateX(-Math.PI / 2);
+  geometry.center();
+  geometry.computeBoundingSphere();
+  const material = new THREE.MeshStandardMaterial({ color: 0xb8b4ab, flatShading: true });
+  scene.add(new THREE.Mesh(geometry, material));
+  camera.position.set(0, 0, geometry.boundingSphere.radius * 4);
+
+  renderer.setAnimationLoop(function () {
+    controls.update();
+    renderer.render(scene, camera);
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
+    </section>
   </main>
 
   <footer class="foot">
-    <p>Drawn with three.js r186.</p>
+    <p>The full notes and every option are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/stl-models#readme">README</a>. The code and the models are under the <a href="https://github.com/N041M/cool-stuff-n-assets/blob/main/LICENSE">MIT licence</a>.</p>
   </footer>
+
+  <script>
+    // Copy a code block to the clipboard, as the Read me panel of the demo does.
+    document.querySelectorAll("[data-copy-code]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        const text = button.parentElement.querySelector("code").textContent;
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          button.textContent = "Copied";
+          setTimeout(function () { button.textContent = "Copy"; }, 1500);
+        }, function () {});
+      });
+    });
+
+    // A frame with data-src holds a WebGL scene. It loads when it comes within
+    // one screen of the window. The demo stops drawing by itself when the
+    // frame leaves the screen.
+    (function () {
+      const frames = document.querySelectorAll("iframe[data-src]");
+      function load(frame) { frame.src = frame.getAttribute("data-src"); }
+      if (!("IntersectionObserver" in window)) { frames.forEach(load); return; }
+      const observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          load(entry.target);
+          observer.unobserve(entry.target);
+        });
+      }, { rootMargin: "100% 0px" });
+      frames.forEach(function (frame) { observer.observe(frame); });
+    })();
+  </script>
 </body>
 </html>

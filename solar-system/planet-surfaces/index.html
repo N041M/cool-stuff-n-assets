@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>Planet surfaces</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23050608'/%3E%3Ccircle cx='16' cy='16' r='11' fill='%23f0a14a'/%3E%3C/svg%3E">
+  <link rel="preload" href="fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script>
+    // ?embed shows the picture and its own controls without the bar and the
+    // Read me, for a frame on the documentation page.
+    if (new URLSearchParams(location.search).has("embed")) document.documentElement.setAttribute("data-embed", "");
+  </script>
+  <link rel="stylesheet" href="demo.css">
+  <script defer src="earth-map.js"></script>
+  <script defer src="surfaces.js"></script>
+  <script defer src="demo.js"></script>
+  <link rel="stylesheet" href="../../assets/code.css">
+  <script defer src="../../assets/code.js"></script>
+</head>
+<body>
+  <header class="bar">
+    <a class="back" href="../" aria-label="Solar system">← <span>Solar system</span></a>
+    <h1 class="brand">Planet surfaces</h1>
+    <button type="button" class="btn" data-readme-open aria-controls="readme" aria-expanded="false">Read me</button>
+  </header>
+
+  <main class="stage">
+    <canvas class="sphere" id="sphere" role="img" aria-label="A body's map on a turning sphere"></canvas>
+    <div class="pick">
+      <button type="button" class="btn" id="prev">Previous</button>
+      <p class="name"><span id="name" aria-live="polite">Earth</span><span class="label status" id="status">Preparing</span></p>
+      <button type="button" class="btn" id="next">Next</button>
+    </div>
+  </main>
+
+  <aside class="readme" id="readme" aria-label="Read me" hidden>
+    <div class="readme__head">
+      <span class="label">Read me</span>
+      <button type="button" class="btn" data-readme-close>Close</button>
+    </div>
+    <p>Use it to give a planet, moon or star in your own scene its surface. It makes each body's map in the browser with no image files, and gives you the pixels as RGB bytes to draw on a canvas or to upload as a texture.</p>
+    <p class="label">Add it to your page</p>
+    <ol class="readme__steps">
+      <li>
+        <p>Copy <code>surfaces.js</code> next to your page. For the Earth, copy <code>earth-map.js</code> as well.</p>
+      </li>
+      <li>
+        <p>Load them in the head, the Earth's map first.</p>
+        <div class="readme__code"><pre><code>&lt;script src="earth-map.js"&gt;&lt;/script&gt;
+&lt;script src="surfaces.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Get a body's map at full size. The pixels are RGB bytes in <code>d</code>, row by row from the north pole, with east longitude running from −180° to 180° across.</p>
+        <div class="readme__code"><pre><code>const map = Surfaces.texture("mars");
+Surfaces.refine("mars", Infinity);
+const { w, h, d } = map.levels[0];</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Copy the pixels into a canvas.</p>
+        <div class="readme__code"><pre><code>const canvas = document.createElement("canvas");
+canvas.width = w;
+canvas.height = h;
+const image = new ImageData(w, h);
+for (let i = 0, j = 0; i &lt; d.length; i += 3, j += 4) {
+  image.data[j] = d[i];
+  image.data[j + 1] = d[i + 1];
+  image.data[j + 2] = d[i + 2];
+  image.data[j + 3] = 255;
+}
+canvas.getContext("2d").putImageData(image, 0, 0);</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>In three.js, use the canvas as the texture of a sphere.</p>
+        <div class="readme__code"><pre><code>const texture = new THREE.CanvasTexture(canvas);
+texture.colorSpace = THREE.SRGBColorSpace;
+const mars = new THREE.Mesh(
+  new THREE.SphereGeometry(1, 64, 32),
+  new THREE.MeshStandardMaterial({ map: texture })
+);
+scene.add(mars);</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>In plain WebGL, upload the bytes as they are. A shader then reads the map at <code>u = 0.5 + longitude / 2π</code> and <code>v = 0.5 − latitude / π</code>, in radians.</p>
+        <div class="readme__code"><pre><code>gl.bindTexture(gl.TEXTURE_2D, gl.createTexture());
+gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, w, h, 0, gl.RGB, gl.UNSIGNED_BYTE, d);
+gl.generateMipmap(gl.TEXTURE_2D);</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+    </ol>
+    <p>The <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/solar-system/planet-surfaces#readme">README</a> has the full API, including how to make a large map a slice at a time, the rings and the Earth's clouds.</p>
+  </aside>
+</body>
+</html>

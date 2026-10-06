@@ -194,7 +194,10 @@ export class Backdrop {
 /** The accent and the page background from the active palette. */
 function readColours() {
     const style = getComputedStyle(document.documentElement);
-    return { accent: toLinear(rgb(style.getPropertyValue('--accent'))), bg: rgb(style.getPropertyValue('--bg')) };
+    // The scene's own accent, the glass of the votive candles, comes from
+    // --scene-accent when the page sets it, and from --accent otherwise.
+    const accent = style.getPropertyValue('--scene-accent').trim() || style.getPropertyValue('--accent');
+    return { accent: toLinear(rgb(accent)), bg: rgb(style.getPropertyValue('--bg')) };
 }
 function rgb(hex) {
     const m = hex.trim().match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);

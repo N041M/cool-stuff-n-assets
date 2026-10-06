@@ -1,0 +1,72 @@
+/* Code blocks drawn like a code view on GitHub's dark theme. code.js adds the
+   .codeview class, the header and the line and token spans. */
+.codeview {
+  position: relative;
+  margin: 0.5rem 0 1rem;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  background: #0d1117;
+  color: #e6edf3;
+  overflow: hidden;
+}
+.codeview .codeview__head {
+  display: flex;
+  align-items: center;
+  gap: 1.5ch;
+  min-height: 2.5rem;
+  padding: 0.375rem 0.5rem 0.375rem 1rem;
+  border-bottom: 1px solid #30363d;
+  background: #161b22;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+}
+.codeview .codeview__file { color: #e6edf3; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.codeview .codeview__meta { margin-right: auto; color: #7d8590; white-space: nowrap; }
+.codeview .codeview__head .btn {
+  position: static;
+  height: 1.75rem;
+  padding: 0 1ch;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  background: #21262d;
+  color: #e6edf3;
+  font-size: 0.75rem;
+}
+.codeview .codeview__head .btn:hover,
+.codeview .codeview__head .btn:focus-visible { background: #30363d; border-color: #8b949e; color: #e6edf3; }
+.codeview pre {
+  margin: 0;
+  padding: 0.5rem 0;
+  overflow-x: auto;
+  border: 0;
+  background: none;
+  font-size: 0.75rem;
+  line-height: 1.25rem;
+  white-space: pre;
+  tab-size: 2;
+  counter-reset: line;
+}
+.codeview pre code { display: block; min-width: max-content; padding-right: 1rem; color: #e6edf3; font: inherit; }
+.codeview .line { counter-increment: line; }
+.codeview .line::before {
+  content: counter(line);
+  position: sticky;
+  left: 0;
+  display: inline-block;
+  width: 5ch;
+  margin-right: 2ch;
+  padding-right: 1ch;
+  background: #0d1117;
+  color: #6e7681;
+  text-align: right;
+  user-select: none;
+}
+.codeview .tok-c { color: #8b949e; }
+.codeview .tok-k { color: #ff7b72; }
+.codeview .tok-s { color: #a5d6ff; }
+.codeview .tok-n { color: #79c0ff; }
+.codeview .tok-f { color: #d2a8ff; }
+.codeview .tok-y { color: #ffa657; }
+.codeview .tok-t { color: #7ee787; }
+.codeview .tok-a { color: #79c0ff; }
+.codeview .tok-p { color: #79c0ff; }

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Planet positions</title>
+  <script>
+    // ?embed shows the picture and its own controls without the bar and the
+    // Read me, for a frame on the documentation page.
+    if (new URLSearchParams(location.search).has("embed")) document.documentElement.setAttribute("data-embed", "");
+  </script>
+  <link rel="stylesheet" href="demo.css">
+  <script defer src="ephemeris.js"></script>
+  <script defer src="demo.js"></script>
+  <link rel="stylesheet" href="../../assets/code.css">
+  <script defer src="../../assets/code.js"></script>
+</head>
+<body>
+  <header class="bar">
+    <a class="back" href="../" aria-label="Solar system">← <span>Solar system</span></a>
+    <h1 class="brand">Planet positions</h1>
+    <p class="date" aria-live="polite"><time id="date"></time></p>
+    <button type="button" class="btn" data-readme-open aria-controls="readme" aria-expanded="false">Read me</button>
+    <div class="seg scale" role="group" aria-label="Scale">
+      <button type="button" class="btn" data-scale="inner" aria-pressed="false">Inner planets</button>
+      <button type="button" class="btn" data-scale="all" aria-pressed="true">All planets</button>
+    </div>
+    <div class="seg step" role="group" aria-label="Date">
+      <button type="button" class="btn" data-step="-1">−1 month</button>
+      <button type="button" class="btn" data-step="0">Now</button>
+      <button type="button" class="btn" data-step="1">+1 month</button>
+    </div>
+  </header>
+
+  <canvas id="map" role="img" aria-label="The Sun and the planets on their orbits, seen from the north"></canvas>
+
+  <aside class="readme" id="readme" aria-label="Read me" hidden>
+    <div class="readme__head">
+      <span class="label">Read me</span>
+      <button type="button" class="btn" data-readme-close>Close</button>
+    </div>
+    <p>Use it to place the planets on a date in your own page, for example in a map of the Solar System or a sky chart. It is one script with no dependencies. It gives positions as numbers, and your own code draws them.</p>
+    <p class="label">Add it to your page</p>
+    <ol class="readme__steps">
+      <li>
+        <p>Copy <code>ephemeris.js</code> next to your page.</p>
+      </li>
+      <li>
+        <p>Load it before your own script.</p>
+        <div class="readme__code"><pre><code>&lt;script src="ephemeris.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Ask for a planet's position on a date. This finds how far Mars was from the Earth when it came closest in January 2025.</p>
+        <div class="readme__code"><pre><code>const date = new Date('2025-01-12T00:00:00Z');
+const mars = Ephemeris.planetPosition('mars', date);
+const earth = Ephemeris.planetPosition('earth', date);
+const au = Math.hypot(mars[0] - earth[0], mars[1] - earth[1], mars[2] - earth[2]);
+console.log(au.toFixed(3) + ' AU');   // 0.642 AU</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+    </ol>
+    <p class="label">Units and frame</p>
+    <p>A position is <code>[x, y, z]</code> in astronomical units (AU) from the Sun. One AU is 149,597,870.7 km, which the script holds as <code>Ephemeris.AU_KM</code>.</p>
+    <p>The frame is the ecliptic of J2000. The x axis points toward the March equinox. The y axis lies 90° east of it in the plane of the Earth's orbit, and the z axis points north of that plane. A map seen from the north has x to the right and y up.</p>
+    <p>The planets' keys are in <code>Ephemeris.PLANETS</code>, from <code>'mercury'</code> to <code>'neptune'</code>. The position for <code>'earth'</code> is the centre of mass of the Earth and the Moon.</p>
+    <p>The full notes, options and API are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/solar-system/planet-positions#readme">README</a>.</p>
+  </aside>
+</body>
+</html>

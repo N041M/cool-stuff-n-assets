@@ -4,26 +4,488 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CRT boot</title>
-  <link rel="stylesheet" href="crt.css">
-  <link rel="stylesheet" href="term.css">
-  <link rel="stylesheet" href="demo.css">
-  <script type="module" src="js/main.js"></script>
+  <script>
+    // ?embed hides the bar, for showing the page in a frame.
+    if (new URLSearchParams(location.search).has("embed")) document.documentElement.setAttribute("data-embed", "");
+  </script>
+  <style>
+    /* The documentation page. It has the look of the demo pages and is dark
+       only. */
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-400-latin-ext.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-600-latin.woff2") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-600-latin-ext.woff2") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+
+    :root {
+      --bg: #050608;
+      --ink: #eceae4;
+      --ink-2: #a8a9ae;
+      --ink-3: #7a7c83;
+      --ink-4: #33353b;
+      --accent: #f0a14a;
+      --accent-ink: #1a1107;
+      --font: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --fs: 0.8125rem;
+      --fs-sm: 0.6875rem;
+      --lh: 1.25rem;
+      --bar-h: 2.75rem;
+      --gutter: 2rem;
+      color-scheme: dark;
+    }
+    @media (max-width: 45em) { :root { --gutter: 1rem; --bar-h: 2.5rem; } }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 400 var(--fs) / var(--lh) var(--font); font-variant-ligatures: none; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 3px; }
+    a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+    h1, h2, h3 { margin: 0; font-size: inherit; font-weight: 600; }
+    button { font: inherit; color: inherit; }
+    code { font: inherit; color: var(--ink-2); }
+    ::selection { background: var(--accent); color: var(--accent-ink); }
+    :focus-visible { outline: 1px dashed var(--accent); outline-offset: 3px; }
+
+    /* The status bar: back link, demo name and a link to the full demo. */
+    .bar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 1.75rem; height: var(--bar-h); padding: 0 var(--gutter); border-bottom: 1px solid var(--ink-4); background: linear-gradient(180deg, rgba(5, 6, 8, 0.94), rgba(5, 6, 8, 0.72)); font-size: var(--fs-sm); }
+    .back { color: var(--ink-2); text-decoration: none; white-space: nowrap; }
+    .back:hover { color: var(--ink); }
+    .brand { min-width: 0; margin: 0 auto 0 0; overflow: hidden; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+    @media (max-width: 45em) { .bar { gap: 0.75rem; } .back span { display: none; } }
+    :root[data-embed] .bar { display: none; }
+
+    .btn { display: inline-flex; align-items: center; height: 1.75rem; padding: 0 1ch; border: 1px solid var(--ink-4); border-radius: 0; background: none; color: var(--ink); font: inherit; font-size: var(--fs-sm); text-decoration: none; white-space: nowrap; cursor: pointer; transition: background 0.12s, color 0.12s; }
+    @media (hover: hover) { .btn:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); } }
+    .btn:focus-visible { background: var(--ink); color: var(--bg); }
+
+    .label { color: var(--ink-3); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    main { max-width: 72.5rem; margin: 0 auto; padding: calc(var(--lh) * 3) var(--gutter); }
+    main p, main ul, main ol { max-width: 64ch; margin: 0 0 var(--lh); color: var(--ink-2); }
+    main .steps { max-width: none; }
+    main code { color: var(--ink); }
+    h1 { margin-bottom: var(--lh); font-size: clamp(1.75rem, 5vw, 3rem); line-height: 1.1; font-weight: 600; letter-spacing: -0.01em; }
+    h2 { margin-bottom: calc(var(--lh) * 0.5); font-size: calc(var(--fs) * 1.7); line-height: calc(var(--lh) * 2); font-weight: 600; }
+    .doc { margin-top: calc(var(--lh) * 4); padding-top: calc(var(--lh) * 1.5); border-top: 1px solid var(--ink-4); }
+    h2[id] { scroll-margin-top: calc(var(--bar-h) + var(--lh) * 1.5); }
+    main p.label { margin: calc(var(--lh) * 1.5) 0 calc(var(--lh) * 0.5); color: var(--ink-3); }
+    main ul { padding-left: 3ch; }
+    main ul li::marker { color: var(--ink-3); }
+
+    /* The links to the sections, in a row that wraps on a phone. */
+    .features { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 2.5ch; }
+    .features .label { margin-right: 1ch; }
+
+    /* A live demo in a frame. */
+    .frame { margin: var(--lh) 0; }
+    .frame iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--ink-4); background: var(--bg); }
+    .frame figcaption { margin-top: 0.5rem; font-size: var(--fs-sm); color: var(--ink-3); }
+    .frame--intro iframe { aspect-ratio: 16 / 10; }
+    @media (max-width: 45em) {
+      .frame iframe { aspect-ratio: 4 / 5; }
+      .frame--intro iframe { aspect-ratio: 3 / 4; }
+    }
+
+    /* Numbered steps and code blocks, as in the Read me panel of the demo. */
+    .steps { padding-left: 3ch; }
+    .steps li { margin-bottom: var(--lh); }
+    .steps li::marker { color: var(--accent); }
+    .steps p { margin-bottom: calc(var(--lh) * 0.5); }
+    main .file { margin: var(--lh) 0 0.25rem; color: var(--ink-3); font-size: var(--fs-sm); }
+    .code { position: relative; margin-bottom: var(--lh); }
+    .steps .code { margin-bottom: 0; }
+    .steps .code + .code { margin-top: 0.5rem; }
+    .code pre { margin: 0; padding: 1ch 1.5ch; padding-right: 8ch; overflow-x: auto; border: 1px solid var(--ink-4); background: rgba(127, 127, 127, 0.06); font-size: var(--fs-sm); line-height: 1.5; white-space: pre; }
+    .code pre code { color: var(--ink); }
+    .code .btn { position: absolute; top: 0.5ch; right: 0.5ch; height: 1.5rem; background: var(--bg); }
+    .code .btn:hover, .code .btn:focus-visible { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+    .foot { max-width: 72.5rem; margin: 0 auto; padding: 0 var(--gutter) calc(var(--lh) * 2); color: var(--ink-3); font-size: var(--fs-sm); }
+    .foot p { margin: 0; padding-top: var(--lh); border-top: 1px solid var(--ink-4); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; }
+    }
+  </style>
+  <link rel="stylesheet" href="../assets/code.css">
+  <script defer src="../assets/code.js"></script>
 </head>
 <body>
-  <header class="top">
+  <header class="bar">
     <a class="back" href="../" aria-label="All demos">← <span>All demos</span></a>
-    <h1 class="brand">CRT boot</h1>
-    <div class="ctl" role="group" aria-label="Screen">
-      <button type="button" data-power-on>Power on</button>
-      <button type="button" data-power-off aria-disabled="true">Power off</button>
-      <button type="button" data-degauss>Degauss</button>
-    </div>
+    <p class="brand">CRT boot</p>
+    <a class="btn" href="demo.html">Open full screen</a>
   </header>
 
-  <main class="stage">
-    <div class="slot">
-      <div class="crt" data-state="standby"></div>
-    </div>
+  <main>
+    <header>
+      <h1>CRT boot</h1>
+      <p>Use it as an intro or a splash screen on a retro or terminal-themed site. The glass waits in a box on your page and grows to fill the window when it powers on.</p>
+      <figure class="frame frame--intro">
+        <iframe src="demo.html?embed" title="CRT boot" data-live></iframe>
+        <figcaption><a href="demo.html">Open on its own</a></figcaption>
+      </figure>
+      <nav class="features" aria-label="Features">
+        <span class="label">Features</span>
+        <a href="#on">Power on</a>
+        <a href="#off">Power off</a>
+        <a href="#degauss">Degauss</a>
+      </nav>
+    </header>
+
+    <section class="doc" aria-labelledby="on">
+      <h2 id="on">Power on</h2>
+      <p>Use the power-on to open a page or a terminal the way an old screen starts up. Visitors can skip it with Skip on the glass or the Escape key.</p>
+      <figure class="frame">
+        <iframe src="demo.html?feature=on&amp;embed" title="Power on" loading="lazy" data-live></iframe>
+        <figcaption><a href="demo.html?feature=on">Open on its own</a></figcaption>
+      </figure>
+
+      <p class="label">What you need</p>
+      <ul>
+        <li><code>crt.css</code> and <code>term.css</code>.</li>
+        <li>The <code>js/</code> folder, which holds <code>screen.js</code>, <code>boot.js</code>, <code>sequence.js</code> and <code>dom.js</code>.</li>
+        <li>The <code>fonts/</code> folder, from which <code>crt.css</code> loads VT323.</li>
+        <li>A box on your page with a size and <code>position: relative</code>, for the glass to wait in.</li>
+        <li>A current browser. The animations use the Web Animations API and CSS <code>clip-path</code>.</li>
+        <li>A web server. The page does not run when it is opened straight from the file.</li>
+      </ul>
+
+      <p class="label">The code</p>
+      <p class="file">js/screen.js</p>
+      <div class="code"><pre><code>/**
+ * Returns a setter that clips the full glass between the slot `from` (0) and
+ * the whole glass (1). The glass must already have is-full. The setter does
+ * nothing once a newer run has started.
+ */
+clipper(from, gen) {
+  const full = this.glass.getBoundingClientRect();
+  const f = {
+    t: from.top - full.top,
+    r: full.right - from.right,
+    b: full.bottom - from.bottom,
+    l: from.left - full.left,
+  };
+  return (k) =&gt; {
+    if (gen !== this.gen) return;
+    if (k &gt;= 1) {
+      this.glass.style.clipPath = '';
+      return;
+    }
+    const i = (v) =&gt; (v * (1 - k)).toFixed(2);
+    this.glass.style.clipPath = `inset(${i(f.t)}px ${i(f.r)}px ${i(f.b)}px ${i(f.l)}px round ${i(this.radius)}px)`;
+  };
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>When it powers on, the glass is fixed to the window. <code>clipper()</code> clips it to the rectangle of its slot at 0 and to the whole window at 1, and a tween runs it from 0 to 1 over 720&nbsp;ms.</p>
+      <p class="file">js/boot.js</p>
+      <div class="code"><pre><code>/**
+ * Tube power-on. The dark glass lifts for a moment as the tube charges. A
+ * point in the centre draws out into a line, and the line opens into an
+ * overexposed raster that settles to black. The promise resolves once the
+ * raster fills the glass, so the first log lines appear under the glare.
+ */
+export async function powerOn(glass, seq) {
+  const beam = qs(glass, '.crt__beam');
+  const raster = qs(glass, '.crt__raster');
+  const noise = qs(glass, '.crt__noise');
+
+  void play(raster, [{ opacity: 0, transform: 'none' }, { opacity: 0.05, transform: 'none', offset: 0.3 }, { opacity: 0, transform: 'none' }], { duration: 170 }, seq);
+  await seq.wait(200);
+
+  await play(
+    beam,
+    [
+      { transform: 'scale(0, 1)', opacity: 0 },
+      { transform: 'scale(0.012, 1)', opacity: 1, offset: 0.16 },
+      { transform: 'scale(1, 1)', opacity: 1 },
+    ],
+    { duration: 230, easing: 'cubic-bezier(.45,.05,.2,1)', fill: 'forwards' },
+    seq,
+  );
+  await seq.wait(70);
+
+  void play(beam, [{ transform: 'scale(1, 1)', opacity: 1 }, { transform: 'scale(1, 8)', opacity: 0 }], { duration: 150, easing: 'ease-out', fill: 'forwards' }, seq);
+  void play(noise, [{ opacity: 0.55 }, { opacity: 0.2, offset: 0.35 }, { opacity: 0.05 }], { duration: 1400, easing: 'ease-out' }, seq);
+  void play(
+    raster,
+    [
+      { transform: 'scaleY(0.006)', opacity: 1 },
+      { transform: 'scaleY(1)', opacity: 0.92, offset: 0.26 },
+      { transform: 'scaleY(1)', opacity: 0.32, offset: 0.55 },
+      { transform: 'scaleY(1)', opacity: 0 },
+    ],
+    { duration: 900, easing: 'cubic-bezier(.2,.7,.2,1)' },
+    seq,
+  );
+  await seq.wait(230);
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>The beam and the raster are layers on the glass, animated with the Web Animations API. <code>play()</code> wraps each animation so that Skip can end it at once.</p>
+
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Copy <code>crt.css</code>, <code>term.css</code> and the folders <code>fonts/</code> and <code>js/</code> next to your page.</p>
+        </li>
+        <li>
+          <p>In the head, give the slot the glass waits in a size and <code>position: relative</code>, and load the two stylesheets.</p>
+          <div class="code"><pre><code>&lt;style&gt;
+  .crt-slot { position: relative; width: 640px; max-width: 100%; aspect-ratio: 7 / 5; }
+&lt;/style&gt;
+&lt;link rel="stylesheet" href="crt.css"&gt;
+&lt;link rel="stylesheet" href="term.css"&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Put the glass in its slot in the body. If your page has a fixed bar at the top, set <code>--crt-top</code> to its height so the full glass starts below it.</p>
+          <div class="code"><pre><code>&lt;div class="crt-slot"&gt;
+  &lt;div class="crt"&gt;&lt;/div&gt;
+&lt;/div&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Build the screen in a module script and power it on.</p>
+          <div class="code"><pre><code>&lt;script type="module"&gt;
+  import { Screen } from './js/screen.js';
+
+  const screen = new Screen(document.querySelector('.crt'));
+  screen.powerOn();
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="doc" aria-labelledby="off">
+      <h2 id="off">Power off</h2>
+      <p>Use the power-off when a visitor closes the terminal, to put the glass back in its place on the page.</p>
+      <figure class="frame">
+        <iframe src="demo.html?feature=off&amp;embed" title="Power off" loading="lazy" data-live></iframe>
+        <figcaption><a href="demo.html?feature=off">Open on its own</a></figcaption>
+      </figure>
+
+      <p class="label">What you need</p>
+      <ul>
+        <li>Everything listed under <a href="#on">Power on</a>.</li>
+        <li>A button that stays in view while the glass fills the window, such as one in a bar fixed to the top.</li>
+      </ul>
+
+      <p class="label">The code</p>
+      <p class="file">js/boot.js</p>
+      <div class="code"><pre><code>/**
+ * Tube power-off. The picture flares once and folds into a bright line across
+ * the middle, and the line pulls in to a point. The promise resolves when the
+ * point has formed. afterglow() fades it.
+ */
+export async function powerOff(glass, seq) {
+  const tube = qs(glass, '.crt__tube');
+  const beam = qs(glass, '.crt__beam');
+  const dot = qs(glass, '.crt__dot');
+  const raster = qs(glass, '.crt__raster');
+
+  void play(raster, [{ opacity: 0, transform: 'none' }, { opacity: 0.28, transform: 'none', offset: 0.3 }, { opacity: 0, transform: 'none' }], { duration: 180 }, seq);
+  await play(
+    tube,
+    [
+      { transform: 'scaleY(1)', filter: 'brightness(1)', opacity: 1 },
+      { transform: 'scaleY(0.012)', filter: 'brightness(3.5)', opacity: 1 },
+    ],
+    { duration: 180, easing: 'cubic-bezier(.75,0,.9,.35)', fill: 'forwards' },
+    seq,
+  );
+  void play(tube, [{ opacity: 1 }, { opacity: 0 }], { duration: 50, fill: 'forwards' }, seq);
+  await play(
+    beam,
+    [
+      { transform: 'scale(1, 1.4)', opacity: 1 },
+      { transform: 'scale(0.01, 1)', opacity: 1 },
+    ],
+    { duration: 210, easing: 'cubic-bezier(.65,0,.85,.45)', fill: 'forwards' },
+    seq,
+  );
+  void play(beam, [{ opacity: 1 }, { opacity: 0 }], { duration: 60, fill: 'forwards' }, seq);
+  dot.getAnimations().forEach((a) =&gt; a.cancel());
+  void play(dot, [{ opacity: 1, transform: 'scale(1)' }], { duration: 1, fill: 'forwards' }, seq);
+}
+
+/** The point left by powerOff() fades the way phosphor does, quickly at first and then slowly. */
+export function afterglow(glass, ms, seq) {
+  return play(
+    qs(glass, '.crt__dot'),
+    [
+      { opacity: 1, transform: 'scale(1)' },
+      { opacity: 0.45, transform: 'scale(0.75)', offset: 0.25 },
+      { opacity: 0, transform: 'scale(0.4)' },
+    ],
+    { duration: ms, easing: 'ease-out', fill: 'forwards' },
+    seq,
+  );
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p><code>powerOff()</code> squashes the tube to a bright line and pulls the line in to a point. <code>afterglow()</code> then fades the point while <code>screen.js</code> shrinks the glass back into its slot with the same clip as the power-on.</p>
+
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Follow the steps under <a href="#on">Power on</a>.</p>
+        </li>
+        <li>
+          <p>Put the button in a bar fixed to the top of the window, and set <code>--crt-top</code> to the bar's height. The full glass then starts below the bar, so the button stays in view. Add the style to the head and the bar to the start of the body.</p>
+          <div class="code"><pre><code>&lt;style&gt;
+  :root { --crt-top: 48px; }
+  body { padding-top: 48px; }
+  .crt-bar { position: fixed; top: 0; right: 0; left: 0; height: 48px; }
+&lt;/style&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+          <div class="code"><pre><code>&lt;div class="crt-bar"&gt;
+  &lt;button type="button" data-crt-off&gt;Power off&lt;/button&gt;
+&lt;/div&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>In the module script, after the line that builds the screen, call <code>screen.powerOff()</code> when the button is pressed.</p>
+          <div class="code"><pre><code>document.querySelector('[data-crt-off]').addEventListener('click', () =&gt; screen.powerOff());</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="doc" aria-labelledby="degauss">
+      <h2 id="degauss">Degauss</h2>
+      <p>Use the degauss to bend the picture for a moment, as a reaction to a click or to new content on the screen.</p>
+      <figure class="frame">
+        <iframe src="demo.html?feature=degauss&amp;embed" title="Degauss" loading="lazy" data-live></iframe>
+        <figcaption><a href="demo.html?feature=degauss">Open on its own</a></figcaption>
+      </figure>
+
+      <p class="label">What you need</p>
+      <ul>
+        <li>Everything listed under <a href="#on">Power on</a>, and a button that stays in view as under <a href="#off">Power off</a>.</li>
+        <li>A browser that applies an SVG filter to HTML with CSS <code>filter: url()</code>.</li>
+        <li>A screen that is on. The degauss does nothing while the screen powers off, or when the system asks for reduced motion.</li>
+      </ul>
+
+      <p class="label">The code</p>
+      <p class="file">js/boot.js</p>
+      <div class="code"><pre><code>/** The filter that degauss() drives. It goes in the glass markup once. */
+export const WAVE_FILTER = `
+&lt;svg class="crt__defs" width="0" height="0" aria-hidden="true" focusable="false"&gt;
+  &lt;filter id="crt-wave" x="-5%" y="0" width="110%" height="100%" color-interpolation-filters="sRGB"&gt;
+    &lt;feTurbulence type="fractalNoise" baseFrequency="0.0015 0.01" numOctaves="2" seed="7" result="noise"/&gt;
+    &lt;feColorMatrix in="noise" type="matrix" values="1 0 0 0 0  0 0 0 0 0.5  0 0 0 0 0  0 0 0 0 1" result="bands"/&gt;
+    &lt;feDisplacementMap in="SourceGraphic" in2="bands" scale="0" xChannelSelector="R" yChannelSelector="G"/&gt;
+  &lt;/filter&gt;
+&lt;/svg&gt;`;
+
+/**
+ * Degauss. For a moment the picture bends sideways in rolling horizontal
+ * waves and blooms, then it settles flat. Each row shifts by its own amount,
+ * so nothing moves as a block.
+ */
+export function degauss(glass, target, seq, ms = 950) {
+  const map = glass.querySelector('#crt-wave feDisplacementMap');
+  const noise = glass.querySelector('#crt-wave feTurbulence');
+  if (!map || !noise || seq.skipped) return Promise.resolve();
+  return new Promise((resolve) =&gt; {
+    const start = performance.now();
+    let raf = 0;
+    let over = false;
+    const done = () =&gt; {
+      if (over) return;
+      over = true;
+      cancelAnimationFrame(raf);
+      target.style.filter = '';
+      map.setAttribute('scale', '0');
+      resolve();
+    };
+    seq.onSkip(done);
+    const step = (now) =&gt; {
+      const t = (now - start) / ms;
+      if (t &gt;= 1 || seq.skipped) {
+        done();
+        return;
+      }
+      const k = Math.pow(1 - t, 2);
+      // The bands drift and stretch as the field collapses.
+      const fy = 0.009 + 0.005 * Math.sin(now / 95);
+      noise.setAttribute('baseFrequency', `0.0012 ${fy.toFixed(4)}`);
+      map.setAttribute('scale', (64 * k * (0.75 + 0.25 * Math.sin(now / 41))).toFixed(1));
+      target.style.filter = `url(#crt-wave) brightness(${(1 + 1.4 * k).toFixed(2)})`;
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+  });
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>The filter feeds <code>feTurbulence</code> into <code>feDisplacementMap</code>. Each frame changes the frequency of the turbulence and the scale of the displacement and adds a brightness bloom, and all of it falls away over 0.95&nbsp;s.</p>
+
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Follow the steps under <a href="#off">Power off</a>, which give the page a bar for the buttons.</p>
+        </li>
+        <li>
+          <p>Add a Degauss button to the bar.</p>
+          <div class="code"><pre><code>&lt;button type="button" data-crt-degauss&gt;Degauss&lt;/button&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>In the module script, call <code>screen.degauss()</code> when the button is pressed.</p>
+          <div class="code"><pre><code>document.querySelector('[data-crt-degauss]').addEventListener('click', () =&gt; screen.degauss());</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
+    </section>
   </main>
+
+  <footer class="foot">
+    <p>The full API and every option are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/crt-boot#readme">README</a>. The code is under the <a href="https://github.com/N041M/cool-stuff-n-assets/blob/main/LICENSE">MIT licence</a>.</p>
+  </footer>
+
+  <script>
+    // Copy a code block to the clipboard, as the Read me panel of the demo does.
+    document.querySelectorAll("[data-copy-code]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        const text = button.parentElement.querySelector("code").textContent;
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          button.textContent = "Copied";
+          setTimeout(function () { button.textContent = "Copy"; }, 1500);
+        }, function () {});
+      });
+    });
+
+    // A frame with data-src holds a WebGL scene. It loads when it comes within
+    // one screen of the window. The demo stops drawing by itself when the
+    // frame leaves the screen.
+    (function () {
+      const frames = document.querySelectorAll("iframe[data-src]");
+      function load(frame) { frame.src = frame.getAttribute("data-src"); }
+      if (!("IntersectionObserver" in window)) { frames.forEach(load); return; }
+      const observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting) return;
+          load(entry.target);
+          observer.unobserve(entry.target);
+        });
+      }, { rootMargin: "100% 0px" });
+      frames.forEach(function (frame) { observer.observe(frame); });
+    })();
+  </script>
 </body>
 </html>

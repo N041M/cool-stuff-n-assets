@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Text scramble</title>
+  <script>
+    // ?embed shows only the demo, for a frame on the documentation page.
+    if (new URLSearchParams(location.search).has("embed")) document.documentElement.setAttribute("data-embed", "");
+  </script>
+  <link rel="preload" href="fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="demo.css">
+  <script defer src="scramble.js"></script>
+  <script defer src="demo.js"></script>
+  <link rel="stylesheet" href="../assets/code.css">
+  <script defer src="../assets/code.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="bar">
+      <a class="back" href="./" aria-label="Text scramble">← <span>Text scramble</span></a>
+      <h1 class="brand" data-scramble>Text scramble</h1>
+      <nav class="nav" aria-label="Sections">
+        <a href="#click" data-scramble><span lang="en">Click</span><span lang="cs">Klik</span></a>
+        <a href="#scroll" data-scramble><span lang="en">Scroll</span><span lang="cs">Posun</span></a>
+        <a href="#stream" data-scramble><span lang="en">Stream</span><span lang="cs">Proud</span></a>
+      </nav>
+      <button type="button" class="btn" data-readme-open aria-controls="readme" aria-expanded="false">Read me</button>
+      <div class="seg" role="group" aria-label="Language">
+        <button type="button" class="btn" data-set-lang="en" aria-pressed="true">EN</button>
+        <button type="button" class="btn" data-set-lang="cs" aria-pressed="false">CZ</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" data-feature="load">
+      <div class="sample" data-scramble>
+        <p class="label"><span lang="en">Selected work, 2021–2026</span><span lang="cs">Vybrané práce, 2021–2026</span></p>
+        <p class="title"><span lang="en">Interfaces, type and small tools</span><span lang="cs">Rozhraní, písmo a malé nástroje</span></p>
+        <p class="label"><span lang="en">Prague, available from May</span><span lang="cs">Praha, volno od května</span></p>
+      </div>
+      <button type="button" class="btn" data-replay=".top [data-scramble], .hero [data-scramble]"><span lang="en">Run again</span><span lang="cs">Znovu</span></button>
+    </section>
+
+    <section class="section" id="click" data-feature="click copy">
+      <div class="panel">
+        <p class="labels" data-scramble data-feature="click"><span>2026</span><span lang="en">Click any label</span><span lang="cs">Klikněte na popisek</span><span>v1.0</span><span lang="en">Prague</span><span lang="cs">Praha</span></p>
+        <p class="mail-row" data-feature="copy">
+          <span class="mail">hello@example.com</span>
+          <button type="button" class="btn copy" data-copy="hello@example.com" data-scramble>
+            <span class="copy-idle"><span lang="en">Copy</span><span lang="cs">Kopírovat</span></span>
+            <span class="copy-done"><span lang="en">Copied</span><span lang="cs">Zkopírováno</span></span>
+          </button>
+        </p>
+      </div>
+    </section>
+
+    <section class="section" id="scroll" data-feature="scroll">
+      <div class="panel">
+        <ol class="timeline">
+          <li><span class="date" data-scramble><span lang="en">Feb – Jul 2025</span><span lang="cs">únor – červenec 2025</span></span><span lang="en">Design lead, Studio North</span><span lang="cs">Vedoucí designu, Studio North</span></li>
+          <li><span class="date" data-scramble><span lang="en">2022 – present</span><span lang="cs">2022 – dosud</span></span><span lang="en">Freelance interfaces and type</span><span lang="cs">Rozhraní a písmo na volné noze</span></li>
+          <li><span class="date" data-scramble><span>2021, 2022 (2×), 2024</span></span><span lang="en">Talks at Typo Prague</span><span lang="cs">Přednášky na Typo Praha</span></li>
+        </ol>
+        <button type="button" class="btn" data-replay="#scroll .timeline [data-scramble]"><span lang="en">Run again</span><span lang="cs">Znovu</span></button>
+      </div>
+    </section>
+
+    <section class="section" id="stream" data-feature="reveal">
+      <div class="panel">
+        <p class="reply" data-reply aria-live="polite"></p>
+        <button type="button" class="btn" data-stream data-scramble><span lang="en">Reveal</span><span lang="cs">Odhalit</span></button>
+      </div>
+    </section>
+  </main>
+
+  <aside class="readme" id="readme" aria-label="Read me" hidden>
+    <div class="readme__head">
+      <span class="label">Read me</span>
+      <button type="button" class="btn" data-readme-close>Close</button>
+    </div>
+    <p>Use it to make a heading, a name or a row of labels resolve out of random characters when the page loads or when someone clicks them. It works on the text already in your markup and puts it back exactly when a run ends. It needs no CSS and no font.</p>
+    <p class="label">Add it to your page</p>
+    <ol class="readme__steps">
+      <li>
+        <p>Copy <code>scramble.js</code> next to your page.</p>
+      </li>
+      <li>
+        <p>Load it at the end of the head.</p>
+        <div class="readme__code"><pre><code>&lt;script defer src="scramble.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Mark the text to scramble with <code>data-scramble</code>. An element is scrambled when it holds only text, so a marked container scrambles each such element inside it.</p>
+        <div class="readme__code"><pre><code>&lt;h1 data-scramble&gt;Your name&lt;/h1&gt;
+&lt;nav data-scramble&gt;&lt;a href="#work"&gt;Work&lt;/a&gt; &lt;a href="#contact"&gt;Contact&lt;/a&gt;&lt;/nav&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Run it when the page loads and on every click, at the end of the body.</p>
+        <div class="readme__code"><pre><code>&lt;script&gt;
+  addEventListener("DOMContentLoaded", function () {
+    Scramble.installClickHandler();
+    Scramble.all("[data-scramble]");
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+    </ol>
+    <p>The full notes, options and API are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/scramble#readme">README</a>.</p>
+  </aside>
+</body>
+</html>

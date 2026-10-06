@@ -1,6 +1,8 @@
-// Runs the scramble on the bar when the page loads, on any label when it is
-// clicked, on the dates the first time they scroll into view, on everything on
-// screen after a language switch, and on the copy button's "Copied".
+// Runs the scramble on the bar and the text under it when the page loads, on
+// any label when it is clicked, on the dates the first time they scroll into
+// view, on everything on screen after a language switch, and on the copy
+// button's "Copied". With ?feature=<id> in the address the page shows only
+// that feature.
 (function () {
   "use strict";
 
@@ -10,9 +12,35 @@
   const reply = document.querySelector("[data-reply]");
 
   const REPLY = {
-    en: "Each character resolves at its own time, in a sweep from left to right, until the whole line holds still.",
-    cs: "Každý znak se rozluští ve svůj čas, postupně zleva doprava, až celý řádek stojí.",
+    en: "Thanks for writing. I am away until Monday and will answer your message then.",
+    cs: "Díky za zprávu. Do pondělí jsem pryč a odpovím vám potom.",
   };
+
+  // Single-feature views. Each id names the sections and rows marked with it
+  // in data-feature, and every other one is hidden along with the section
+  // links and the language switch. The bar links back to the full page.
+  const FEATURES = {
+    load: "On load",
+    click: "On click",
+    scroll: "On first sight",
+    reveal: "Streamed reveal",
+    copy: "Copy button",
+  };
+  const asked = new URLSearchParams(location.search).get("feature");
+  const view = Object.prototype.hasOwnProperty.call(FEATURES, asked) ? asked : null;
+  if (view) {
+    root.setAttribute("data-view", view);
+    document.querySelectorAll("[data-feature]").forEach(function (el) {
+      el.hidden = el.getAttribute("data-feature").split(" ").indexOf(view) < 0;
+    });
+    const brand = document.querySelector(".brand");
+    const link = document.createElement("a");
+    link.href = "demo.html";
+    link.textContent = brand.textContent;
+    const name = document.createElement("span");
+    name.textContent = FEATURES[view];
+    brand.replaceChildren(link, " / ", name);
+  }
 
   // Language. Both languages are in the markup and only the active one is
   // shown, so a switch scrambles whatever is on screen.
@@ -60,8 +88,8 @@
     button.addEventListener("click", reveal);
   });
 
-  // Run again repeats what the page load did for the bar, or what scrolling
-  // into view did for the dates.
+  // Run again repeats what the page load did for the bar and the text under
+  // it, or what scrolling into view did for the dates.
   document.querySelectorAll("[data-replay]").forEach(function (button) {
     button.addEventListener("click", function () {
       Scramble.all(button.getAttribute("data-replay"));
@@ -69,7 +97,7 @@
   });
 
   Scramble.installClickHandler();
-  Scramble.all(".top [data-scramble], .hero [data-scramble]");
+  if (!view || view === "load") Scramble.all(".top [data-scramble], .hero [data-scramble]");
 
   // Labels further down resolve the first time they scroll into view.
   const seen = new WeakSet();
@@ -84,4 +112,32 @@
     });
   }, { threshold: 0.6 });
   document.querySelectorAll("main section:not(.hero) [data-scramble]").forEach(function (el) { io.observe(el); });
+})();
+
+// The Read me panel: open and close it, close it with Escape, and copy a
+// code block to the clipboard. It holds no [data-scramble], so clicks in it
+// never scramble anything.
+(function () {
+  const panel = document.getElementById("readme");
+  const open = document.querySelector("[data-readme-open]");
+  if (!panel || !open) return;
+  function show(on) {
+    panel.hidden = !on;
+    open.setAttribute("aria-expanded", String(on));
+    if (on) panel.querySelector("[data-readme-close]").focus();
+    else open.focus();
+  }
+  open.addEventListener("click", function () { show(panel.hidden); });
+  panel.querySelector("[data-readme-close]").addEventListener("click", function () { show(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !panel.hidden) show(false); });
+  panel.querySelectorAll("[data-copy-code]").forEach(function (button) {
+    button.addEventListener("click", function () {
+      const text = button.parentElement.querySelector("code").textContent;
+      if (!navigator.clipboard) return;
+      navigator.clipboard.writeText(text).then(function () {
+        button.textContent = "Copied";
+        setTimeout(function () { button.textContent = "Copy"; }, 1500);
+      }, function () {});
+    });
+  });
 })();

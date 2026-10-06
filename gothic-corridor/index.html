@@ -4,67 +4,381 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Gothic corridor</title>
-  <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
   <style>
+    /* IBM Plex Mono in two weights. Each weight comes as a Latin file and a
+       Latin Extended file, which holds the Czech letters. A browser downloads
+       the second file only when the page uses one of its characters. */
     @font-face {
-      font-family: "Departure Mono";
-      src: url("fonts/DepartureMono-Regular.woff2") format("woff2");
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
       font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
     }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-400-latin-ext.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-600-latin.woff2") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-600-latin-ext.woff2") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+
     :root {
-      --bg: #090606;
-      --accent: #ff5a43;
-      --ink: #e8e1d9;
+      --bg: #050608;
+      --ink: #eceae4;
+      --ink-2: #a8a9ae;
+      --ink-3: #7a7c83;
+      --ink-4: #33353b;
+      --accent: #f0a14a;
+      --accent-ink: #1a1107;
+      --font: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --fs: 0.8125rem;
+      --fs-sm: 0.6875rem;
+      --lh: 1.25rem;
+      --bar-h: 2.75rem;
+      --gutter: 2rem;
       color-scheme: dark;
     }
+    @media (max-width: 45em) { :root { --gutter: 1rem; --bar-h: 2.5rem; } }
+
     *, *::before, *::after { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); }
-    body { font: 400 15px/1.5 "Departure Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
-    /* preview.webp is one frame of this scene. It shows while the scene
-       bakes, and it stays when the scene cannot run on the device. */
-    .scene {
-      position: fixed;
-      inset: 0;
-      overflow: hidden;
-      background: var(--bg) url("preview.webp") 70% 50% / cover no-repeat;
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 400 var(--fs) / var(--lh) var(--font); font-variant-ligatures: none; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 3px; }
+    a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+    h1, h2, h3 { margin: 0; font-size: inherit; font-weight: 600; }
+    button { font: inherit; color: inherit; }
+    code { font: inherit; color: var(--ink-2); }
+    ::selection { background: var(--accent); color: var(--accent-ink); }
+    :focus-visible { outline: 1px dashed var(--accent); outline-offset: 3px; }
+
+    /* The status bar: back link, demo name, then the full screen link. */
+    .bar { display: flex; align-items: center; gap: 1.75rem; height: var(--bar-h); padding: 0 var(--gutter); border-bottom: 1px solid var(--ink-4); background: linear-gradient(180deg, rgba(5, 6, 8, 0.94), rgba(5, 6, 8, 0.72)); font-size: var(--fs-sm); }
+    .back { color: var(--ink-2); text-decoration: none; white-space: nowrap; }
+    .back:hover { color: var(--ink); }
+    .brand { margin: 0 auto 0 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    @media (max-width: 45em) { .bar { gap: 0.75rem; } .back span { display: none; } }
+
+    /* Buttons: text in a thin box that inverts on hover. */
+    .btn { height: 1.75rem; padding: 0 1ch; border: 1px solid var(--ink-4); border-radius: 0; background: none; color: var(--ink); font: inherit; font-size: var(--fs-sm); white-space: nowrap; cursor: pointer; transition: background 0.12s, color 0.12s; }
+    @media (hover: hover) { .btn:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); } }
+    .btn:focus-visible { background: var(--ink); color: var(--bg); }
+    a.btn { display: inline-flex; align-items: center; text-decoration: none; }
+
+    .label { color: var(--ink-3); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* The page: an intro with the full demo, then one section per feature. */
+    main { max-width: 72.5rem; margin: 0 auto; padding: calc(var(--lh) * 3) var(--gutter); color: var(--ink-2); }
+    main p { max-width: 64ch; margin: 0 0 var(--lh); }
+    main code { color: var(--ink); }
+    h1 { margin-bottom: var(--lh); color: var(--ink); font-size: clamp(1.75rem, 5vw, 3rem); line-height: 1.1; font-weight: 600; letter-spacing: -0.01em; }
+    h2 { color: var(--ink); font-size: calc(var(--fs) * 1.7); line-height: calc(var(--lh) * 2); font-weight: 600; }
+    .lede { color: var(--ink); }
+    .features { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 2.5ch; }
+    .features .label { margin-right: 0.5ch; }
+    section { margin-top: calc(var(--lh) * 4); padding-top: var(--lh); border-top: 1px solid var(--ink-4); }
+    section > .label { margin: calc(var(--lh) * 1.5) 0 calc(var(--lh) * 0.5); }
+    .needs { max-width: 64ch; margin: 0 0 var(--lh); padding-left: 3ch; }
+    .needs li::marker { color: var(--ink-3); }
+    .steps { margin: 0 0 var(--lh); padding-left: 3ch; }
+    .steps li { margin-bottom: var(--lh); }
+    .steps li::marker { color: var(--accent); }
+    .steps p { margin-bottom: calc(var(--lh) * 0.5); }
+    .steps .code + .code { margin-top: calc(var(--lh) * 0.5); }
+    .file { margin: 0 0 0.25rem; color: var(--ink-3); font-size: var(--fs-sm); }
+    .code + p, .code + .file { margin-top: var(--lh); }
+
+    /* Live demos in frames. */
+    .frame { margin: var(--lh) 0; }
+    .frame iframe, .frame img { display: block; width: 100%; border: 1px solid var(--ink-4); background: var(--bg); }
+    .frame iframe { aspect-ratio: 16 / 9; color-scheme: normal; }
+    .frame img { height: auto; }
+    .frame figcaption { margin-top: 0.5rem; font-size: var(--fs-sm); color: var(--ink-3); }
+    .frame--intro iframe { aspect-ratio: 16 / 10; }
+    .frame--short iframe { aspect-ratio: 5 / 2; }
+    @media (max-width: 45em) { .frame iframe, .frame--intro iframe, .frame--short iframe { aspect-ratio: 4 / 5; } }
+
+    /* Code blocks with a Copy button, as in the demo's Read me. */
+    .code { position: relative; }
+    .code pre { margin: 0; padding: 1ch 1.5ch; padding-right: 8ch; overflow-x: auto; border: 1px solid var(--ink-4); background: rgba(127, 127, 127, 0.06); color: var(--ink); font-size: var(--fs-sm); line-height: 1.5; white-space: pre; }
+    .code code { color: inherit; }
+    .code .btn { position: absolute; top: 0.5ch; right: 0.5ch; height: 1.5rem; background: var(--bg); }
+    .code .btn:hover, .code .btn:focus-visible { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+    footer { max-width: 72.5rem; margin: 0 auto; padding: 0 var(--gutter) calc(var(--lh) * 2); }
+    footer p { margin: 0; padding-top: var(--lh); border-top: 1px solid var(--ink-4); color: var(--ink-3); font-size: var(--fs-sm); }
+    footer a { color: var(--ink-2); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; }
     }
-    .backdrop__canvas {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0;
-      transition: opacity 0.9s ease;
-    }
-    .scene.is-ready .backdrop__canvas { opacity: 1; }
-    .back {
-      position: fixed;
-      top: 16px;
-      left: 16px;
-      padding: 8px 12px;
-      background: rgb(9 6 6 / 0.72);
-      color: var(--ink);
-      text-decoration: none;
-    }
-    .back:hover { color: var(--accent); }
-    .still-note {
-      display: none;
-      position: fixed;
-      right: 16px;
-      bottom: 16px;
-      margin: 0;
-      padding: 4px 10px;
-      background: rgb(9 6 6 / 0.72);
-      font-size: 13px;
-    }
-    .scene.is-still ~ .still-note { display: block; }
   </style>
-  <script type="module" src="js/main.js"></script>
+  <link rel="stylesheet" href="../assets/code.css">
+  <script defer src="../assets/code.js"></script>
 </head>
 <body>
-  <div class="scene" aria-hidden="true"></div>
-  <a class="back" href="../">← All demos</a>
-  <p class="still-note">Still image</p>
+  <header class="bar">
+    <a class="back" href="../" aria-label="All demos">← <span>All demos</span></a>
+    <span class="brand">Gothic corridor</span>
+    <a class="btn" href="demo.html">Open full screen</a>
+  </header>
+
+  <main>
+    <header class="intro">
+      <h1>Gothic corridor</h1>
+      <p class="lede">Use it as a full-window backdrop behind a title or a landing page. It draws live in WebGL2, and a still image takes its place while it loads and on devices that cannot run it.</p>
+      <figure class="frame frame--intro">
+        <iframe data-src="demo.html?embed" title="Gothic corridor" data-live></iframe>
+        <figcaption><a href="demo.html">Open on its own</a></figcaption>
+      </figure>
+      <nav class="features" aria-label="Features">
+      <span class="label">Features</span>
+      <a href="#scene">Scene</a>
+      <a href="#still">Still image</a>
+      <a href="#page">Behind a page</a>
+      </nav>
+    </header>
+
+    <section id="scene" aria-labelledby="scene-title">
+      <h2 id="scene-title">Scene</h2>
+      <p class="lede">Use the scene where a page needs a moving backdrop. It fills the element it is given and stops drawing while that element is off screen or the tab is hidden.</p>
+      <p class="label">What you need</p>
+      <ul class="needs">
+        <li>The <code>js/</code> and <code>shaders/</code> folders, 104 KB together.</li>
+        <li><code>preview.webp</code>, the still image, 49 KB.</li>
+        <li>WebGL2 with half-float render targets (<code>EXT_color_buffer_float</code> or <code>EXT_color_buffer_half_float</code>).</li>
+        <li>A web server, because the shaders are fetched.</li>
+      </ul>
+      <p class="label">The code</p>
+      <p class="file">js/main.js</p>
+      <div class="code"><pre><code>import { Backdrop } from './backdrop.js';
+const SHADERS = [
+    'common.glsl',
+    'hall.glsl',
+    'servitor.glsl',
+    'bake.frag',
+    'quad.vert',
+    'volume.frag',
+    'motion.glsl',
+    'smoke.glsl',
+    'air.frag',
+    'censer.glsl',
+    'frame.frag',
+    'sprite.vert',
+    'sprite.frag',
+    'bloom.frag',
+    'grade.glsl',
+    'final.frag',
+];
+const scene = document.querySelector('.scene');
+try {
+    const files = Object.fromEntries(await Promise.all(SHADERS.map(async (name) =&gt; {
+        const res = await fetch(`shaders/${name}`);
+        if (!res.ok)
+            throw new Error(`${name}: HTTP ${res.status}`);
+        return [name, await res.text()];
+    })));
+    new Backdrop(scene, files).start();
+}
+catch (err) {
+    console.warn('[backdrop]', err);
+    scene.classList.add('is-still');
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p><code>main.js</code> fetches the sixteen shader files and hands them to <code>Backdrop</code>, which bakes the hall once and then draws about 30 frames a second into a canvas inside <code>.scene</code>. When a shader fails to load, the scene gets the <code>is-still</code> class and the still image stays.</p>
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Copy the <code>js/</code> and <code>shaders/</code> folders and <code>preview.webp</code> next to your page.</p>
+        </li>
+        <li>
+          <p>Add the scene as the first element in the body.</p>
+          <div class="code"><pre><code>&lt;div class="scene" aria-hidden="true"&gt;&lt;/div&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Add its CSS.</p>
+          <div class="code"><pre><code>:root { --bg: #050608; --scene-accent: #ff5a43; }
+body { margin: 0; background: var(--bg); }
+.scene {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg) url("preview.webp") 70% 50% / cover no-repeat;
+}
+.backdrop__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.scene.is-ready .backdrop__canvas { opacity: 1; }
+main { position: relative; }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Load the script in the head.</p>
+          <div class="code"><pre><code>&lt;script type="module" src="js/main.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Open the page from a web server, for example <code>python3 -m http.server</code> in its folder.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="still" aria-labelledby="still-title">
+      <h2 id="still-title">Still image</h2>
+      <p class="lede">Use the still image so the backdrop is never empty. It shows while the scene loads, and it stays on devices without WebGL2 and on GPUs too slow for the scene.</p>
+      <figure class="frame">
+        <iframe src="demo.html?still&amp;embed" loading="lazy" title="Still image" data-live></iframe>
+        <figcaption><a href="demo.html?still">Open on its own</a></figcaption>
+      </figure>
+      <p class="label">What you need</p>
+      <ul class="needs">
+        <li><code>preview.webp</code>, 49 KB.</li>
+      </ul>
+      <p class="label">The code</p>
+      <p class="file">demo.html</p>
+      <div class="code"><pre><code>/* preview.webp is one frame of this scene. It shows while the scene
+   bakes, and it stays when the scene cannot run on the device. */
+.scene {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg) url("preview.webp") 70% 50% / cover no-repeat;
+}
+.backdrop__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+.scene.is-ready .backdrop__canvas { opacity: 1; }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p class="file">js/backdrop.js</p>
+      <div class="code"><pre><code>}
+/** Stop trying and leave the still image under the canvas showing. */
+giveUp(err) {
+    console.warn('[backdrop]', err);
+    this.host.classList.remove('is-ready');
+    this.host.classList.add('is-still');
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>The image is the background of <code>.scene</code>, and the canvas fades in over it once the first frame is drawn. When the scene gives up, it removes <code>is-ready</code>, adds <code>is-still</code> and writes the reason to the console.</p>
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>To label the still image, add a note after the scene.</p>
+          <div class="code"><pre><code>&lt;p class="still-note"&gt;Still image&lt;/p&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Show the note only when the scene has given up.</p>
+          <div class="code"><pre><code>.still-note {
+  display: none;
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  margin: 0;
+}
+.scene.is-still ~ .still-note { display: block; }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>If you change <code>--scene-accent</code>, replace <code>preview.webp</code> with a screenshot of your version so that the still image matches the scene.</p>
+        </li>
+      </ol>
+    </section>
+
+    <section id="page" aria-labelledby="page-title">
+      <h2 id="page-title">Behind a page</h2>
+      <p class="lede">Put your title or landing page over the scene and give the scene your page's colours.</p>
+      <p class="label">The code</p>
+      <p class="file">js/backdrop.js</p>
+      <div class="code"><pre><code>/** The accent and the page background from the active palette. */
+function readColours() {
+    const style = getComputedStyle(document.documentElement);
+    // The scene's own accent, the glass of the votive candles, comes from
+    // --scene-accent when the page sets it, and from --accent otherwise.
+    const accent = style.getPropertyValue('--scene-accent').trim() || style.getPropertyValue('--accent');
+    return { accent: toLinear(rgb(accent)), bg: rgb(style.getPropertyValue('--bg')) };
+}
+function rgb(hex) {
+    const m = hex.trim().match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+    if (!m)
+        return [0, 0, 0];
+    return [parseInt(m[1], 16) / 255, parseInt(m[2], 16) / 255, parseInt(m[3], 16) / 255];
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>The scene reads <code>--bg</code> and <code>--scene-accent</code> from the page once, when it starts, and uses <code>--accent</code> when <code>--scene-accent</code> is not set. A colour written in any form other than <code>#rrggbb</code> comes out black.</p>
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Set the colours on <code>:root</code>. <code>--bg</code> is the background and <code>--scene-accent</code> is the glass of the candles.</p>
+          <div class="code"><pre><code>:root { --bg: #050608; --scene-accent: #ff5a43; }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Put your content after the scene and give it <code>position: relative</code>, so that it paints above the fixed scene.</p>
+          <div class="code"><pre><code>&lt;div class="scene" aria-hidden="true"&gt;&lt;/div&gt;
+&lt;main&gt;
+  &lt;h1&gt;Your title&lt;/h1&gt;
+&lt;/main&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+          <div class="code"><pre><code>main { position: relative; }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
+    </section>
+  </main>
+
+  <footer>
+    <p>The full API and every option are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/gothic-corridor#readme">README</a>. The code is under the <a href="https://github.com/N041M/cool-stuff-n-assets/blob/main/LICENSE">MIT licence</a>.</p>
+  </footer>
+
+  <script>
+    // Copy a code block to the clipboard.
+    document.querySelectorAll("[data-copy-code]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        const text = button.parentElement.querySelector("code").textContent;
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          button.textContent = "Copied";
+          setTimeout(function () { button.textContent = "Copy"; }, 1500);
+        }, function () {});
+      });
+    });
+
+    // WebGL frames load once they come within one screen of the viewport.
+    // The scene stops drawing on its own while its frame is off screen.
+    (function () {
+      const frames = document.querySelectorAll("iframe[data-src]");
+      if (!frames.length || !("IntersectionObserver" in window)) {
+        frames.forEach(function (f) { f.src = f.getAttribute("data-src"); });
+        return;
+      }
+      const io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          io.unobserve(e.target);
+          e.target.src = e.target.getAttribute("data-src");
+        });
+      }, { rootMargin: "100% 0px" });
+      frames.forEach(function (f) { io.observe(f); });
+    })();
+  </script>
 </body>
 </html>

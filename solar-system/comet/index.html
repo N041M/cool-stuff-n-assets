@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Comet</title>
+  <script>
+    // ?embed shows the picture and its own controls without the bar and the
+    // Read me, for a frame on the documentation page.
+    if (new URLSearchParams(location.search).has("embed")) document.documentElement.setAttribute("data-embed", "");
+  </script>
+  <link rel="stylesheet" href="demo.css">
+  <script defer src="../glyph-renderer/glyph-renderer.js"></script>
+  <script defer src="comet.js"></script>
+  <script defer src="comet-glyphs.js"></script>
+  <script defer src="demo.js"></script>
+  <link rel="stylesheet" href="../../assets/code.css">
+  <script defer src="../../assets/code.js"></script>
+</head>
+<body>
+  <header class="bar">
+    <a class="back" href="../" aria-label="Solar system">← <span>Solar system</span></a>
+    <h1 class="brand">Comet</h1>
+    <p class="date" aria-live="polite"><time id="date"></time></p>
+    <button type="button" class="btn" data-readme-open aria-controls="readme" aria-expanded="false">Read me</button>
+    <div class="seg" role="group" aria-label="Date">
+      <button type="button" class="btn" data-go="1986" aria-pressed="true">1986</button>
+      <button type="button" class="btn" data-go="now" aria-pressed="false">Now</button>
+      <button type="button" class="btn" data-go="2061" aria-pressed="false">2061</button>
+    </div>
+  </header>
+
+  <canvas id="sky" role="img" aria-label="Halley's Comet seen from the north of the Solar System"></canvas>
+  <span class="tag" id="sun-tag" aria-hidden="true" hidden>Sun</span>
+  <span class="tag" id="comet-tag" aria-hidden="true" hidden>Halley's Comet</span>
+
+  <aside class="readme" id="readme" aria-label="Read me" hidden>
+    <div class="readme__head">
+      <span class="label">Read me</span>
+      <button type="button" class="btn" data-readme-close>Close</button>
+    </div>
+    <p>Use it to show Halley's Comet, or another comet on an orbit you give it, in a page about the sky or the Solar System. The core works out where the comet is on a date and gives its tails as points for your own drawing. The glyph layer draws the comet in text characters on a canvas.</p>
+    <p class="label">The core alone</p>
+    <ol class="readme__steps">
+      <li>
+        <p>Copy <code>comet.js</code> next to your page.</p>
+      </li>
+      <li>
+        <p>Add a canvas, load the script and draw the tails for a date. This draws the dust in yellow and the ion tail in blue, seen from the north of the Solar System at 1,000 pixels to an AU.</p>
+        <div class="readme__code"><pre><code>&lt;canvas id="tails" width="600" height="600" style="background: #000"&gt;&lt;/canvas&gt;
+&lt;script src="comet.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const jd = Date.UTC(1986, 2, 10) / 864e5 + 2440587.5;   // 10 March 1986
+  const pos = Comet.position(Comet.HALLEY, jd);           // [x, y, z] in AU
+  const comet = Comet.at(Comet.HALLEY, jd, pos);
+  const dust = Comet.dust(comet, { N: [0, 0, 1], Q: [1, 0, 0], E: [0, 1, 0] });
+  const ion = Comet.ion(comet);
+  const g = document.getElementById('tails').getContext('2d');
+  g.fillStyle = '#ffd';
+  for (let i = 0; i &lt; dust.n; i++) {
+    if (dust.w[i] &gt; 0) g.fillRect(180 + dust.pos[i * 3] * 1000, 120 - dust.pos[i * 3 + 1] * 1000, 1, 1);
+  }
+  g.fillStyle = '#8bf';
+  for (let i = 0; i &lt; ion.n; i++) {
+    g.fillRect(180 + ion.pos[i * 3] * 1000, 120 - ion.pos[i * 3 + 1] * 1000, 1, 1);
+  }
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+    </ol>
+    <p class="label">The glyph look</p>
+    <ol class="readme__steps">
+      <li>
+        <p>Copy <code>comet.js</code> and <code>comet-glyphs.js</code> from this folder, and <code>glyph-renderer.js</code> from <code>../glyph-renderer/</code>, next to your page.</p>
+      </li>
+      <li>
+        <p>Give the page a dark background with no margin.</p>
+        <div class="readme__code"><pre><code>body { margin: 0; background: #050608; }
+#sky { display: block; }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Add a canvas, load the three scripts and draw the comet. This puts the nucleus near the top left of the window, with a tenth of an AU to the window's height.</p>
+        <div class="readme__code"><pre><code>&lt;canvas id="sky"&gt;&lt;/canvas&gt;
+&lt;script src="glyph-renderer.js"&gt;&lt;/script&gt;
+&lt;script src="comet.js"&gt;&lt;/script&gt;
+&lt;script src="comet-glyphs.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const g = GlyphRenderer.create(document.getElementById('sky'));
+  g.resize(innerWidth, innerHeight, devicePixelRatio, 10);
+  const jd = Date.UTC(1986, 1, 9) / 864e5 + 2440587.5;    // 9 February 1986
+  const pos = Comet.position(Comet.HALLEY, jd);
+  g.clear();
+  Comet.draw(g, {
+    elements: Comet.HALLEY, jd: jd, pos: pos,
+    x: g.W * 0.3, y: g.H * 0.25, scale: g.H * 10,
+    frame: { N: [0, 0, 1], Q: [1, 0, 0], E: [0, 1, 0] }
+  });
+  g.compose();
+  g.present();
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+    </ol>
+    <p>The full notes, options and API are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/solar-system/comet#readme">README</a>.</p>
+  </aside>
+</body>
+</html>

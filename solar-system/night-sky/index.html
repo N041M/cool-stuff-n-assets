@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Night sky</title>
+  <link rel="preload" href="fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script>
+    // ?embed shows the picture and its own controls without the bar and the
+    // Read me, for a frame on the documentation page.
+    if (new URLSearchParams(location.search).has("embed")) document.documentElement.setAttribute("data-embed", "");
+  </script>
+  <link rel="stylesheet" href="demo.css">
+  <script defer src="../glyph-renderer/glyph-renderer.js"></script>
+  <script defer src="night-sky.js"></script>
+  <script defer src="night-sky-glyphs.js"></script>
+  <script defer src="demo.js"></script>
+  <link rel="stylesheet" href="../../assets/code.css">
+  <script defer src="../../assets/code.js"></script>
+</head>
+<body>
+  <canvas id="sky" aria-hidden="true"></canvas>
+
+  <header class="bar">
+    <a class="back" href="../" aria-label="Solar system">← <span>Solar system</span></a>
+    <h1 class="brand">Night sky</h1>
+    <button type="button" class="btn" data-readme-open aria-controls="readme" aria-expanded="false">Read me</button>
+  </header>
+
+  <aside class="readme" id="readme" aria-label="Read me" hidden>
+    <div class="readme__head">
+      <span class="label">Read me</span>
+      <button type="button" class="btn" data-readme-close>Close</button>
+    </div>
+    <p>Use it as a starry background behind your page. It draws in text characters on a canvas fixed under your content, where the stars twinkle and the sky drifts slowly past. When the system asks for reduced motion, it draws one still sky.</p>
+    <p class="label">Add it to your page</p>
+    <ol class="readme__steps">
+      <li>
+        <p>Copy <code>night-sky.js</code>, <code>night-sky-glyphs.js</code> and <code>glyph-renderer.js</code> from the <code>glyph-renderer</code> folder next to your page.</p>
+      </li>
+      <li>
+        <p>Load them at the end of the head.</p>
+        <div class="readme__code"><pre><code>&lt;script defer src="glyph-renderer.js"&gt;&lt;/script&gt;
+&lt;script defer src="night-sky.js"&gt;&lt;/script&gt;
+&lt;script defer src="night-sky-glyphs.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Put the canvas first in the body.</p>
+        <div class="readme__code"><pre><code>&lt;canvas id="sky" aria-hidden="true"&gt;&lt;/canvas&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Fix the canvas behind the page.</p>
+        <div class="readme__code"><pre><code>body { margin: 0; background: #050608; }
+#sky { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+main { position: relative; z-index: 1; }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Start the sky at the end of the body.</p>
+        <div class="readme__code"><pre><code>&lt;script&gt;
+  addEventListener('DOMContentLoaded', () =&gt; {
+    const g = GlyphRenderer.create(document.getElementById('sky'));
+    const sky = NightSky.layer(g);
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let lon = 4.7, laidAt = 0;
+    // look along the ecliptic at longitude lon and draw the sky
+    function draw() {
+      const c = Math.cos(lon), s = Math.sin(lon);
+      g.view.B = [-c, -s, 0]; g.view.R = [s, -c, 0]; g.view.U = [0, 0, 1];
+      sky.place();
+      g.clear();
+      NightSky.drawGalaxies(g, 1);
+      g.compose(sky);
+      g.present();
+    }
+    function size() { g.resize(innerWidth, innerHeight, devicePixelRatio, 10); draw(); }
+    addEventListener('resize', size);
+    sky.still = still;
+    size();
+    if (still) return;
+    requestAnimationFrame(function frame(ms) {
+      sky.time = ms / 1000;
+      // one turn in 15 minutes, laid out again 4 times a second
+      if (ms - laidAt &gt; 250) { laidAt = ms; lon = 4.7 + ms / 1000 * 0.007; draw(); }
+      else { g.update(sky, true); g.present(); }
+      requestAnimationFrame(frame);
+    });
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+    </ol>
+    <p class="label">Draw the stars your own way</p>
+    <p><code>night-sky.js</code> on its own gives the stars and galaxies as data and needs nothing else. Each star has a direction, a glyph, a colour and a brightness. This plots the whole sky on a map.</p>
+    <div class="readme__code"><pre><code>&lt;canvas id="map" width="720" height="360" style="background:#000"&gt;&lt;/canvas&gt;
+&lt;script src="night-sky.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const m = document.getElementById('map').getContext('2d');
+  for (const s of NightSky.stars()) {
+    const lon = Math.atan2(s.d[1], s.d[0]), lat = Math.asin(s.d[2]);
+    const [r, g, b] = NightSky.TINTS[s.tint];
+    m.fillStyle = `rgba(${r}, ${g}, ${b}, ${s.a})`;
+    m.fillText(s.glyph, (1 - lon / Math.PI) * 360, (0.5 - lat / Math.PI) * 360);
+  }
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+    <p>The full notes and API are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/solar-system/night-sky#readme">README</a>.</p>
+  </aside>
+</body>
+</html>

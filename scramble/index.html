@@ -4,64 +4,508 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Text scramble</title>
-  <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="demo.css">
-  <script defer src="scramble.js"></script>
-  <script defer src="demo.js"></script>
+  <link rel="preload" href="fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    /* IBM Plex Mono in two weights. Each weight comes as a Latin file and a
+       Latin Extended file, which holds the Czech letters. A browser downloads
+       the second file only when the page uses one of its characters. */
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-400-latin-ext.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-600-latin.woff2") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-600-latin-ext.woff2") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+
+    :root {
+      --bg: #050608;
+      --ink: #eceae4;
+      --ink-2: #a8a9ae;
+      --ink-3: #7a7c83;
+      --ink-4: #33353b;
+      --accent: #f0a14a;
+      --accent-ink: #1a1107;
+      --font: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --fs: 0.8125rem;
+      --fs-sm: 0.6875rem;
+      --lh: 1.25rem;
+      --bar-h: 2.75rem;
+      --gutter: 2rem;
+      color-scheme: dark;
+    }
+    @media (max-width: 45em) { :root { --gutter: 1rem; --bar-h: 2.5rem; } }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 400 var(--fs) / var(--lh) var(--font); font-variant-ligatures: none; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 3px; }
+    a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+    h1, h2, h3 { margin: 0; font-size: inherit; font-weight: 600; }
+    button { font: inherit; color: inherit; }
+    code { font: inherit; color: var(--ink-2); }
+    ::selection { background: var(--accent); color: var(--accent-ink); }
+    :focus-visible { outline: 1px dashed var(--accent); outline-offset: 3px; }
+
+    /* The status bar: back link, demo name, then the full screen link. */
+    .bar { display: flex; align-items: center; gap: 1.75rem; height: var(--bar-h); padding: 0 var(--gutter); border-bottom: 1px solid var(--ink-4); background: linear-gradient(180deg, rgba(5, 6, 8, 0.94), rgba(5, 6, 8, 0.72)); font-size: var(--fs-sm); }
+    .back { color: var(--ink-2); text-decoration: none; white-space: nowrap; }
+    .back:hover { color: var(--ink); }
+    .brand { margin: 0 auto 0 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    @media (max-width: 45em) { .bar { gap: 0.75rem; } .back span { display: none; } }
+
+    /* Buttons: text in a thin box that inverts on hover. */
+    .btn { height: 1.75rem; padding: 0 1ch; border: 1px solid var(--ink-4); border-radius: 0; background: none; color: var(--ink); font: inherit; font-size: var(--fs-sm); white-space: nowrap; cursor: pointer; transition: background 0.12s, color 0.12s; }
+    @media (hover: hover) { .btn:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); } }
+    .btn:focus-visible { background: var(--ink); color: var(--bg); }
+    a.btn { display: inline-flex; align-items: center; text-decoration: none; }
+
+    .label { color: var(--ink-3); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* The page: an intro with the full demo, then one section per feature. */
+    main { max-width: 72.5rem; margin: 0 auto; padding: calc(var(--lh) * 3) var(--gutter); color: var(--ink-2); }
+    main p { max-width: 64ch; margin: 0 0 var(--lh); }
+    main code { color: var(--ink); }
+    h1 { margin-bottom: var(--lh); color: var(--ink); font-size: clamp(1.75rem, 5vw, 3rem); line-height: 1.1; font-weight: 600; letter-spacing: -0.01em; }
+    h2 { color: var(--ink); font-size: calc(var(--fs) * 1.7); line-height: calc(var(--lh) * 2); font-weight: 600; }
+    .lede { color: var(--ink); }
+    .features { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 2.5ch; }
+    .features .label { margin-right: 0.5ch; }
+    section { margin-top: calc(var(--lh) * 4); padding-top: var(--lh); border-top: 1px solid var(--ink-4); }
+    section > .label { margin: calc(var(--lh) * 1.5) 0 calc(var(--lh) * 0.5); }
+    .needs { max-width: 64ch; margin: 0 0 var(--lh); padding-left: 3ch; }
+    .needs li::marker { color: var(--ink-3); }
+    .steps { margin: 0 0 var(--lh); padding-left: 3ch; }
+    .steps li { margin-bottom: var(--lh); }
+    .steps li::marker { color: var(--accent); }
+    .steps p { margin-bottom: calc(var(--lh) * 0.5); }
+    .steps .code + .code { margin-top: calc(var(--lh) * 0.5); }
+    .file { margin: 0 0 0.25rem; color: var(--ink-3); font-size: var(--fs-sm); }
+    .code + p, .code + .file { margin-top: var(--lh); }
+
+    /* Live demos in frames. */
+    .frame { margin: var(--lh) 0; }
+    .frame iframe, .frame img { display: block; width: 100%; border: 1px solid var(--ink-4); background: var(--bg); }
+    .frame iframe { aspect-ratio: 16 / 9; color-scheme: normal; }
+    .frame img { height: auto; }
+    .frame figcaption { margin-top: 0.5rem; font-size: var(--fs-sm); color: var(--ink-3); }
+    .frame--intro iframe { aspect-ratio: 16 / 10; }
+    .frame--short iframe { aspect-ratio: 5 / 2; }
+    @media (max-width: 45em) { .frame iframe, .frame--intro iframe, .frame--short iframe { aspect-ratio: 4 / 5; } }
+
+    /* Code blocks with a Copy button, as in the demo's Read me. */
+    .code { position: relative; }
+    .code pre { margin: 0; padding: 1ch 1.5ch; padding-right: 8ch; overflow-x: auto; border: 1px solid var(--ink-4); background: rgba(127, 127, 127, 0.06); color: var(--ink); font-size: var(--fs-sm); line-height: 1.5; white-space: pre; }
+    .code code { color: inherit; }
+    .code .btn { position: absolute; top: 0.5ch; right: 0.5ch; height: 1.5rem; background: var(--bg); }
+    .code .btn:hover, .code .btn:focus-visible { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+    footer { max-width: 72.5rem; margin: 0 auto; padding: 0 var(--gutter) calc(var(--lh) * 2); }
+    footer p { margin: 0; padding-top: var(--lh); border-top: 1px solid var(--ink-4); color: var(--ink-3); font-size: var(--fs-sm); }
+    footer a { color: var(--ink-2); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; }
+    }
+  </style>
+  <link rel="stylesheet" href="../assets/code.css">
+  <script defer src="../assets/code.js"></script>
 </head>
 <body>
-  <header class="top">
-    <div class="bar">
-      <a class="back" href="../" aria-label="All demos">← <span>All demos</span></a>
-      <h1 class="brand" data-scramble>scramble.js</h1>
-      <nav class="nav" aria-label="Sections">
-        <a href="#click" data-scramble><span lang="en">Click</span><span lang="cs">Klik</span></a>
-        <a href="#scroll" data-scramble><span lang="en">Scroll</span><span lang="cs">Posun</span></a>
-        <a href="#stream" data-scramble><span lang="en">Stream</span><span lang="cs">Proud</span></a>
-      </nav>
-      <div class="seg" role="group" aria-label="Language">
-        <button type="button" data-set-lang="en" aria-pressed="true">EN</button>
-        <button type="button" data-set-lang="cs" aria-pressed="false">CZ</button>
-      </div>
-    </div>
+  <header class="bar">
+    <a class="back" href="../" aria-label="All demos">← <span>All demos</span></a>
+    <span class="brand">Text scramble</span>
+    <a class="btn" href="demo.html">Open full screen</a>
   </header>
 
   <main>
-    <section class="hero">
-      <p class="lede"><span class="hl" lang="en">The bar resolved when the page loaded.</span><span class="hl" lang="cs">Lišta se rozluštila při načtení stránky.</span></p>
-      <button type="button" class="btn" data-replay=".top [data-scramble], .hero [data-scramble]"><span lang="en">Run again</span><span lang="cs">Znovu</span></button>
+    <header class="intro">
+      <h1>Text scramble</h1>
+      <p class="lede">Use it to make headings, names and labels resolve out of random characters when the page loads, when they are clicked or when they scroll into view. It works on the text already in your markup and needs no CSS and no font.</p>
+      <figure class="frame frame--intro">
+        <iframe src="demo.html?embed" loading="lazy" title="Text scramble" data-live></iframe>
+        <figcaption><a href="demo.html">Open on its own</a></figcaption>
+      </figure>
+      <nav class="features" aria-label="Features">
+      <span class="label">Features</span>
+      <a href="#load">On load</a>
+      <a href="#click">On click</a>
+      <a href="#scroll">On first sight</a>
+      <a href="#reveal">Streamed reveal</a>
+      <a href="#copy">Copy button</a>
+      </nav>
+    </header>
+
+    <section id="load" aria-labelledby="load-title">
+      <h2 id="load-title">On load</h2>
+      <p class="lede">Use it on a heading or a name at the top of the page, so the text resolves as the page appears.</p>
+      <figure class="frame frame--short">
+        <iframe src="demo.html?feature=load&amp;embed" loading="lazy" title="On load" data-live></iframe>
+        <figcaption><a href="demo.html?feature=load">Open on its own</a></figcaption>
+      </figure>
+      <p class="label">What you need</p>
+      <ul class="needs">
+        <li><code>scramble.js</code>, 7 KB.</li>
+      </ul>
+      <p class="label">The code</p>
+      <p class="file">scramble.js</p>
+      <div class="code"><pre><code>const pool = POOLS[(Math.random() * POOLS.length) | 0];
+const n = orig.length;
+const total = SPREAD_BASE_MS + Math.random() * SPREAD_RANGE_MS;
+
+const order = Array.from({ length: n }, function (_, i) { return i; });
+if (Math.random() &lt; REVERSE_CHANCE) order.reverse();
+const resolveAt = new Array(n);
+order.forEach(function (charIndex, k) {
+  resolveAt[charIndex] =
+    (k / Math.max(1, n - 1)) * total * SWEEP_SHARE + Math.random() * total * JITTER_SHARE;
+});
+
+const start = performance.now();
+// If something else rewrites the node mid-run, stop instead of finishing
+// over the new text.
+let written = orig;
+interval = setInterval(function () {
+  if (node.nodeValue !== written) {
+    stop();
+    return;
+  }
+  const elapsed = performance.now() - start;
+  let out = "";
+  let done = true;
+  for (let i = 0; i &lt; n; i++) {
+    const c = orig[i];
+    if (/\s/.test(c)) {
+      out += c;
+      continue;
+    }
+    if (elapsed &gt;= resolveAt[i]) out += c;
+    else {
+      done = false;
+      out += randomFrom(pool);
+    }
+  }
+  node.nodeValue = out;
+  written = out;
+  if (done) {
+    node.nodeValue = orig;
+    stop();
+  }
+}, TICK_MS);</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>Each character gets a time to resolve, spread from left to right across 620 to 800 ms with some jitter. Every 38 ms the characters that have not resolved change to random glyphs from one pool, and at the end the element gets its exact original text back.</p>
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Copy <code>scramble.js</code> next to your page.</p>
+        </li>
+        <li>
+          <p>Load it at the end of the head.</p>
+          <div class="code"><pre><code>&lt;script defer src="scramble.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Mark the text with <code>data-scramble</code>. An element is scrambled when it holds only text, so a marked container scrambles each such element inside it.</p>
+          <div class="code"><pre><code>&lt;h1 data-scramble&gt;Your name&lt;/h1&gt;
+&lt;nav data-scramble&gt;&lt;a href="#work"&gt;Work&lt;/a&gt; &lt;a href="#contact"&gt;Contact&lt;/a&gt;&lt;/nav&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Run it when the page loads, at the end of the body.</p>
+          <div class="code"><pre><code>&lt;script&gt;
+  addEventListener("DOMContentLoaded", function () {
+    Scramble.all("[data-scramble]");
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
     </section>
 
-    <section class="section" id="click">
-      <div class="panel">
-        <p class="labels" data-scramble><span>2026</span><span lang="en">Click any label</span><span lang="cs">Klikněte na popisek</span><span>v1.0</span><span lang="en">Plain JavaScript</span><span lang="cs">Čistý JavaScript</span></p>
-        <p class="mail-row">
-          <span class="mail">hello@example.com</span>
-          <button type="button" class="copy" data-copy="hello@example.com" data-scramble>
-            <span class="copy-idle"><span lang="en">Copy</span><span lang="cs">Kopírovat</span></span>
-            <span class="copy-done"><span lang="en">Copied</span><span lang="cs">Zkopírováno</span></span>
-          </button>
-        </p>
-      </div>
+    <section id="click" aria-labelledby="click-title">
+      <h2 id="click-title">On click</h2>
+      <p class="lede">Use it on labels, tags or links, so they scramble again when someone clicks them.</p>
+      <figure class="frame frame--short">
+        <iframe src="demo.html?feature=click&amp;embed" loading="lazy" title="On click" data-live></iframe>
+        <figcaption><a href="demo.html?feature=click">Open on its own</a></figcaption>
+      </figure>
+      <p class="label">What you need</p>
+      <ul class="needs">
+        <li><code>scramble.js</code>, 7 KB.</li>
+      </ul>
+      <p class="label">The code</p>
+      <p class="file">scramble.js</p>
+      <div class="code"><pre><code>function installClickHandler() {
+  document.addEventListener("click", function (event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+    if (!target.closest("[data-scramble]")) return;
+    if (target.children.length !== 0) return;
+    scrambleElement(target, CLICK_DELAY_MS);
+  });
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>One listener on the document handles every click. It scrambles the clicked element when the element holds only text and sits inside <code>[data-scramble]</code>, and it ignores a second click while a run is still going.</p>
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Copy <code>scramble.js</code> next to your page and load it at the end of the head.</p>
+          <div class="code"><pre><code>&lt;script defer src="scramble.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Mark the labels with <code>data-scramble</code>.</p>
+          <div class="code"><pre><code>&lt;p data-scramble&gt;&lt;span&gt;2026&lt;/span&gt; &lt;span&gt;Prague&lt;/span&gt; &lt;span&gt;v1.0&lt;/span&gt;&lt;/p&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Install the click handler at the end of the body.</p>
+          <div class="code"><pre><code>&lt;script&gt;
+  addEventListener("DOMContentLoaded", function () {
+    Scramble.installClickHandler();
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
     </section>
 
-    <section class="section" id="scroll">
-      <div class="panel">
-        <ol class="timeline">
-          <li><span class="date" data-scramble><span lang="en">Feb – Jul 2025</span><span lang="cs">únor – červenec 2025</span></span><span lang="en">Each label resolves the first time it scrolls into view.</span><span lang="cs">Každý popisek se rozluští, když poprvé přijede na obrazovku.</span></li>
-          <li><span class="date" data-scramble><span lang="en">2022 – present</span><span lang="cs">2022 – dosud</span></span><span lang="en">Labels in one block start 40 ms apart.</span><span lang="cs">Popisky v jednom bloku začínají 40 ms po sobě.</span></li>
-          <li><span class="date" data-scramble><span>2021, 2022 (2×), 2024</span></span><span lang="en">Spaces never scramble, so the shape of each word holds still.</span><span lang="cs">Mezery se nemíchají, takže tvar slov zůstává.</span></li>
-        </ol>
-        <button type="button" class="btn" data-replay="#scroll .timeline [data-scramble]"><span lang="en">Run again</span><span lang="cs">Znovu</span></button>
-      </div>
+    <section id="scroll" aria-labelledby="scroll-title">
+      <h2 id="scroll-title">On first sight</h2>
+      <p class="lede">Use it on dates, figures or captions further down a long page, so they resolve when the reader reaches them.</p>
+      <figure class="frame frame--short">
+        <iframe src="demo.html?feature=scroll&amp;embed" loading="lazy" title="On first sight" data-live></iframe>
+        <figcaption><a href="demo.html?feature=scroll">Open on its own</a></figcaption>
+      </figure>
+      <p class="label">What you need</p>
+      <ul class="needs">
+        <li><code>scramble.js</code>, 7 KB.</li>
+      </ul>
+      <p class="label">The code</p>
+      <p class="file">demo.js</p>
+      <div class="code"><pre><code>// Labels further down resolve the first time they scroll into view.
+const seen = new WeakSet();
+const io = new IntersectionObserver(function (entries) {
+  entries.forEach(function (e) {
+    if (!e.isIntersecting || seen.has(e.target)) return;
+    seen.add(e.target);
+    io.unobserve(e.target);
+    Scramble.leaves(e.target).forEach(function (el, i) {
+      if (el.getClientRects().length) Scramble.element(el, (i % 5) * 40);
+    });
+  });
+}, { threshold: 0.6 });
+document.querySelectorAll("main section:not(.hero) [data-scramble]").forEach(function (el) { io.observe(el); });</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>An <code>IntersectionObserver</code> watches each marked element. The first time 60% of one is on screen, every element inside it that holds only text scrambles, 40 ms after the one before and starting over every five.</p>
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Copy <code>scramble.js</code> next to your page and load it at the end of the head.</p>
+          <div class="code"><pre><code>&lt;script defer src="scramble.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Mark the text with <code>data-scramble</code>.</p>
+          <div class="code"><pre><code>&lt;p data-scramble&gt;Feb – Jul 2025&lt;/p&gt;
+&lt;p data-scramble&gt;2022 – present&lt;/p&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Watch the marked elements, at the end of the body.</p>
+          <div class="code"><pre><code>&lt;script&gt;
+  addEventListener("DOMContentLoaded", function () {
+    const seen = new WeakSet();
+    const io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (!e.isIntersecting || seen.has(e.target)) return;
+        seen.add(e.target);
+        io.unobserve(e.target);
+        Scramble.leaves(e.target).forEach(function (el, i) {
+          if (el.getClientRects().length) Scramble.element(el, (i % 5) * 40);
+        });
+      });
+    }, { threshold: 0.6 });
+    document.querySelectorAll("[data-scramble]").forEach(function (el) { io.observe(el); });
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
     </section>
 
-    <section class="section" id="stream">
-      <div class="panel">
-        <p class="reply" data-reply aria-live="polite"></p>
-        <button type="button" class="btn" data-stream data-scramble><span lang="en">Reveal</span><span lang="cs">Odhalit</span></button>
-      </div>
+    <section id="reveal" aria-labelledby="reveal-title">
+      <h2 id="reveal-title">Streamed reveal</h2>
+      <p class="lede">Use it to show a message, an answer or a status line as if it were arriving. The text streams in behind a short run of random characters.</p>
+      <figure class="frame frame--short">
+        <iframe src="demo.html?feature=reveal&amp;embed" loading="lazy" title="Streamed reveal" data-live></iframe>
+        <figcaption><a href="demo.html?feature=reveal">Open on its own</a></figcaption>
+      </figure>
+      <p class="label">What you need</p>
+      <ul class="needs">
+        <li><code>scramble.js</code>, 7 KB.</li>
+      </ul>
+      <p class="label">The code</p>
+      <p class="file">scramble.js</p>
+      <div class="code"><pre><code>// Reveal a known string through a trailing scrambled window. `onFrame` gets
+// the text to display, and the last frame is always the exact string.
+function streamReveal(text, onFrame, onDone) {
+  if (!isMotionEnabled()) {
+    onFrame(text);
+    if (onDone) onDone();
+    return function () {};
+  }
+  const pool = POOLS[(Math.random() * POOLS.length) | 0];
+  const n = text.length;
+  const advance = revealAdvanceFor(n);
+  let front = 0;
+  let interval = null;
+  const tick = function () {
+    front = Math.min(front + advance, n + STREAM_WINDOW_CHARS);
+    const resolved = Math.max(0, Math.min(n, front - STREAM_WINDOW_CHARS));
+    let out = text.slice(0, resolved);
+    for (let i = resolved; i &lt; Math.min(n, front); i++) {
+      const c = text[i];
+      out += /\s/.test(c) ? c : randomFrom(pool);
+    }
+    onFrame(out);
+    if (resolved &gt;= n) {
+      clearInterval(interval);
+      interval = null;
+      if (onDone) onDone();
+    }
+  };
+  tick();
+  if (front - STREAM_WINDOW_CHARS &lt; n) interval = setInterval(tick, TICK_MS);
+  return function () {
+    if (interval !== null) clearInterval(interval);
+    interval = null;
+  };
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>Each 38 ms tick moves the front forward by at least five characters, and by more in a long text, so that a long text takes about 1.1 s. The 14 characters behind the front are random glyphs, and everything before them is the real text.</p>
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Copy <code>scramble.js</code> next to your page and load it at the end of the head.</p>
+          <div class="code"><pre><code>&lt;script defer src="scramble.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Add an element for the text and a button that starts it.</p>
+          <div class="code"><pre><code>&lt;p data-reply aria-live="polite"&gt;&lt;/p&gt;
+&lt;button type="button" data-stream&gt;Reveal&lt;/button&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Stream the text in when the button is pressed, at the end of the body.</p>
+          <div class="code"><pre><code>&lt;script&gt;
+  addEventListener("DOMContentLoaded", function () {
+    const reply = document.querySelector("[data-reply]");
+    let cancel = function () {};
+    document.querySelector("[data-stream]").addEventListener("click", function () {
+      cancel();
+      cancel = Scramble.streamReveal("Thanks for writing. I am away until Monday and will answer your message then.", function (text) { reply.textContent = text; });
+    });
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="copy" aria-labelledby="copy-title">
+      <h2 id="copy-title">Copy button</h2>
+      <p class="lede">Use it on a button that copies an email address or a code, so its label scrambles into “Copied”.</p>
+      <figure class="frame frame--short">
+        <iframe src="demo.html?feature=copy&amp;embed" loading="lazy" title="Copy button" data-live></iframe>
+        <figcaption><a href="demo.html?feature=copy">Open on its own</a></figcaption>
+      </figure>
+      <p class="label">What you need</p>
+      <ul class="needs">
+        <li><code>scramble.js</code>, 7 KB.</li>
+        <li>The Clipboard API, which works on HTTPS pages and on <code>localhost</code>.</li>
+      </ul>
+      <p class="label">The code</p>
+      <p class="file">demo.js</p>
+      <div class="code"><pre><code>// The copy button scrambles "Copied" once the address is on the clipboard.
+document.querySelectorAll("[data-copy]").forEach(function (button) {
+  let timer = 0;
+  button.addEventListener("click", function () {
+    const done = function () {
+      button.classList.add("done");
+      Scramble.leaves(button.querySelector(".copy-done")).forEach(function (el) { Scramble.element(el); });
+      clearTimeout(timer);
+      timer = setTimeout(function () { button.classList.remove("done"); }, 2200);
+    };
+    if (navigator.clipboard &amp;&amp; navigator.clipboard.writeText) navigator.clipboard.writeText(button.getAttribute("data-copy")).then(done, function () {});
+  });
+});</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>The button holds both labels, and CSS shows one of them. Once the text is on the clipboard, the button gets the <code>done</code> class and its “Copied” label scrambles, and 2.2 s later the button goes back.</p>
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Copy <code>scramble.js</code> next to your page and load it at the end of the head.</p>
+          <div class="code"><pre><code>&lt;script defer src="scramble.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Add the button with both labels. <code>data-copy</code> holds the text to copy.</p>
+          <div class="code"><pre><code>&lt;button type="button" class="copy" data-copy="hello@example.com"&gt;
+  &lt;span class="copy-idle"&gt;Copy&lt;/span&gt;
+  &lt;span class="copy-done"&gt;Copied&lt;/span&gt;
+&lt;/button&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Show one label at a time.</p>
+          <div class="code"><pre><code>.copy .copy-done, .copy.done .copy-idle { display: none; }
+.copy.done .copy-done { display: inline; }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Copy the text and scramble “Copied” when the button is pressed, at the end of the body.</p>
+          <div class="code"><pre><code>&lt;script&gt;
+  addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("[data-copy]").forEach(function (button) {
+      let timer = 0;
+      button.addEventListener("click", function () {
+        const done = function () {
+          button.classList.add("done");
+          Scramble.leaves(button.querySelector(".copy-done")).forEach(function (el) { Scramble.element(el); });
+          clearTimeout(timer);
+          timer = setTimeout(function () { button.classList.remove("done"); }, 2200);
+        };
+        if (navigator.clipboard &amp;&amp; navigator.clipboard.writeText) navigator.clipboard.writeText(button.getAttribute("data-copy")).then(done, function () {});
+      });
+    });
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
     </section>
   </main>
+
+  <footer>
+    <p>The full API and every option are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/scramble#readme">README</a>. The code is under the <a href="https://github.com/N041M/cool-stuff-n-assets/blob/main/LICENSE">MIT licence</a>.</p>
+  </footer>
+
+  <script>
+    // Copy a code block to the clipboard.
+    document.querySelectorAll("[data-copy-code]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        const text = button.parentElement.querySelector("code").textContent;
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          button.textContent = "Copied";
+          setTimeout(function () { button.textContent = "Copy"; }, 1500);
+        }, function () {});
+      });
+    });
+  </script>
 </body>
 </html>

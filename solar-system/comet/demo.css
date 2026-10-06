@@ -1,0 +1,184 @@
+/* The demo page's styles. The comet is drawn in characters on a canvas that
+   fills the window under the bar. */
+
+/* IBM Plex Mono in two weights. Each weight comes as a Latin file and a Latin
+   Extended file, which holds the Czech letters. A browser downloads the second
+   file only when the page uses one of its characters. */
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-400-latin-ext.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-600-latin.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-600-latin-ext.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  --bg: #050608;
+  --panel: rgba(6, 7, 10, 0.86);
+  --ink: #eceae4;
+  --ink-2: #a8a9ae;
+  --ink-3: #7a7c83;
+  --ink-4: #33353b;
+  --border: #62646b;
+  --accent: #f0a14a;
+  --accent-ink: #1a1107;
+  --fg: var(--ink);
+  --font: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --fs: 0.8125rem;
+  --fs-sm: 0.6875rem;
+  --lh: 1.25rem;
+  --bar-h: 2.75rem;
+  --gutter: 2rem;
+  color-scheme: dark;
+}
+@media (max-width: 45em) { :root { --gutter: 1rem; --bar-h: 2.5rem; } }
+
+*, *::before, *::after { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 var(--fs) / var(--lh) var(--font);
+  font-variant-ligatures: none;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+a { color: inherit; text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 3px; }
+a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+h1, h2, h3 { margin: 0; font-size: inherit; font-weight: 600; }
+button { font: inherit; color: inherit; }
+code { font: inherit; color: var(--ink-2); }
+::selection { background: var(--accent); color: var(--accent-ink); }
+:focus-visible { outline: 1px dashed var(--accent); outline-offset: 3px; }
+
+#sky {
+  position: fixed;
+  top: var(--bar-h);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: block;
+  width: 100%;
+  height: calc(100% - var(--bar-h));
+}
+
+/* The names of the Sun and the comet over the canvas. */
+.tag {
+  position: fixed;
+  z-index: 5;
+  color: var(--ink-2);
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  pointer-events: none;
+  text-shadow: 0 0 8px var(--bg), 0 0 2px var(--bg);
+  transform: translateY(-50%);
+}
+.tag[hidden] { display: none; }
+
+.bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 1.75rem;
+  height: var(--bar-h);
+  padding: 0 var(--gutter);
+  border-bottom: 1px solid var(--ink-4);
+  background: linear-gradient(180deg, rgba(5, 6, 8, 0.94), rgba(5, 6, 8, 0.72));
+  font-size: var(--fs-sm);
+}
+.back { color: var(--ink-2); text-decoration: none; white-space: nowrap; }
+.back:hover { color: var(--ink); }
+.brand { margin: 0 auto 0 0; font-weight: 600; white-space: nowrap; }
+.date { margin: 0; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+@media (max-width: 45em) { .bar { gap: 0.75rem; } .back span { display: none; } }
+
+.btn {
+  height: 1.75rem;
+  padding: 0 1ch;
+  border: 1px solid var(--ink-4);
+  border-radius: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+@media (hover: hover) { .btn:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); } }
+.btn:focus-visible { background: var(--ink); color: var(--bg); }
+.btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.btn[aria-pressed="false"] { color: var(--ink-3); }
+
+.seg { display: inline-flex; gap: 0.5ch; }
+
+.label { color: var(--ink-3); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.06em; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; }
+}
+
+/* The Read me panel. */
+.readme { position: fixed; top: var(--bar-h); right: 0; bottom: 0; z-index: 30; width: min(52ch, 100%); overflow-y: auto; overscroll-behavior: contain; padding: var(--lh) 3ch calc(var(--lh) * 2); border-left: 1px solid var(--ink-4); background: var(--bg); color: var(--ink-2); }
+.readme[hidden] { display: none; }
+.readme__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--lh); }
+.readme p { margin: 0 0 var(--lh); }
+.readme .label { margin: calc(var(--lh) * 1.5) 0 calc(var(--lh) * 0.5); }
+.readme__head .label { margin: 0; }
+.readme__steps { margin: 0 0 var(--lh); padding-left: 3ch; }
+.readme__steps li { margin-bottom: var(--lh); }
+.readme__steps li::marker { color: var(--accent); }
+.readme__steps p { margin-bottom: calc(var(--lh) * 0.5); }
+.readme code { color: var(--ink); }
+.readme__code { position: relative; }
+.readme__code pre { margin: 0; padding: 1ch 1.5ch; padding-right: 8ch; overflow-x: auto; border: 1px solid var(--ink-4); background: rgba(127, 127, 127, 0.06); font-size: var(--fs-sm); line-height: 1.5; white-space: pre; }
+.readme__code .btn { position: absolute; top: 0.5ch; right: 0.5ch; height: 1.5rem; background: var(--bg); }
+/* The Copy button keeps the inverted look of a hovered or focused button. */
+@media (hover: hover) { .readme__code .btn:hover { background: var(--ink); } }
+.readme__code .btn:focus-visible { background: var(--ink); }
+@media (max-width: 45em) { .readme { width: 100%; border-left: 0; } }
+
+/* A phone has no room in the bar for the demo's name next to the controls.
+   The name stays for screen readers. */
+@media (max-width: 30em) {
+  .brand { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .date { margin-left: auto; }
+}
+
+/* ?embed shows the comet, the date and its buttons without the back link,
+   the name and the Read me, for a frame on the documentation page. */
+:root[data-embed] .back,
+:root[data-embed] .brand,
+:root[data-embed] [data-readme-open],
+:root[data-embed] .readme { display: none !important; }
+:root[data-embed] .bar { justify-content: center; border-bottom-color: transparent; background: none; }
+:root[data-embed] .date { margin-left: 0; }

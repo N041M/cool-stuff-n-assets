@@ -127,7 +127,10 @@
 
   // --------------------------------------------------------------- glyphs ---
 
-  // Every glyph here exists in Departure Mono.
+  // Most of these glyphs are in IBM Plex Mono. The box-drawing characters,
+  // ≈ and ■ are not, so the browser takes them from the next monospace font
+  // it has. Cells are 7 × 14 CSS px with the glyphs set in 11px type. A large
+  // window or a slow machine gets bigger cells and bigger type.
   const SETS = {
     digits: "0123456789",
     water: "─═-—~≈─",
@@ -199,7 +202,7 @@
     atlas.width = GLYPHS.length * cwD;
     atlas.height = 7 * chD;
     const a = atlas.getContext("2d");
-    a.font = fontPx * dpr + 'px "Departure Mono", ui-monospace, Menlo, monospace';
+    a.font = fontPx * dpr + 'px "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace';
     a.textBaseline = "alphabetic";
     const baseline = Math.round(fontPx * dpr);
     a.fillStyle = colors.fg;
@@ -232,8 +235,8 @@
     let scale = scaleFloor;
     for (;;) {
       fontPx = 11 * scale;
-      cwD = Math.max(1, Math.round(((fontPx * 350) / 550) * dpr));
-      chD = Math.max(1, Math.round(((fontPx * 700) / 550) * dpr));
+      cwD = Math.max(1, Math.round(((fontPx * 7) / 11) * dpr));
+      chD = Math.max(1, Math.round(((fontPx * 14) / 11) * dpr));
       cols = Math.ceil(canvas.width / cwD);
       rows = Math.ceil(canvas.height / chD) + 1;
       if (cols * rows <= MAX_CELLS || scale >= 2) break;
@@ -537,7 +540,7 @@
   });
 
   const fontReady = document.fonts && document.fonts.load
-    ? document.fonts.load('11px "Departure Mono"')
+    ? document.fonts.load('11px "IBM Plex Mono"')
     : Promise.resolve();
   Promise.race([fontReady, new Promise(function (r) { setTimeout(r, 1500); })]).then(start, start);
 })();

@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Page background</title>
+  <script>
+    // ?embed shows only the field and the page under the bar, for a frame on
+    // the documentation page. demo.css hides the bar and the Read me.
+    if (new URLSearchParams(location.search).has("embed")) document.documentElement.setAttribute("data-embed", "");
+  </script>
+  <link rel="preload" href="fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="demo.css">
+  <script defer src="field.js"></script>
+  <link rel="stylesheet" href="../assets/code.css">
+  <script defer src="../assets/code.js"></script>
+</head>
+<body>
+  <canvas id="field" aria-hidden="true"></canvas>
+
+  <header class="top">
+    <div class="bar ko">
+      <a class="back" href="./" aria-label="Page background">← <span>Page background</span></a>
+      <h1 class="brand" data-brand>Page background</h1>
+      <button type="button" class="btn" data-readme-open aria-controls="readme" aria-expanded="false">Read me</button>
+      <div class="seg" role="group" aria-label="Theme" data-full>
+        <button type="button" class="btn" data-set-theme="dark" aria-pressed="true">Dark</button>
+        <button type="button" class="btn" data-set-theme="light" aria-pressed="false">Light</button>
+      </div>
+    </div>
+  </header>
+
+  <main data-full>
+    <section class="hero">
+      <div class="wrap hero-inner">
+        <button type="button" class="btn ko" data-to-water>Scroll to the water</button>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="panel ko">
+          <p>The morning train leaves at seven and reaches the coast before noon. The wind usually picks up after lunch.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="panel ko">
+          <p>The library keeps its reading room open until eight. Books borrowed on a Friday are due back the following Monday.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="panel ko">
+          <p>A short walk from the square leads to a park with a pond and a row of old chestnut trees.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <div class="wrap">
+      <div class="foot-row ko">
+        <p>Water under the footer</p>
+        <p><a href="#">Back to top <span aria-hidden="true">↑</span></a></p>
+      </div>
+    </div>
+    <div class="shore" data-shore aria-hidden="true"></div>
+  </footer>
+
+  <aside class="readme" id="readme" aria-label="Read me" hidden>
+    <div class="readme__head">
+      <span class="label">Read me</span>
+      <button type="button" class="btn" data-readme-close>Close</button>
+    </div>
+    <p>Use it as an animated background behind a page of text. It draws on a fixed canvas under everything else, scrolls at half the speed of the page and leaves room around the blocks you mark so their text stays readable. It sets the glyphs in IBM Plex Mono when the page loads that font, and in the system's monospace font otherwise.</p>
+    <p class="label">Add it to your page</p>
+    <ol class="readme__steps">
+      <li>
+        <p>Copy <code>field.js</code> next to your page.</p>
+      </li>
+      <li>
+        <p>Load it at the end of the head.</p>
+        <div class="readme__code"><pre><code>&lt;script defer src="field.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Put the canvas first in the body.</p>
+        <div class="readme__code"><pre><code>&lt;canvas id="field" aria-hidden="true"&gt;&lt;/canvas&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Fix the canvas behind the page and set the two colours the field reads.</p>
+        <div class="readme__code"><pre><code>:root { --bg: #050608; --fg: #eceae4; }
+body { margin: 0; background: var(--bg); color: var(--fg); }
+#field { position: fixed; inset: 0; width: 100%; height: 100vh; pointer-events: none; z-index: 0; }
+main, footer { position: relative; z-index: 1; }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Add the class <code>ko</code> to each block of text the field should leave room around.</p>
+      </li>
+      <li>
+        <p>For water at the end of the page, put an empty block with <code>data-shore</code> after the footer.</p>
+        <div class="readme__code"><pre><code>&lt;div data-shore aria-hidden="true" style="height: 36vh"&gt;&lt;/div&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+    </ol>
+    <p>The full notes, options and API are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/page-background#readme">README</a>.</p>
+  </aside>
+
+  <script>
+    // The page's controls, and the water view. ?feature=water shows only the
+    // water. It hides the content and the theme switch, and the footer moves
+    // to the bottom of the window so the water fills the space under it.
+    (function () {
+      var root = document.documentElement;
+      if (new URLSearchParams(window.location.search).get("feature") === "water") {
+        var brand = document.querySelector("[data-brand]");
+        var full = document.createElement("a");
+        full.href = "demo.html";
+        full.textContent = "Page background";
+        brand.textContent = "";
+        brand.append(full, " / Water");
+        document.title = "Page background / Water";
+        root.setAttribute("data-feature", "water");
+        document.querySelectorAll("[data-full]").forEach(function (el) { el.hidden = true; });
+      }
+      document.querySelector("[data-to-water]").addEventListener("click", function () {
+        var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        window.scrollTo({ top: root.scrollHeight, behavior: reduced ? "auto" : "smooth" });
+      });
+      // The page opens dark. The field reads --bg and --fg and redraws when
+      // data-theme changes.
+      document.querySelectorAll("[data-set-theme]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          root.setAttribute("data-theme", b.getAttribute("data-set-theme"));
+          document.querySelectorAll("[data-set-theme]").forEach(function (o) {
+            o.setAttribute("aria-pressed", String(o === b));
+          });
+        });
+      });
+    })();
+
+    // The Read me panel: open and close it, close it with Escape, and copy a
+    // code block to the clipboard. Clicks and pointer moves stop at the panel,
+    // so an effect that listens on the window, such as the cursor trail, does
+    // not react to them.
+    (function () {
+      const panel = document.getElementById("readme");
+      const open = document.querySelector("[data-readme-open]");
+      if (!panel || !open) return;
+      function show(on) {
+        panel.hidden = !on;
+        open.setAttribute("aria-expanded", String(on));
+        if (on) panel.querySelector("[data-readme-close]").focus();
+        else open.focus();
+      }
+      open.addEventListener("click", function () { show(panel.hidden); });
+      panel.querySelector("[data-readme-close]").addEventListener("click", function () { show(false); });
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !panel.hidden) show(false); });
+      panel.querySelectorAll("[data-copy-code]").forEach(function (button) {
+        button.addEventListener("click", function () {
+          const text = button.parentElement.querySelector("code").textContent;
+          if (!navigator.clipboard) return;
+          navigator.clipboard.writeText(text).then(function () {
+            button.textContent = "Copied";
+            setTimeout(function () { button.textContent = "Copy"; }, 1500);
+          }, function () {});
+        });
+      });
+      ["click", "pointerdown", "pointermove", "pointerup"].forEach(function (type) {
+        panel.addEventListener(type, function (e) { e.stopPropagation(); });
+      });
+    })();
+  </script>
+</body>
+</html>

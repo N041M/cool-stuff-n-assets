@@ -12,7 +12,9 @@ From the root of this repository:
 python3 -m http.server
 ```
 
-Then open http://localhost:8000/pixel-drive/. The panel on the page jumps to a place, a time of day, a weather or one of the scenes. Speed runs the drive at 1, 2, 4 or 8 times its pace, and the day and the weather run faster with it. Hop makes the car hop, as clicking it does. Hide setup folds the panel down to the speed and Hop. Clicking the UFO sends it away.
+Then open http://localhost:8000/pixel-drive/ for the documentation page. It shows each feature in a frame, with the code behind it and the steps to add it to your page.
+
+The demo itself is at http://localhost:8000/pixel-drive/demo.html. Its panel jumps to a place, a time of day, a weather or one of the scenes, and switches between the pixel look and the character look. Speed runs the drive at 1, 2, 4 or 8 times its pace, and the day and the weather run faster with it. Hop makes the car hop, as clicking it does. Hide setup folds the panel down to the speed and Hop. Clicking the UFO sends it away, and so does Send away, which shows while a UFO is on screen. The page opens dark, and Light switches it to the light colours.
 
 The address takes these options:
 
@@ -20,8 +22,25 @@ The address takes these options:
 - `?seed=123` starts the route from a fixed seed.
 - `?hour=21.5` starts the day at 21:30.
 
+Add `?feature=<id>` to the demo's address to show one feature on its own, without the panel. For example `demo.html?feature=pitch` shows only the football pitch. Hop stays in every view.
+
+| Id       | Shows |
+|----------|-------|
+| `ascii`  | The character look |
+| `pitch`  | The football pitch in a village |
+| `jested` | Ještěd on the horizon above a village in the hills |
+| `ufo`    | The UFO coming down over farmland at night |
+| `rain`   | Farmland in rain |
+| `snow`   | A village in snow |
+| `fog`    | A forest in fog |
+| `sprint` | The highway sprint, where the car weaves through slower traffic |
+
+Add `embed` to the address to show the demo without its bar and Read me, as the frames on the documentation page do. For example `demo.html?feature=pitch&embed`. The full demo folds its setup in this mode.
+
 ## Files
 
+- `index.html` is the documentation page.
+- `demo.html` is the demo.
 - `js/core.js` holds the materials, the light and weather colouring, and the small sprites every picture is drawn into.
 - `js/art-nature.js`, `js/art-built.js` and `js/art-beings.js` draw the pictures: plants, buildings and signs, and people, animals and vehicles.
 - `js/world.js` holds the places, the regions and the route.
@@ -29,13 +48,13 @@ The address takes these options:
 - `js/scenes.js` holds everything that moves: people, animals, the football pitch, traffic, trains, boats, birds, planes and the UFO.
 - `js/ascii.js` redraws the pictures in characters for the character look.
 - `js/engine.js` builds the planes of scenery and draws each frame.
-- `demo.js` and `demo.css` are the demo page's controls and styles.
+- `demo.js` and `demo.css` are the demo page's controls, single-feature views, Read me panel and styles.
 
 The blend between road surfaces in `drawRoad` in `js/engine.js` is unfinished.
 
 ## Putting it on a page
 
-Load the nine scripts in the order `index.html` uses, with `defer`. The drive draws on `<canvas id="drive">`, which should be fixed to the window behind the page:
+Load the nine scripts in the order `demo.html` uses, with `defer`. The drive draws on `<canvas id="drive">`, which should be fixed to the window behind the page:
 
 ```css
 #drive { position: fixed; inset: 0; width: 100%; height: 100vh; pointer-events: none; z-index: 0; }
@@ -46,8 +65,8 @@ Everything else is optional:
 - An element with `data-hero` sets the height of the scene. The road sits at 80% of it. Without one, the scene fills the window.
 - The road moves lower to keep clear of any block in `[data-hero] .hero-inner` that would stand above the car.
 - The sky starts just below a `.top` bar, or 56 px from the top without one.
-- The drive reads `--bg`, `--fg` and `--accent` from `:root`. The car's body is the accent colour, and the scene fades into `--bg` at the bottom. It redraws when `data-theme` on `<html>` or the system theme changes.
-- The character look uses the Departure Mono font. The drive waits up to 1.5 s for it to load before it starts.
+- The drive reads `--bg`, `--fg` and `--accent` from `:root`, written as six-digit hex colours. The car's body is the accent colour, and the scene fades into `--bg` at the bottom. It redraws when `data-theme` on `<html>` or the system theme changes.
+- The character look uses the IBM Plex Mono font at 11 px in cells of 7 × 14 px. The drive waits up to 1.5 s for the font to load before it starts. Characters the font lacks, such as the box-drawing lines, come from the system's monospace font, and the blocks and shades are drawn as shapes.
 - A click on the car calls `window.Field.pulse(x, y)` when the page has it. The cursor trail in `../cursor-trail/` provides it.
 
 When the system asks for reduced motion, the drive shows one still picture, generated fresh for each visit.
@@ -92,4 +111,4 @@ The pitch is a nod to a referee from the years of communist Czechoslovakia. It h
 
 ## Font
 
-[Departure Mono](https://departuremono.com) by Helena Zhang, under the SIL Open Font License 1.1. The licence text is in `fonts/LICENSE-DepartureMono.txt`.
+[IBM Plex Mono](https://github.com/IBM/plex) by IBM, under the SIL Open Font License 1.1. The licence text is in `fonts/LICENSE-IBMPlexMono.txt`.

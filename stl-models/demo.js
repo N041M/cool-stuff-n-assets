@@ -12,7 +12,6 @@ import { createLooks } from "./looks.js";
 
 const root = document.documentElement;
 const reducedMQ = window.matchMedia("(prefers-reduced-motion: reduce)");
-const darkMQ = window.matchMedia("(prefers-color-scheme: dark)");
 
 const stage = document.querySelector("[data-stage]");
 const canvas = document.querySelector("[data-canvas]");
@@ -22,7 +21,6 @@ const buildButton = document.querySelector("[data-build]");
 const lookButtons = document.querySelectorAll("[data-look]");
 const out = {
   name: document.querySelector("[data-name]"),
-  short: document.querySelector("[data-short]"),
   size: document.querySelector("[data-size]"),
   tris: document.querySelector("[data-tris]"),
   file: document.querySelector("[data-file]"),
@@ -30,13 +28,10 @@ const out = {
 };
 
 // The list in the page is the list of models.
-const MODELS = Array.from(document.querySelectorAll("[data-model]")).map(function (li, i) {
+const MODELS = Array.from(document.querySelectorAll("[data-model]")).map(function (li) {
   return {
     slug: li.getAttribute("data-model"),
-    index: String(i + 1).padStart(2, "0"),
     name: li.querySelector(".pick-name").textContent,
-    category: li.querySelector(".pick-cat").textContent,
-    short: li.getAttribute("data-short"),
     file: li.querySelector(".dl").getAttribute("href"),
     button: li.querySelector(".pick"),
   };
@@ -48,17 +43,56 @@ const VIEW_AZIMUTH = 35 * Math.PI / 180;
 const VIEW_ELEVATION = 22 * Math.PI / 180;
 const GRID_STEP = 10;
 
-// Theme switch, as on the other demos. The colours of the scene follow it.
+// A single-feature view, set from ?feature= by the script in the head of
+// demo.html. The bar names the view and links back to the full page.
+const FEATURES = { models: "Models", looks: "Looks" };
+const feature = root.getAttribute("data-feature");
+if (FEATURES[feature]) {
+  const brand = document.querySelector(".brand");
+  const full = document.createElement("a");
+  full.href = "demo.html";
+  full.textContent = brand.textContent;
+  brand.replaceChildren(full, " / " + FEATURES[feature]);
+  document.title = brand.textContent;
+}
+
+// Theme switch, as on the other demos. The page opens dark, and the colours
+// of the scene follow the switch.
 document.querySelectorAll("[data-set-theme]").forEach(function (b) {
   b.addEventListener("click", function () {
-    const choice = b.getAttribute("data-set-theme");
-    if (choice === "system") root.removeAttribute("data-theme");
-    else root.setAttribute("data-theme", choice);
+    root.setAttribute("data-theme", b.getAttribute("data-set-theme"));
     document.querySelectorAll("[data-set-theme]").forEach(function (o) {
       o.setAttribute("aria-pressed", String(o === b));
     });
   });
 });
+
+// The Read me panel: open and close it, close it with Escape, and copy a
+// code block to the clipboard.
+(function () {
+  const panel = document.getElementById("readme");
+  const open = document.querySelector("[data-readme-open]");
+  if (!panel || !open) return;
+  function show(on) {
+    panel.hidden = !on;
+    open.setAttribute("aria-expanded", String(on));
+    if (on) panel.querySelector("[data-readme-close]").focus();
+    else open.focus();
+  }
+  open.addEventListener("click", function () { show(panel.hidden); });
+  panel.querySelector("[data-readme-close]").addEventListener("click", function () { show(false); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !panel.hidden) show(false); });
+  panel.querySelectorAll("[data-copy-code]").forEach(function (button) {
+    button.addEventListener("click", function () {
+      const text = button.parentElement.querySelector("code").textContent;
+      if (!navigator.clipboard) return;
+      navigator.clipboard.writeText(text).then(function () {
+        button.textContent = "Copied";
+        setTimeout(function () { button.textContent = "Copy"; }, 1500);
+      }, function () {});
+    });
+  });
+})();
 
 let renderer;
 try {
@@ -231,7 +265,6 @@ function pick(i, keepHash) {
   const model = MODELS[i];
   MODELS.forEach(function (m, j) { m.button.setAttribute("aria-pressed", String(j === i)); });
   out.name.textContent = model.name;
-  out.short.textContent = model.short;
   out.file.href = model.file;
   out.file.textContent = model.slug + ".stl";
   out.size.textContent = "–";
@@ -341,7 +374,6 @@ new IntersectionObserver(function (entries) {
 }).observe(stage);
 
 new MutationObserver(applyTheme).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
-darkMQ.addEventListener("change", applyTheme);
 reducedMQ.addEventListener("change", setMotion);
 
 // The address can name a model, as in #servo-skull-drone.
@@ -357,4 +389,6 @@ window.addEventListener("hashchange", function () {
 resize();
 applyTheme();
 setMotion();
+// The Looks view opens in Phosphor, so the model grows in as it loads.
+if (feature === "looks") setLook("phosphor");
 pick(Math.max(fromHash(), 0), true);

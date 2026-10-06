@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Deep sky</title>
+  <link rel="preload" href="fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script>
+    // ?embed shows the picture and its own controls without the bar and the
+    // Read me, for a frame on the documentation page.
+    if (new URLSearchParams(location.search).has("embed")) document.documentElement.setAttribute("data-embed", "");
+  </script>
+  <link rel="stylesheet" href="demo.css">
+  <script defer src="../glyph-renderer/glyph-renderer.js"></script>
+  <script defer src="deep-sky.js"></script>
+  <script defer src="deep-sky-glyphs.js"></script>
+  <script defer src="demo.js"></script>
+  <link rel="stylesheet" href="../../assets/code.css">
+  <script defer src="../../assets/code.js"></script>
+</head>
+<body>
+  <canvas id="sky" aria-hidden="true"></canvas>
+
+  <header class="bar">
+    <a class="back" href="../" aria-label="Solar system">← <span>Solar system</span></a>
+    <h1 class="brand">Deep sky</h1>
+    <button type="button" class="btn" data-readme-open aria-controls="readme" aria-expanded="false">Read me</button>
+    <div class="seg" role="group" aria-label="Object">
+      <button type="button" class="btn" data-prev>Previous</button>
+      <span class="target" data-target aria-live="polite">Milky Way</span>
+      <button type="button" class="btn" data-next>Next</button>
+    </div>
+  </header>
+
+  <p class="status label" data-status role="status" hidden>Preparing</p>
+
+  <aside class="readme" id="readme" aria-label="Read me" hidden>
+    <div class="readme__head">
+      <span class="label">Read me</span>
+      <button type="button" class="btn" data-readme-close>Close</button>
+    </div>
+    <p>Use it to put the Milky Way, a nebula or the black hole at its centre on your page, drawn in text characters on a canvas, as a hero picture or a background. The core on its own gives the objects as clouds of points and works out the black hole's light, for drawing them your own way.</p>
+    <p class="label">Add it to your page</p>
+    <ol class="readme__steps">
+      <li>
+        <p>Copy <code>deep-sky.js</code>, <code>deep-sky-glyphs.js</code> and <code>glyph-renderer.js</code> from the <code>glyph-renderer</code> folder next to your page.</p>
+      </li>
+      <li>
+        <p>Add a canvas with a dark background and load the scripts at the end of the body.</p>
+        <div class="readme__code"><pre><code>&lt;canvas id="sky" style="background:#050608"&gt;&lt;/canvas&gt;
+&lt;script src="glyph-renderer.js"&gt;&lt;/script&gt;
+&lt;script src="deep-sky.js"&gt;&lt;/script&gt;
+&lt;script src="deep-sky-glyphs.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Make the galaxy's stars a few milliseconds a frame, then draw it face-on with 40 kiloparsecs from the top of the canvas to the bottom.</p>
+        <div class="readme__code"><pre><code>&lt;script&gt;
+  const g = GlyphRenderer.create(document.getElementById('sky'));
+  g.resize(innerWidth, innerHeight, devicePixelRatio, 6);
+  g.view.k = g.H / 40;
+  g.view.span = 40;
+  requestAnimationFrame(function make() {
+    if (!DeepSky.galaxy.prepare(10)) return requestAnimationFrame(make);
+    g.clear();
+    DeepSky.drawGalaxy(g);
+    g.compose();
+    g.present();
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>For a nebula or the black hole, draw it in place of the galaxy, with its middle and size in device pixels on the canvas. A nebula's points are made first with <code>DeepSky.nebula.prepare(key, ms)</code>, as the galaxy's stars are. The black hole needs nothing made first.</p>
+        <div class="readme__code"><pre><code>// the Crab Nebula, a third of the canvas's height across
+DeepSky.drawNebula(g, { key: 'crab', x: g.W / 2, y: g.H / 2, radius: g.H / 6,
+  frame: { u: [1, 0, 0], v: [0, 1, 0], w: [0, 0, 1] } });
+// the black hole, its disc tipped 78° from face-on
+DeepSky.drawHole(g, { x: g.W / 2, y: g.H / 2, radius: g.H / 6,
+  frame: { N: [0, 0.98, 0.21], Q: [1, 0, 0], E: [0, 0.21, -0.98] } });</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+    </ol>
+    <p class="label">Draw the objects your own way</p>
+    <p>Copy only <code>deep-sky.js</code>, which needs nothing else. <code>DeepSky.galaxy.points()</code> and <code>DeepSky.nebula.points(key)</code> give the points as arrays of positions and colours. This draws a third of the galaxy's stars face-on, 10 pixels to a kiloparsec.</p>
+    <div class="readme__code"><pre><code>&lt;canvas id="disc" width="400" height="400" style="background:#000"&gt;&lt;/canvas&gt;
+&lt;script src="deep-sky.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  requestAnimationFrame(function make() {
+    if (!DeepSky.galaxy.prepare(10)) return requestAnimationFrame(make);
+    const P = DeepSky.galaxy.points(), c = document.getElementById('disc').getContext('2d');
+    for (let i = 0; i &lt; P.n; i += 3) {
+      c.fillStyle = `rgb(${P.col[i * 3]}, ${P.col[i * 3 + 1]}, ${P.col[i * 3 + 2]})`;
+      c.fillRect(200 + P.pos[i * 3] * 10, 200 - P.pos[i * 3 + 1] * 10, 1, 1);
+    }
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+    <p><code>DeepSky.hole.at</code> gives the black hole's light at any point round it, with the paths of light bent round the hole. This draws it one pixel at a time, 80 pixels to the radius of its ring.</p>
+    <div class="readme__code"><pre><code>&lt;canvas id="hole" width="400" height="400"&gt;&lt;/canvas&gt;
+&lt;script src="deep-sky.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const H = DeepSky.hole, o = {}, c = document.getElementById('hole').getContext('2d');
+  const img = c.createImageData(400, 400);
+  const s = H.setup({ N: [0, 0.98, 0.21], Q: [1, 0, 0], E: [0, 0.21, -0.98] },
+                    { R: [1, 0, 0], U: [0, 1, 0], B: [0, 0, 1] }, 1 / 80);
+  for (let y = 0, i = 0; y &lt; 400; y++) for (let x = 0; x &lt; 400; x++, i += 4) {
+    H.at(s, (x - 200) / 80, (200 - y) / 80, o);
+    img.data[i] = 255 * (o.r + o.f * H.colour[0]);
+    img.data[i + 1] = 255 * (o.g + o.f * H.colour[1]);
+    img.data[i + 2] = 255 * (o.b + o.f * H.colour[2]);
+    img.data[i + 3] = 255;
+  }
+  c.putImageData(img, 0, 0);
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+    <p>The full notes and API are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/solar-system/deep-sky#readme">README</a>.</p>
+  </aside>
+</body>
+</html>

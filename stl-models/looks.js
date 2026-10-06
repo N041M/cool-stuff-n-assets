@@ -255,7 +255,8 @@ export function createLooks(scene) {
     scanRing.material.color.set(read("--ph-line"));
 
     // X-ray glows on a dark stage and is laid down like ink on a light one.
-    const hsl = new THREE.Color(read("--panel")).getHSL({});
+    // The stage is the page background seen through --panel.
+    const hsl = new THREE.Color(read("--bg")).getHSL({});
     const glow = hsl.l < 0.5;
     xray.material.blending = glow ? THREE.AdditiveBlending : THREE.NormalBlending;
     xray.material.uniforms.uGlow.value = glow ? 1 : 0;

@@ -21,7 +21,10 @@
   A.CW = CWc;
   A.CH = CHc;
 
-  // Every glyph used here exists in Departure Mono.
+  // Letters, digits and most punctuation come from IBM Plex Mono. The
+  // box-drawing characters and symbols such as ▲ ■ ★ ♣ are not in it, so the
+  // browser takes them from the next monospace font it has. The blocks and
+  // shades are drawn as shapes in A.init.
   const QUADS = " ▗▖▄▝▐▞▟▘▚▌▙▀▜▛█";
   const TEXT = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ÁÉÍÓÚÝČĎĚŇŘŠŤŽŮ.,:-·/→★ ";
   const EXTRA = "%&@♣♠▲^\"',;`-=~:·.#X▒▓░═─━║│┃|▪■□•*°o+✦_¯≈—\\/v┊┌┐└┘┬┴┼╤╧╦╩╪┄╳▚▞╱";
@@ -58,6 +61,33 @@
     return set[Math.min(set.length - 1, Math.floor(h * set.length))];
   }
 
+  // The quarter blocks and the shades are drawn as shapes so that they fill
+  // the whole cell. A fallback font's blocks stop about 2 px short of the top
+  // of a 14 px cell, which leaves a gap between rows. The halves overlap by
+  // one column, and a shade is a fixed scatter of pixels covering its share
+  // of the cell.
+  const SHADES = { "░": 0.3, "▒": 0.6, "▓": 0.85 };
+  function drawBlock(a, g, x0) {
+    const q = QUADS.indexOf(g);
+    if (q > 0) {
+      if (q & 8) a.fillRect(x0, 0, 4, 7);
+      if (q & 4) a.fillRect(x0 + 3, 0, 4, 7);
+      if (q & 2) a.fillRect(x0, 7, 4, 7);
+      if (q & 1) a.fillRect(x0 + 3, 7, 4, 7);
+      return true;
+    }
+    const share = SHADES[g];
+    if (!share) return false;
+    for (let y = 0; y < CHc; y++) {
+      for (let x = 0; x < CWc; x++) {
+        let h = Math.imul(x * 73856093 ^ y * 19349663, 0x9e3779b1);
+        h ^= h >>> 15;
+        if ((h >>> 0) / 4294967296 < share) a.fillRect(x0 + x, y, 1, 1);
+      }
+    }
+    return true;
+  }
+
   // The white glyph atlas, one CSS pixel per font pixel.
   let atlas = null;
   A.init = function () {
@@ -65,10 +95,12 @@
     atlas.width = GLYPHS.length * CWc;
     atlas.height = CHc;
     const a = atlas.getContext("2d");
-    a.font = '11px "Departure Mono", ui-monospace, Menlo, monospace';
+    a.font = '11px "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace';
     a.textBaseline = "alphabetic";
     a.fillStyle = "#fff";
-    for (let i = 0; i < GLYPHS.length; i++) a.fillText(GLYPHS[i], i * CWc, 11);
+    for (let i = 0; i < GLYPHS.length; i++) {
+      if (!drawBlock(a, GLYPHS[i], i * CWc)) a.fillText(GLYPHS[i], i * CWc, 11);
+    }
     stampCache.clear();
   };
   A.ready = function () {
@@ -1258,7 +1290,7 @@
     x.fillStyle = "rgb(" + (rgb[0] | 0) + "," + (rgb[1] | 0) + "," + (rgb[2] | 0) + ")";
     if (!GI.has(ch)) {
       // A character outside the atlas is set from the font directly.
-      x.font = '11px "Departure Mono", ui-monospace, Menlo, monospace';
+      x.font = '11px "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace';
       x.textBaseline = "alphabetic";
       x.fillText(ch, 0, 11);
       stampCache.set(key, cv);

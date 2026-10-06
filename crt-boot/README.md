@@ -10,17 +10,21 @@ From the root of this repository:
 python3 -m http.server
 ```
 
-Then open http://localhost:8000/crt-boot/. The page is made of JavaScript modules, so it has to come from a server and not straight from the file.
+Then open http://localhost:8000/crt-boot/ for the documentation page. It shows the demo and each feature in a frame, with the code that makes the feature work and the steps to add it to a page. The demo itself is at http://localhost:8000/crt-boot/demo.html. The pages are made of JavaScript modules, so they have to come from a server and not straight from the file.
 
-The screen waits in standby for a moment and then powers on by itself. The buttons in the bar work at any point in the sequence.
+In the demo, the screen waits in standby for a moment and then powers on by itself. The buttons in the bar work at any point in the sequence. Read me in the bar opens a panel with the steps to put the screen on another page.
 
 - **Power on** starts the screen from standby. When the screen is already on or still starting, it powers off and on again and replays the boot.
 - **Power off** folds the picture away and puts the glass back in its place on the page.
 - **Degauss** bends the picture in rolling waves for about a second. The boot runs one degauss by itself when the log starts.
 
-During the boot, Skip in the corner of the glass and the Escape key jump to the finished terminal. A press on the glass in standby powers it on.
+During the boot, Skip in the corner of the glass and the Escape key jump to the finished terminal. Escape pressed inside the Read me panel closes the panel and leaves the boot running. A press on the glass in standby powers it on.
 
 When the system asks for reduced motion, Power on shows the finished terminal at once and Power off goes straight back to standby. The grain, the hum bar, the flicker and the blinking stop, and the page leaves out the Degauss button.
+
+Each feature of the demo can be shown on its own. Add `?feature=on` to the address of `demo.html` to show only the boot, with Power on. Add `?feature=off` to start with the terminal on and show only Power off. In that view, Power off pressed while the screen is off puts the terminal back at once and folds it again. Add `?feature=degauss` to start with the terminal on and show only Degauss. The name in the bar links back to the full demo, and the back link goes to the documentation page.
+
+Add `?embed` to hide the back link, the name and the Read me, so that the page can be shown in a frame. The bar then holds only the screen's buttons. It combines with a feature, as in `demo.html?feature=off&embed`. The documentation page shows its frames this way.
 
 ## How it is drawn
 
@@ -35,16 +39,17 @@ Over everything on the glass sit CSS layers for the scanlines, a moving grain ti
 
 ## Files
 
-- `index.html` is the demo page.
-- `js/main.js` loads the font, builds the screen and wires the buttons.
+- `index.html` is the documentation page.
+- `demo.html` is the demo page.
+- `js/main.js` loads the font, builds the screen, wires the buttons and the Read me panel and sets up the single-feature views. The script in the head of `demo.html` picks the view before the page is drawn.
 - `js/screen.js` is the screen. It holds the states, the grow and the shrink, and the terminal picture.
 - `js/boot.js` holds the power-on, degauss, draw, power-off and afterglow steps and the start-up log.
 - `js/sequence.js` is a timeline that can be skipped, and a tween.
 - `js/dom.js` holds small helpers for the DOM and the clock.
 - `crt.css` is the glass, its layers and the log. It also sets the two phosphor colours.
 - `term.css` is the terminal picture.
-- `demo.css` is the bar and the slot on the demo page.
-- `fonts/` holds VT323 and Share Tech Mono with their licences.
+- `demo.css` is the bar, the slot and the Read me panel on the demo page.
+- `fonts/` holds VT323 and IBM Plex Mono with their licences.
 
 ## Putting it on a page
 
@@ -74,6 +79,6 @@ screen.powerOn();
 ## Fonts
 
 - [VT323](https://fonts.google.com/specimen/VT323) by Peter Hull draws everything on the glass. It is under the SIL Open Font License 1.1, and the licence text is in `fonts/LICENSE-VT323.txt`.
-- [Share Tech Mono](https://fonts.google.com/specimen/Share+Tech+Mono) by Carrois Type Design is the font of the bar. It is under the SIL Open Font License 1.1, and the licence text is in `fonts/LICENSE-ShareTechMono.txt`.
+- [IBM Plex Mono](https://github.com/IBM/plex) by IBM is the font of the page around the glass. It is under the SIL Open Font License 1.1, and the licence text is in `fonts/LICENSE-IBMPlexMono.txt`.
 
-Both files are the latin subset from the Fontsource packages `@fontsource/vt323` and `@fontsource/share-tech-mono`, version 5.3.0.
+The VT323 file is the latin subset from the Fontsource package `@fontsource/vt323`, version 5.3.0.

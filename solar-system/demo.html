@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <title>Solar system</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23050608'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23f0a14a'/%3E%3Cellipse cx='16' cy='16' rx='13' ry='4' fill='none' stroke='%23eceae4' stroke-width='1.5' transform='rotate(-20 16 16)'/%3E%3C/svg%3E">
+  <link rel="preload" href="fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <script>
+    // ?embed shows the sky and its controls without the bar and the Read me,
+    // for a frame on the documentation page. ?feature=<id> shows one feature
+    // with only its own controls (see demo.js).
+    (function () {
+      var q = new URLSearchParams(location.search);
+      if (q.has("embed")) document.documentElement.setAttribute("data-embed", "");
+      if (q.get("feature")) document.documentElement.setAttribute("data-feature", q.get("feature"));
+    })();
+  </script>
+  <link rel="stylesheet" href="demo.css">
+  <script defer src="planet-positions/ephemeris.js"></script>
+  <script defer src="planet-surfaces/earth-map.js"></script>
+  <script defer src="planet-surfaces/surfaces.js"></script>
+  <script defer src="glyph-renderer/glyph-renderer.js"></script>
+  <script defer src="night-sky/night-sky.js"></script>
+  <script defer src="night-sky/night-sky-glyphs.js"></script>
+  <script defer src="deep-sky/deep-sky.js"></script>
+  <script defer src="deep-sky/deep-sky-glyphs.js"></script>
+  <script defer src="comet/comet.js"></script>
+  <script defer src="comet/comet-glyphs.js"></script>
+  <script defer src="spacecraft/spacecraft.js"></script>
+  <script defer src="spacecraft/spacecraft-glyphs.js"></script>
+  <script defer src="js/bodies.js"></script>
+  <script defer src="js/orrery.js"></script>
+  <script defer src="demo.js"></script>
+  <link rel="stylesheet" href="../assets/code.css">
+  <script defer src="../assets/code.js"></script>
+</head>
+<body>
+  <canvas id="sky" aria-hidden="true"></canvas>
+  <canvas id="hud" aria-hidden="true"></canvas>
+  <div class="stage" id="stage" tabindex="0" role="application" aria-label="Solar system view" aria-describedby="keys"></div>
+  <p class="sr-only" id="keys">The arrow keys turn and zoom. Keys 0 to 8 fly to the Sun and the planets, M to the Moon, and Home shows the whole system.</p>
+  <p class="sr-only" id="said" aria-live="polite"></p>
+
+  <header class="bar" id="top">
+    <a class="back" href="./" aria-label="Solar system">← <span>Solar system</span></a>
+    <h1 class="brand" id="brand">Solar system</h1>
+    <p class="clock" aria-live="off"><span id="date">----------</span> <span id="rate">Live</span></p>
+    <button type="button" class="btn" data-readme-open aria-controls="readme" aria-expanded="false">Read me</button>
+  </header>
+
+  <nav class="panel bodies" id="bodies" aria-label="Bodies" hidden></nav>
+
+  <section class="panel info" id="info" aria-labelledby="info-name">
+    <div class="info__head">
+      <p class="info-name" id="info-name">Saturn</p>
+      <button type="button" class="btn" id="info-close">Close</button>
+    </div>
+    <dl class="kv" id="info-rows"></dl>
+    <button type="button" class="btn info-back" id="info-back" hidden></button>
+  </section>
+
+  <div class="controls" id="controls">
+    <div class="group panels" role="group" aria-label="Panels">
+      <button type="button" class="btn text" id="open-bodies" aria-expanded="false" aria-controls="bodies">Bodies</button>
+      <button type="button" class="btn text" id="open-info" aria-expanded="true" aria-controls="info">Info</button>
+    </div>
+    <div class="group view" role="group" aria-label="View">
+      <button type="button" class="btn" data-zoom="1" aria-label="Zoom out" title="Zoom out">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10"/></svg>
+      </button>
+      <button type="button" class="btn" data-zoom="-1" aria-label="Zoom in" title="Zoom in">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M8 3v10"/></svg>
+      </button>
+      <button type="button" class="btn" data-turn="-1" aria-label="Turn left" title="Turn left">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M12.5 10.5A5 5 0 1 0 6 12.6"/><path d="M3 10.2l3 2.4-2.6 2.6"/></svg>
+      </button>
+      <button type="button" class="btn" data-turn="1" aria-label="Turn right" title="Turn right">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 10.5A5 5 0 1 1 10 12.6"/><path d="M13 10.2l-3 2.4 2.6 2.6"/></svg>
+      </button>
+      <button type="button" class="btn" data-tilt="-1" aria-label="Tilt up" title="Tilt up">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13V3M4 7l4-4 4 4"/></svg>
+      </button>
+      <button type="button" class="btn" data-tilt="1" aria-label="Tilt down" title="Tilt down">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4"/></svg>
+      </button>
+    </div>
+    <div class="group time" role="group" aria-label="Time">
+      <button type="button" class="btn" data-warp="-1" aria-label="Slower or backwards" title="Slower or backwards">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path class="fill" d="M8 4v8L3 8zM13 4v8L8 8z"/></svg>
+      </button>
+      <button type="button" class="btn" id="pause" aria-label="Pause" title="Pause">
+        <svg class="if-playing" viewBox="0 0 16 16" aria-hidden="true"><path class="fill" d="M4 3h3v10H4zM9 3h3v10H9z"/></svg>
+        <svg class="if-paused" viewBox="0 0 16 16" aria-hidden="true"><path class="fill" d="M5 3l8 5-8 5z"/></svg>
+      </button>
+      <button type="button" class="btn" data-warp="1" aria-label="Faster" title="Faster">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path class="fill" d="M3 4v8l5-4zM8 4v8l5-4z"/></svg>
+      </button>
+      <button type="button" class="btn text" id="now">Now</button>
+    </div>
+    <div class="group seg renderer" role="group" aria-label="Renderer">
+      <button type="button" class="btn text" data-renderer="webgl" aria-pressed="true">WebGL</button>
+      <button type="button" class="btn text" data-renderer="2d" aria-pressed="false">Canvas 2D</button>
+    </div>
+  </div>
+
+  <aside class="readme" id="readme" aria-label="Read me" hidden>
+    <div class="readme__head">
+      <span class="label">Read me</span>
+      <button type="button" class="btn" data-readme-close>Close</button>
+    </div>
+    <p>Use it as a page of its own where visitors explore space, from the planets where they are today out to the nearest stars and the whole galaxy, all drawn in text characters. It fills the window with two canvases and lays its controls over them.</p>
+    <p class="label">Add it to your page</p>
+    <ol class="readme__steps">
+      <li>
+        <p>The explorer combines the component folders beside it. To take one part on its own, start from that part's demo and its read-me.</p>
+        <ul class="readme__parts">
+          <li><a href="glyph-renderer/">Glyph renderer</a> draws the character grid.</li>
+          <li><a href="planet-positions/">Planet positions</a> works out where every body is.</li>
+          <li><a href="planet-surfaces/">Planet surfaces</a> makes the maps of the bodies.</li>
+          <li><a href="night-sky/">Night sky</a> draws the background stars and galaxies.</li>
+          <li><a href="deep-sky/">Deep sky</a> draws the galaxy, the nebulae and the black hole.</li>
+          <li><a href="comet/">Comet</a> draws Halley's coma and tails.</li>
+          <li><a href="spacecraft/">Spacecraft</a> draws the spacecraft.</li>
+        </ul>
+      </li>
+      <li>
+        <p>For the whole explorer, copy the <code>solar-system/</code> folder with its subfolders and keep their names. Serve it with a static web server and open <code>demo.html</code>.</p>
+        <div class="readme__code"><pre><code>python3 -m http.server</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>To build it into a page of your own instead, put the page in <code>solar-system/</code> and load the components and the explorer at the end of the body.</p>
+        <div class="readme__code"><pre><code>&lt;script src="planet-positions/ephemeris.js"&gt;&lt;/script&gt;
+&lt;script src="planet-surfaces/earth-map.js"&gt;&lt;/script&gt;
+&lt;script src="planet-surfaces/surfaces.js"&gt;&lt;/script&gt;
+&lt;script src="glyph-renderer/glyph-renderer.js"&gt;&lt;/script&gt;
+&lt;script src="night-sky/night-sky.js"&gt;&lt;/script&gt;
+&lt;script src="night-sky/night-sky-glyphs.js"&gt;&lt;/script&gt;
+&lt;script src="deep-sky/deep-sky.js"&gt;&lt;/script&gt;
+&lt;script src="deep-sky/deep-sky-glyphs.js"&gt;&lt;/script&gt;
+&lt;script src="comet/comet.js"&gt;&lt;/script&gt;
+&lt;script src="comet/comet-glyphs.js"&gt;&lt;/script&gt;
+&lt;script src="spacecraft/spacecraft.js"&gt;&lt;/script&gt;
+&lt;script src="spacecraft/spacecraft-glyphs.js"&gt;&lt;/script&gt;
+&lt;script src="js/orrery.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Put two canvases before those scripts and fix them over the window. The second one holds the labels.</p>
+        <div class="readme__code"><pre><code>&lt;canvas id="sky"&gt;&lt;/canvas&gt;
+&lt;canvas id="hud"&gt;&lt;/canvas&gt;
+&lt;style&gt;
+  body { margin: 0; background: #050608; }
+  #sky, #hud { position: fixed; top: 0; left: 0; display: block; }
+&lt;/style&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+      <li>
+        <p>Start it after the scripts. <code>Orrery.flyTo</code>, <code>Orrery.zoom</code> and <code>Orrery.rotate</code> then move the camera from your own buttons, and <code>Orrery.setRenderer("2d")</code> draws the characters on a 2D canvas instead of with WebGL.</p>
+        <div class="readme__code"><pre><code>&lt;script&gt;
+  Orrery.init(document.getElementById("sky"), document.getElementById("hud"), { focus: "earth" });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      </li>
+    </ol>
+    <p>The explorer's own <code>demo.js</code> adds the body list, the info panel, the clock and the gestures. The full notes, options and API are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/solar-system#readme">README</a>.</p>
+  </aside>
+</body>
+</html>

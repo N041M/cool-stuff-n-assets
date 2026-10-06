@@ -1,104 +1,137 @@
-/* The globe's styles. */
+/* The globe page's styles. */
 
+/* IBM Plex Mono in two weights. Each weight comes as a Latin file and a
+   Latin Extended file, which holds the Czech letters. A browser downloads
+   the second file only when the page uses one of its characters. */
 @font-face {
-  font-family: "Departure Mono";
-  src: url("fonts/DepartureMono-Regular.woff2") format("woff2");
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
   font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-400-latin-ext.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-600-latin.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-600-latin-ext.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
 /* The globe shades its sea and land between the --sea-* and --land-* pairs.
-   Borders are cut out of the land in --panel, the colour of the figure. */
+   Borders are cut out of the land in --bg, the colour behind the figure. */
 :root {
-  --bg: #fbfaf8;
-  --fg: #17181b;
-  --muted: #6d6c68;
-  --line: #e5e3de;
-  --soft: #efeeea;
-  --panel: #ffffff;
-  --edge: #17181b;
-  --drop: #d9d6cf;
-  --accent: #c8352b;
-  --on-accent: #fbfaf8;
-  --sea-lit: #f4f2ed;
-  --sea-dark: #b9b5ac;
-  --land-lit: #9b978f;
-  --land-dark: #35363a;
-  --mono: "Departure Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  color-scheme: light;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --bg: #131417;
-    --fg: #edece8;
-    --muted: #8e8d88;
-    --line: #2a2b30;
-    --soft: #212227;
-    --panel: #18191c;
-    --edge: #4a4b52;
-    --drop: #2c2d33;
-    --accent: #dc665e;
-    --on-accent: #131417;
-    --sea-lit: #3a3b41;
-    --sea-dark: #1c1d20;
-    --land-lit: #d8d6d0;
-    --land-dark: #4d4e53;
-    color-scheme: dark;
-  }
-}
-:root[data-theme="dark"] {
-  --bg: #131417;
-  --fg: #edece8;
-  --muted: #8e8d88;
-  --line: #2a2b30;
-  --soft: #212227;
-  --panel: #18191c;
-  --edge: #4a4b52;
-  --drop: #2c2d33;
-  --accent: #dc665e;
-  --on-accent: #131417;
-  --sea-lit: #3a3b41;
-  --sea-dark: #1c1d20;
-  --land-lit: #d8d6d0;
-  --land-dark: #4d4e53;
+  --bg: #050608;
+  --panel: rgba(6, 7, 10, 0.86);
+  --ink: #eceae4;
+  --ink-2: #a8a9ae;
+  --ink-3: #7a7c83;
+  --ink-4: #33353b;
+  --border: #62646b;
+  --accent: #f0a14a;
+  --accent-ink: #1a1107;
+  --fg: var(--ink);
+  --sea-lit: #2c2f37;
+  --sea-dark: #0b0c10;
+  --land-lit: #e4e1d9;
+  --land-dark: #44464d;
+  --font: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --fs: 0.8125rem;
+  --fs-sm: 0.6875rem;
+  --lh: 1.25rem;
+  --bar-h: 2.75rem;
+  --gutter: 2rem;
   color-scheme: dark;
 }
-
-/* The figure is framed like a plot, with dotted grid columns behind the
-   drawing. */
-.fig {
-  margin: 0;
-  padding: 14px;
-  background-image:
-    linear-gradient(var(--panel) 50%, transparent 50%),
-    linear-gradient(90deg, var(--line) 1px, transparent 1px);
-  background-size: 100% 4px, 42px 100%;
-  background-position: 0 0, 13px 0;
+@media (max-width: 45em) { :root { --gutter: 1rem; --bar-h: 2.5rem; } }
+:root[data-theme="light"] {
+  --bg: #f4f2ec;
+  --panel: rgba(244, 242, 236, 0.9);
+  --ink: #16171a;
+  --ink-2: #4c4e54;
+  --ink-3: #6b6d73;
+  --ink-4: #cfccc4;
+  --border: #8b8d93;
+  --accent: #b8661a;
+  --accent-ink: #fff8ee;
+  --sea-lit: #fdfcf9;
+  --sea-dark: #bab6ad;
+  --land-lit: #8e8b84;
+  --land-dark: #2a2b2f;
+  color-scheme: light;
 }
+
+/* Buttons: text in a thin box that inverts on hover. The page's switches
+   use them too. */
+.seg { display: inline-flex; gap: 0.5ch; }
+.btn {
+  box-sizing: border-box;
+  height: 1.75rem;
+  padding: 0 1ch;
+  border: 1px solid var(--ink-4);
+  border-radius: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--fs-sm);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+@media (hover: hover) { .btn:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); } }
+.btn:focus-visible { background: var(--ink); color: var(--bg); }
+.btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.btn[aria-pressed="false"] { color: var(--ink-3); }
+
+/* The figure is a panel with the globe and its zoom buttons. */
+.fig { margin: 0; }
 .globe-fig {
   position: relative;
+  box-sizing: border-box;
+  font: 400 var(--fs) / var(--lh) var(--font);
   min-width: 0;
-  border: 1px solid var(--edge);
-  background-color: var(--panel);
-  box-shadow: 5px 5px 0 var(--drop);
+  padding: var(--lh) 2ch;
+  border: 1px solid var(--ink-4);
+  background: var(--panel);
 }
 
-/* The globe is text in 11px Departure Mono, 7 px wide and 14 px high per
-   cell. It fills the width it is given and redraws to fit after a resize. */
+/* The globe is text in 11px IBM Plex Mono, in rows 14 px high. globe.js
+   measures the width of a cell once the font has loaded. The globe fills the
+   width it is given and redraws to fit after a resize. */
 .plot {
   max-width: 100%;
   margin: 0;
   height: 140px;
   overflow: hidden;
-  font: 11px/14px var(--mono);
+  font: 400 11px/14px var(--font);
+  font-variant-ligatures: none;
   white-space: pre;
   color: var(--fg);
   user-select: none;
 }
 .plot .a { color: var(--accent); }
-.plot .d { color: var(--muted); }
-.plot .g { color: var(--line); }
+.plot .d { color: var(--ink-3); }
+.plot .g { color: var(--ink-4); }
 .plot .i { background: var(--fg); color: var(--bg); }
-.plot .ai { background: var(--accent); color: var(--on-accent); }
+.plot .ai { background: var(--accent); color: var(--accent-ink); }
 
 /* The globe's shading. Sea and land each blend from a lit colour to a shadow
    colour, and s0–s15 and l0–l15 set how lit a cell is. Sea is drawn as the
@@ -140,37 +173,18 @@
 .plot .sf { color: color-mix(in srgb, var(--sea-lit) var(--s), var(--sea-dark)); }
 .plot .lb { background: color-mix(in srgb, var(--land-lit) var(--l), var(--land-dark)); }
 .plot .lf { color: color-mix(in srgb, var(--land-lit) var(--l), var(--land-dark)); }
-.plot .cut { color: var(--panel); }
+.plot .cut { color: var(--bg); }
 .plot .gr { color: color-mix(in srgb, var(--fg) 16%, transparent); }
-.plot .tag { background: var(--panel); }
+.plot .tag { background: var(--bg); }
 
 .globe-fig .plot { height: 322px; cursor: grab; touch-action: pan-y; }
 .globe-fig .plot.grabbing { cursor: grabbing; }
 
 /* The zoom buttons sit on the right of the readings under the globe. */
-.seg {
-  display: inline-flex;
-  padding: 2px;
-  border: 1px solid var(--line);
-  background: var(--panel);
-}
-.seg button {
-  appearance: none;
-  display: inline-grid;
-  place-items: center;
-  height: 30px;
-  min-width: 34px;
-  padding: 0 8px;
-  border: 0;
-  background: transparent;
-  color: var(--fg);
-  font: 400 11px/1 var(--mono);
-  letter-spacing: 0.08em;
-  cursor: pointer;
-}
-.seg button:hover { background: var(--soft); }
-.seg button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
-.globe-zoom { position: absolute; right: 14px; bottom: 14px; }
+.globe-zoom { position: absolute; right: 2ch; bottom: var(--lh); }
+.globe-zoom .btn { min-width: 3.5ch; background: var(--bg); }
+@media (hover: hover) { .globe-zoom .btn:hover { background: var(--ink); } }
+.globe-zoom .btn:focus-visible { background: var(--ink); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }

@@ -1,6 +1,6 @@
-/* The explorer's page. The sky is drawn for a dark background, so the page
-   is dark in both system themes. --accent is set by demo.js to the colour
-   of the body in focus. */
+/* The explorer's page. The sky is drawn as light on black, so the page is
+   dark only. --accent is set by demo.js to the colour of the body in
+   focus. */
 
 @font-face {
   font-family: "IBM Plex Mono";
@@ -8,22 +8,52 @@
   font-weight: 400;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-400-latin-ext.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-600-latin.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-600-latin-ext.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }
 
 :root {
   --bg: #050608;
-  --shade: rgba(5, 6, 8, 0.9);
+  --panel: rgba(6, 7, 10, 0.86);
   --ink: #eceae4;
   --ink-2: #a8a9ae;
   --ink-3: #7a7c83;
-  --line: #2c2e34;
+  --ink-4: #33353b;
   --accent: #f0a14a;
-  --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
-  --gutter: 16px;
-  --top-h: 52px;
+  --accent-ink: #1a1107;
+  --font: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --fs: 0.8125rem;
+  --fs-sm: 0.6875rem;
+  --lh: 1.25rem;
+  --bar-h: 2.75rem;
+  --gutter: 2rem;
+  --top: calc(var(--bar-h) + env(safe-area-inset-top));
   color-scheme: dark;
 }
-@media (min-width: 720px) { :root { --gutter: 24px; } }
+@media (max-width: 45em) { :root { --gutter: 1rem; --bar-h: 2.5rem; } }
 
 *, *::before, *::after { box-sizing: border-box; }
 html, body {
@@ -34,9 +64,15 @@ html, body {
   background: var(--bg);
   color: var(--ink);
 }
-body { font: 400 13px/20px var(--mono); -webkit-font-smoothing: antialiased; }
+body { font: 400 var(--fs) / var(--lh) var(--font); font-variant-ligatures: none; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 3px; }
+a:hover { color: var(--accent); text-decoration-color: var(--accent); }
 p, h1, dl, dd { margin: 0; }
+h1 { font-size: inherit; font-weight: 600; }
 button { font: inherit; color: inherit; }
+code { font: inherit; color: var(--ink-2); }
+::selection { background: var(--accent); color: var(--accent-ink); }
+:focus-visible { outline: 1px dashed var(--accent); outline-offset: 3px; }
 [hidden] { display: none !important; }
 .sr-only {
   position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
@@ -49,121 +85,126 @@ button { font: inherit; color: inherit; }
 #hud { z-index: 1; }
 .stage {
   position: fixed; inset: 0; z-index: 2;
-  touch-action: none; outline: none; cursor: grab;
+  touch-action: none; cursor: grab;
   -webkit-user-select: none; user-select: none;
 }
+.stage:focus { outline: none; }
+.stage:focus-visible { outline: 1px dashed var(--accent); outline-offset: -0.5rem; }
 .stage.is-pick { cursor: pointer; }
 .stage.is-drag { cursor: grabbing; }
 
-.top {
+/* The status bar: the back link, the name, the clock and the Read me. */
+.bar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 4;
-  display: flex; align-items: center; gap: 12px;
-  min-height: var(--top-h);
+  display: flex; align-items: center; gap: 1.75rem;
+  height: var(--top);
   padding: env(safe-area-inset-top) max(var(--gutter), env(safe-area-inset-right)) 0 max(var(--gutter), env(safe-area-inset-left));
-  background: linear-gradient(180deg, rgba(5, 6, 8, 0.9), rgba(5, 6, 8, 0.55) 70%, rgba(5, 6, 8, 0));
-  pointer-events: none;
+  border-bottom: 1px solid var(--ink-4);
+  background: linear-gradient(180deg, rgba(5, 6, 8, 0.94), rgba(5, 6, 8, 0.72));
+  font-size: var(--fs-sm);
 }
-.top > * { pointer-events: auto; }
-.back { padding: 10px 4px 10px 0; color: var(--ink-2); text-decoration: none; white-space: nowrap; }
-.back:hover, .back:focus-visible { color: var(--ink); }
-.brand { margin-right: auto; font: inherit; font-size: 14px; letter-spacing: 0.04em; white-space: nowrap; }
-.clock { display: flex; flex-direction: column; align-items: flex-end; font-size: 11px; line-height: 15px; color: var(--ink-2); font-variant-numeric: tabular-nums; text-align: right; }
-.clock #rate { color: var(--accent); }
-@media (max-width: 400px) { .back span { display: none; } }
+.back { color: var(--ink-2); text-decoration: none; white-space: nowrap; }
+.back:hover { color: var(--ink); }
+.brand { margin: 0 auto 0 0; font-weight: 600; white-space: nowrap; }
+.clock { display: flex; gap: 1.5ch; color: var(--ink-2); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.clock #rate { color: var(--accent); text-transform: uppercase; letter-spacing: 0.06em; }
+@media (max-width: 45em) {
+  .bar { gap: 0.75rem; }
+  .back span { display: none; }
+  .clock { flex-direction: column; align-items: flex-end; gap: 0; line-height: 0.9375rem; }
+}
 
-/* the control bar along the bottom */
+/* Buttons: text or an icon in a thin box that inverts on hover. */
+.btn {
+  height: 1.75rem; padding: 0 1ch;
+  border: 1px solid var(--ink-4); border-radius: 0;
+  background: none; color: var(--ink);
+  font: inherit; font-size: var(--fs-sm); white-space: nowrap;
+  cursor: pointer; transition: background 0.12s, color 0.12s;
+}
+.btn[aria-expanded="true"], .btn[aria-pressed="true"], .btn.is-paused { border-color: var(--accent); color: var(--accent); }
+.btn[aria-pressed="false"] { color: var(--ink-3); }
+.btn:disabled { opacity: 0.4; cursor: default; }
+.seg { display: inline-flex; gap: 0.5ch; }
+
+/* The controls along the bottom. The buttons are large enough for a
+   fingertip. */
 .controls {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 5;
-  display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 20px;
-  padding: 10px max(var(--gutter), env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(var(--gutter), env(safe-area-inset-left));
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 0.375rem 1.25rem;
+  padding: 0.625rem max(var(--gutter), env(safe-area-inset-right)) max(0.625rem, env(safe-area-inset-bottom)) max(var(--gutter), env(safe-area-inset-left));
   background: linear-gradient(0deg, rgba(5, 6, 8, 0.92), rgba(5, 6, 8, 0.75) 65%, rgba(5, 6, 8, 0));
   -webkit-user-select: none; user-select: none;
 }
-.group { display: flex; flex-wrap: nowrap; gap: 4px; }
-/* On a narrow screen the panel buttons and the time share the first row
-   and the view takes the second. */
+.group { display: flex; flex-wrap: nowrap; gap: 0.25rem; }
+/* On a narrow screen the panel buttons and the time share the first row,
+   the view takes the second and the renderer switch the third. */
 @media (max-width: 719px) {
-  .controls { gap: 6px 12px; }
+  .controls { gap: 0.375rem 0.75rem; }
   .controls .view { order: 1; }
+  .controls .renderer { order: 2; }
 }
-.controls button {
-  appearance: none;
+.controls .btn {
   display: inline-flex; align-items: center; justify-content: center;
-  min-width: 40px; height: 40px; padding: 0;
-  border: 1px solid var(--line); border-radius: 0;
+  min-width: 2.5rem; height: 2.5rem; padding: 0;
   background: rgba(5, 6, 8, 0.75);
-  color: var(--ink-2);
-  cursor: pointer;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
-.controls button.text { padding: 0 12px; }
-.controls button:focus-visible, .panel button:focus-visible, .back:focus-visible, .stage:focus-visible { outline: 1px solid var(--accent); outline-offset: 1px; }
-@media (hover: hover) { .controls button:hover { color: var(--ink); border-color: var(--ink-3); } }
-.controls button:active { color: var(--ink); border-color: var(--accent); }
-.controls button[aria-expanded="true"] { color: var(--accent); border-color: var(--accent); }
+.controls .btn.text { padding: 0 1.5ch; }
+.controls .btn:active { border-color: var(--accent); }
+/* The hover and focus look comes after every kind of button, so that it
+   wins over their backgrounds and states. */
+@media (hover: hover) { .btn:not(:disabled):hover { background: var(--ink); border-color: var(--ink); color: var(--bg); } }
+.btn:focus-visible { background: var(--ink); color: var(--bg); }
 svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 svg .fill { fill: currentColor; stroke: none; }
 #pause .if-paused, #pause.is-paused .if-playing { display: none; }
 #pause.is-paused .if-paused { display: block; }
-#pause.is-paused { color: var(--accent); border-color: var(--accent); }
 
-/* the body list and the info panel */
+/* The body list and the info panel */
 .panel {
   position: fixed; z-index: 3;
   overflow-y: auto; overscroll-behavior: contain;
-  background: var(--shade);
-  border: 1px solid var(--line);
-  scrollbar-width: thin; scrollbar-color: var(--line) transparent;
+  border: 1px solid var(--ink-4);
+  background: var(--panel);
+  scrollbar-width: thin; scrollbar-color: var(--ink-4) transparent;
 }
+.label { color: var(--ink-3); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.06em; }
 
 .bodies {
   left: max(var(--gutter), env(safe-area-inset-left));
-  top: calc(var(--top-h) + env(safe-area-inset-top));
-  bottom: calc(var(--controls-h, 64px) + 8px);
-  width: min(300px, calc(100vw - 2 * var(--gutter)));
-  padding: 6px 0 12px;
+  top: calc(var(--top) + 0.5rem);
+  bottom: calc(var(--controls-h, 64px) + 0.5rem);
+  width: min(19rem, calc(100vw - 2 * var(--gutter)));
+  padding: 0.25rem 0 var(--lh);
 }
-.bodies .head { margin: 12px 14px 2px; color: var(--ink-3); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
-.bodies .head:first-child { margin-top: 6px; }
+.bodies .head { margin: var(--lh) 2ch 0.25rem; }
+.bodies .head:first-child { margin-top: 0.75rem; }
 .bodies button {
-  appearance: none; display: block; width: 100%; padding: 6px 14px;
+  appearance: none; display: block; width: 100%; padding: 0.375rem 2ch;
   border: 0; background: none; color: var(--ink-2); text-align: left; cursor: pointer;
 }
-.bodies .kids { display: flex; flex-wrap: wrap; gap: 0 2px; padding: 0 10px 4px 26px; }
-.bodies .kids button { display: inline-block; width: auto; padding: 6px 5px; font-size: 12px; color: var(--ink-3); }
+.bodies .kids { display: flex; flex-wrap: wrap; gap: 0 0.25rem; padding: 0 1.5ch 0.25rem 3.5ch; }
+.bodies .kids button { display: inline-block; width: auto; padding: 0.375rem 0.5ch; font-size: var(--fs-sm); color: var(--ink-3); }
 @media (hover: hover) { .bodies button:hover { color: var(--hue, var(--ink)); } }
 .bodies button:focus-visible { color: var(--hue, var(--ink)); outline-offset: -2px; }
 .bodies button[aria-current="true"] { color: var(--accent); }
-.bodies button[aria-current="true"]::before { content: "> "; }
 
 .info {
   right: max(var(--gutter), env(safe-area-inset-right));
-  bottom: calc(var(--controls-h, 64px) + 8px);
-  width: min(400px, calc(100vw - 2 * var(--gutter)));
-  max-height: calc(100% - var(--top-h) - var(--controls-h, 64px) - 24px);
-  padding: 12px 14px 14px;
-  font-size: 12px; line-height: 18px;
+  bottom: calc(var(--controls-h, 64px) + 0.5rem);
+  width: min(48ch, calc(100vw - 2 * var(--gutter)));
+  max-height: calc(100% - var(--top) - var(--controls-h, 64px) - 1.5rem);
+  padding: 0.75rem 3ch var(--lh);
+  font-size: var(--fs-sm);
 }
-.info-name { padding-right: 36px; color: var(--accent); font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; }
-.info-close {
-  appearance: none; position: absolute; top: 4px; right: 4px;
-  display: flex; align-items: center; justify-content: center;
-  width: 36px; height: 36px; padding: 0;
-  border: 0; background: none; color: var(--ink-3); cursor: pointer;
-}
-.info-close:hover, .info-close:focus-visible { color: var(--ink); }
-.rows { margin-top: 8px; }
-.rows div { display: flex; gap: 1ch; }
-.rows dt { flex: none; width: 16ch; color: var(--ink-3); }
-.rows dd { min-width: 0; color: var(--ink); font-variant-numeric: tabular-nums; }
-.note { margin-top: 10px; color: var(--ink-2); }
-.link {
-  appearance: none; margin-top: 10px; padding: 4px 0;
-  border: 0; border-bottom: 1px dotted var(--ink-3); background: none;
-  color: var(--ink-2); cursor: pointer;
-}
-.link:hover, .link:focus-visible { color: var(--ink); border-bottom-color: var(--accent); }
+.info__head { display: flex; align-items: center; justify-content: space-between; gap: 1ch; margin-bottom: 0.5rem; }
+.info-name { color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.kv div { display: flex; gap: 1ch; }
+.kv dt { flex: none; width: 16ch; color: var(--ink-3); text-transform: uppercase; }
+.kv dd { min-width: 0; color: var(--ink); font-variant-numeric: tabular-nums; }
+.info-back { margin-top: var(--lh); }
 
 /* On a narrow screen both panels take the width above the controls, and
    the body list covers the info panel while it is open. */
@@ -173,10 +214,46 @@ svg .fill { fill: currentColor; stroke: none; }
     right: max(var(--gutter), env(safe-area-inset-right));
     width: auto;
   }
-  .bodies { top: auto; max-height: min(60vh, calc(100% - var(--top-h) - var(--controls-h, 64px) - 24px)); z-index: 4; background: var(--bg); }
-  .info { max-height: min(38vh, calc(100% - var(--top-h) - var(--controls-h, 64px) - 24px)); }
-  .rows dt { width: 14ch; }
+  .bodies { top: auto; max-height: min(60vh, calc(100% - var(--top) - var(--controls-h, 64px) - 1.5rem)); z-index: 4; background: var(--bg); }
+  .info { max-height: min(38vh, calc(100% - var(--top) - var(--controls-h, 64px) - 1.5rem)); padding: 0.5rem 2ch 0.75rem; }
+  .kv dt { width: 14ch; }
 }
+
+/* The Read me panel */
+.readme { position: fixed; top: var(--top); right: 0; bottom: 0; z-index: 30; width: min(52ch, 100%); overflow-y: auto; overscroll-behavior: contain; padding: var(--lh) 3ch calc(var(--lh) * 2); border-left: 1px solid var(--ink-4); background: var(--bg); color: var(--ink-2); }
+.readme[hidden] { display: none; }
+.readme__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--lh); }
+.readme p { margin: 0 0 var(--lh); }
+.readme .label { margin: calc(var(--lh) * 1.5) 0 calc(var(--lh) * 0.5); }
+.readme__head .label { margin: 0; }
+.readme__steps { margin: 0 0 var(--lh); padding-left: 3ch; }
+.readme__steps li { margin-bottom: var(--lh); }
+.readme__steps li::marker { color: var(--accent); }
+.readme__steps p { margin-bottom: calc(var(--lh) * 0.5); }
+.readme__parts { margin: 0 0 calc(var(--lh) * 0.5); padding: 0; list-style: none; }
+.readme__steps .readme__parts li { margin: 0 0 0.25rem; }
+.readme code { color: var(--ink); }
+.readme p code { white-space: nowrap; }
+.readme__code { position: relative; }
+.readme__code pre { margin: 0; padding: 1ch 1.5ch; padding-right: 8ch; overflow-x: auto; border: 1px solid var(--ink-4); background: rgba(127, 127, 127, 0.06); font-size: var(--fs-sm); line-height: 1.5; white-space: pre; }
+.readme__code .btn { position: absolute; top: 0.5ch; right: 0.5ch; height: 1.5rem; background: var(--bg); }  /* solid, because long lines scroll under it */
+@media (hover: hover) { .readme__code .btn:hover { background: var(--ink); } }
+.readme__code .btn:focus-visible { background: var(--ink); }
+@media (max-width: 45em) { .readme { width: 100%; border-left: 0; } }
+
+/* ?embed shows the sky and its controls without the bar and the Read me,
+   for a frame on the documentation page. A scroll that the sky does not
+   take goes on to that page. */
+:root[data-embed] { --top: 0px; }
+:root[data-embed] .bar,
+:root[data-embed] .readme { display: none !important; }
+:root[data-embed],
+:root[data-embed] body { overscroll-behavior: auto; }
+
+/* In a feature view the explorer's name links to the whole explorer. On a
+   phone the feature's name goes on a second line, as the clock does. */
+.brand a { text-decoration: none; }
+@media (max-width: 45em) { :root[data-feature] .brand { white-space: normal; line-height: 0.9375rem; } }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

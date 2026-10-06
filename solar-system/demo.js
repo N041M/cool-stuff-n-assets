@@ -4,7 +4,7 @@
 (function () {
   'use strict';
 
-  const OR = window.Orrery, INFO = window.BODY_INFO, Sf = window.Surfaces, Eph = window.Ephemeris;
+  const OR = window.Orrery, INFO = window.BODY_INFO, Eph = window.Ephemeris;
   if (!OR || !INFO) return;
 
   const $ = (id) => document.getElementById(id);
@@ -32,7 +32,7 @@
     sgra: '#ffa23e', s2: '#a9c1ff'
   };
   function colourOf(key) {
-    const S = Sf ? Sf.BODIES : {};
+    const S = OR.BODIES;
     for (let k = key; k; k = S[k] ? S[k].parent || S[k].host : null) if (COLOUR[k]) return COLOUR[k];
     return '#f0a14a';
   }
@@ -42,6 +42,42 @@
   const listName = (k) => (B[k] ? B[k].short || B[k].name : k);
   // a body's name in a sentence, with "the" before the Sun and the Moon
   const theName = (k) => (k === 'sun' || k === 'moon' ? 'the ' + nameOf(k) : nameOf(k));
+
+  /* ------------------------------------------------------------------------
+     Views. ?embed (set on the root by the script in demo.html) shows the sky
+     and its controls in a frame on the documentation page. ?focus=<key>
+     opens on any body. ?feature=<id> shows one feature with only the groups
+     of controls it keeps, and without the info panel.
+     ------------------------------------------------------------------------ */
+  const params = new URLSearchParams(window.location.search);
+  const embed = root.hasAttribute('data-embed');
+  const FEATURES = {
+    flights: { name: 'Flights', keep: ['panels', 'view'] },
+    // Saturn in June 2017, with its rings tilted furthest toward the Sun
+    rings: { name: 'Rings', focus: 'saturn', time: Date.UTC(2017, 5, 15), keep: ['view'] },
+    // the total eclipse of the Moon of 7 September 2025, from before the
+    // middle to the end, run at a minute a second over and over
+    eclipse: { name: 'Eclipse', focus: 'moon', time: Date.UTC(2025, 8, 7, 16, 55), until: Date.UTC(2025, 8, 7, 20, 0), warp: 60, keep: ['time'] },
+    renderer: { name: 'Renderer', keep: ['renderer'] }
+  };
+  const featureId = root.getAttribute('data-feature');
+  const feature = Object.prototype.hasOwnProperty.call(FEATURES, featureId) ? FEATURES[featureId] : null;
+  if (!feature) root.removeAttribute('data-feature');
+  const focusParam = params.get('focus');
+  const startFocus = OR.BODIES[focusParam] ? focusParam : feature && feature.focus ? feature.focus : 'saturn';
+  if (feature) {
+    const brand = $('brand'), full = document.createElement('a');
+    full.href = 'demo.html';
+    full.textContent = 'Solar system';
+    brand.textContent = '';
+    brand.append(full, ' / ' + feature.name);
+    document.title = 'Solar system / ' + feature.name;
+    controls.querySelectorAll('.group').forEach((g) => { g.hidden = !feature.keep.some((c) => g.classList.contains(c)); });
+    $('open-info').hidden = true;
+    // Now would leave the moment the view opens on
+    if (feature.time != null) $('now').hidden = true;
+  }
+  const noInfo = !!feature;
 
   /* ------------------------------------------------------------------------
      Start the sky
@@ -68,20 +104,28 @@
 
   const sky = $('sky'), hud = $('hud');
   root.style.setProperty('--controls-h', controls.offsetHeight + 'px');
+  // A frame on a phone has no room for the info panel at first. Its button
+  // opens it.
+  if (noInfo || (embed && narrow.matches)) {
+    info.hidden = true;
+    $('open-info').setAttribute('aria-expanded', 'false');
+  }
   OR.init(sky, hud, {
     font: getComputedStyle(document.body).fontFamily,
     fontWeight: 400,
-    accent: colourOf('saturn'),
+    focus: startFocus,
+    accent: colourOf(startFocus),
     background: '#050608',
     fps: 30,
     reducedMotion: reduced,
+    time: feature && feature.time != null ? feature.time : null,
     insets: insets()
   });
   const labels = { num: (x, d) => x.toFixed(d), int: (x) => fmtInt(x) };
   Object.keys(B).forEach((k) => { labels[k] = B[k].label; });
   OR.setLabels(labels);
-  OR.setColours(Object.fromEntries(Object.keys(Sf.BODIES).map((k) => [k, colourOf(k)])));
-  OR.setSites(Object.fromEntries(Object.keys(B).filter((k) => B[k].sites)
+  OR.setColours(Object.fromEntries(Object.keys(OR.BODIES).map((k) => [k, colourOf(k)])));
+  if (!noInfo) OR.setSites(Object.fromEntries(Object.keys(B).filter((k) => B[k].sites)
     .map((k) => [k, B[k].sites.map((s) => [s.name, +s.t.slice(0, 4), s.at[0], s.at[1]])])));
   // The glyphs are measured again once the font has loaded.
   if (document.fonts && document.fonts.load) {
@@ -101,7 +145,8 @@
     if (key === measureKey) return;
     measureKey = key;
     OR.setCovered(boxes);
-    OR.setGutter(parseFloat(getComputedStyle(root).getPropertyValue('--gutter')) || 16);
+    // the bar's side padding is the page's gutter, in CSS pixels
+    OR.setGutter(parseFloat(getComputedStyle(top).paddingLeft) || 16);
     OR.setInsets(ins[0], Math.max(0, Math.round(OR.size[1] - window.innerHeight)) + ins[1], ins[2]);
   }
   window.addEventListener('resize', measure);
@@ -116,13 +161,13 @@
   const fly = (k) => '<button type="button" data-fly="' + k + '" style="--hue:' + colourOf(k) + '">' + esc(listName(k)) + '</button>';
   let html = '';
   INFO.groups.forEach((g) => {
-    html += '<p class="head">' + esc(g.name) + '</p>';
+    html += '<p class="label head">' + esc(g.name) + '</p>';
     g.items.forEach((it) => {
       if (!Array.isArray(it)) { html += fly(it); return; }
       html += fly(it[0]) + '<div class="kids">' + it[1].map(fly).join('') + '</div>';
     });
   });
-  html += '<p class="head">Views</p><button type="button" data-fly="all">Whole system</button><button type="button" data-fly="milkyway">Whole galaxy</button>';
+  html += '<p class="label head">Views</p><button type="button" data-fly="all">Whole system</button><button type="button" data-fly="milkyway">Whole galaxy</button>';
   bodiesEl.innerHTML = html;
   const flyBtns = [...bodiesEl.querySelectorAll('[data-fly]')];
   const openBodies = $('open-bodies'), openInfo = $('open-info');
@@ -150,6 +195,7 @@
      The info panel
      ------------------------------------------------------------------------ */
   function setInfo(open) {
+    if (noInfo) open = false;
     info.hidden = !open;
     openInfo.setAttribute('aria-expanded', String(open));
     if (open) update(true);
@@ -226,7 +272,7 @@
   const deg = (x) => Math.abs(x).toFixed(Math.min(2, (String(x).split('.')[1] || '').length)) + '°\u00a0';
   const latLon = (la, lo) => deg(la) + (la < 0 ? 'S' : 'N') + ', ' + deg(lo) + (lo < 0 ? 'W' : 'E');
 
-  // the panel's title, rows and note for what is in view
+  // the panel's title and rows for what is in view
   function describe() {
     const d = OR.date, gal = OR.galaxyShown > 0.5, key = gal ? 'milkyway' : OR.focus;
     const b = B[key] || {}, rows = [];
@@ -238,14 +284,14 @@
       if (S.stay) rows.push(['On the surface', S.stay]);
       if (S.place) rows.push(['Place', S.place]);
       rows.push(['Coordinates', latLon(S.at[0], S.at[1])]);
-      return { title: S.name, rows: rows, note: S.note, back: 'Back to ' + theName(site.body) };
+      return { title: S.name, rows: rows, back: 'Back to ' + theName(site.body) };
     }
     if (gal) {
       rows.push(['Sun to centre', ly(fmtInt(Math.round(Eph.GALAXY.R0 * 3261.56 / 100) * 100))]);
       rows.push(['Diameter', 'about ' + ly('100,000')]);
       rows.push(['Sun’s orbit', '230 million years']);
       rows.push(['Stars', '100 to 400 billion']);
-      return { title: b.name, rows: rows, note: [b.note, b.unreal].filter(Boolean).join(' ') };
+      return { title: b.name, rows: rows };
     }
     const inf = OR.info(key), cls = inf.cls;
     const parent = inf.parent ? theName(inf.parent) : '';
@@ -315,8 +361,7 @@
       }
       if (cls === 'craft') rows.push(['Launched', String(b.craft)]);
     }
-    const approx = cls === 'craft' || (cls === 'moon' && key !== 'moon') || b.approx ? 'Its position is approximate.' : '';
-    return { title: b.name, rows: rows, note: [b.note, b.unreal, approx].filter(Boolean).join(' ') };
+    return { title: b.name, rows: rows };
   }
 
   /* ------------------------------------------------------------------------
@@ -360,11 +405,13 @@
     pauseBtn.setAttribute('aria-label', paused ? 'Play' : 'Pause');
     pauseBtn.title = paused ? 'Play' : 'Pause';
   }
+  // a view that opens on a moment may run its clock at a rate of its own
+  if (feature && feature.warp) setWarp(WARPS.indexOf(feature.warp));
 
   /* ------------------------------------------------------------------------
      Keeping the panel, the clock and the framing up to date
      ------------------------------------------------------------------------ */
-  const nameEl = $('info-name'), rowsEl = $('info-rows'), noteEl = $('info-note'), backEl = $('info-back');
+  const nameEl = $('info-name'), rowsEl = $('info-rows'), backEl = $('info-back');
   let lastUpdate = 0;
   function update(now) {
     const t = performance.now();
@@ -377,14 +424,23 @@
     if (nameEl.textContent !== D.title) nameEl.textContent = D.title;
     const html = D.rows.map((r) => '<div><dt>' + esc(r[0]) + '</dt><dd>' + esc(r[1]) + '</dd></div>').join('');
     if (rowsEl._html !== html) rowsEl.innerHTML = rowsEl._html = html;
-    if (noteEl.textContent !== D.note) noteEl.textContent = D.note;
-    noteEl.hidden = !D.note;
     backEl.hidden = !D.back;
     if (D.back && backEl.textContent !== D.back) backEl.textContent = D.back;
     measure();
   }
+  // In a frame on another page, the sky stops drawing while the frame is
+  // off screen.
+  let onScreen = true;
+  if (embed && window.IntersectionObserver) {
+    new IntersectionObserver((entries) => {
+      onScreen = entries[entries.length - 1].isIntersecting;
+      OR.setPaused(!onScreen);
+    }).observe(stage);
+  }
   (function tick() {
-    update(false);
+    // a view with an end goes back to its start once the clock passes the end
+    if (feature && feature.until && OR.warp > 0 && OR.date.getTime() > feature.until) { OR.setTime(feature.time); update(true); }
+    if (onScreen) update(false);
     requestAnimationFrame(tick);
   })();
 
@@ -394,8 +450,22 @@
   OR.setAccent(colourOf(OR.focus));
   root.style.setProperty('--accent', colourOf(OR.focus));
   flyBtns.forEach((b) => b.setAttribute('aria-current', String(b.dataset.fly === OR.focus)));
+  if (featureId === 'flights' && roomy.matches) setBodies(true);
   update(true);
   OR.frameFocus();
+
+  /* ------------------------------------------------------------------------
+     The renderer switch: WebGL, or the 2D canvas that browsers without
+     WebGL get. The pressed button shows the renderer in use, and WebGL is
+     turned off where the browser has none.
+     ------------------------------------------------------------------------ */
+  const rendererBtns = [...document.querySelectorAll('[data-renderer]')];
+  function showRenderer() {
+    rendererBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.renderer === OR.renderer)));
+  }
+  if (OR.renderer === '2d') rendererBtns.forEach((b) => { if (b.dataset.renderer === 'webgl') b.disabled = true; });
+  rendererBtns.forEach((b) => b.addEventListener('click', () => { OR.setRenderer(b.dataset.renderer); showRenderer(); }));
+  showRenderer();
 
   /* ------------------------------------------------------------------------
      Buttons that turn and zoom. Holding one down repeats it.
@@ -427,6 +497,9 @@
      a click flies to a body or picks a landing site.
      ------------------------------------------------------------------------ */
   stage.addEventListener('wheel', (e) => {
+    // in a frame, the wheel scrolls the page round it unless Ctrl or Cmd is
+    // held, as it is for a trackpad's pinch
+    if (embed && !e.ctrlKey && !e.metaKey) return;
     e.preventDefault();
     let dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? window.innerHeight : 1);
     if (e.ctrlKey) dy *= 5;
@@ -498,7 +571,7 @@
     pointers.delete(e.pointerId);
     if (drag && !drag.on && e.type === 'pointerup') {
       // a fingertip gets more reach than a mouse
-      const si = OR.pickSite(e.clientX, e.clientY, drag.touch ? 22 : 10);
+      const si = noInfo ? -1 : OR.pickSite(e.clientX, e.clientY, drag.touch ? 22 : 10);
       if (si >= 0) showSite(si);
       else {
         const k = OR.pick(e.clientX, e.clientY, drag.touch ? 30 : 18);
@@ -518,8 +591,11 @@
   stage.addEventListener('pointerleave', () => { if (!pointers.size) { OR.hover(null); stage.classList.remove('is-pick'); } });
 
   const KEY_BODIES = ['sun', 'mercury', 'venus', 'earth', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune'];
+  const readme = $('readme');
   window.addEventListener('keydown', (e) => {
     if (e.altKey || e.metaKey || e.ctrlKey) return;
+    // keys pressed in the Read me panel are its own
+    if (readme && e.target.closest && e.target.closest('#readme')) return;
     const k = e.key;
     if (k === 'Escape') {
       if (!bodiesEl.hidden && !roomy.matches) setBodies(false, true);
@@ -545,6 +621,8 @@
      keep the first icon they load show the one in the page's head.
      ------------------------------------------------------------------------ */
   (function tabIcon() {
+    // a frame has no tab of its own
+    if (embed) return;
     const SIZE = 32, ARM = 7, LINE = 2, INSET = 2;
     const tile = document.createElement('canvas'), body = document.createElement('canvas');
     tile.width = tile.height = body.width = body.height = SIZE;
@@ -592,4 +670,34 @@
     setInterval(tick, 1000);
     document.addEventListener('visibilitychange', tick);
   })();
+})();
+
+// The Read me panel: open and close it, close it with Escape, and copy a
+// code block to the clipboard. The Escape that closes it goes no further,
+// so it does not also close the explorer's panels.
+(function () {
+  const panel = document.getElementById("readme");
+  const open = document.querySelector("[data-readme-open]");
+  if (!panel || !open) return;
+  function show(on) {
+    panel.hidden = !on;
+    open.setAttribute("aria-expanded", String(on));
+    if (on) panel.querySelector("[data-readme-close]").focus();
+    else open.focus();
+  }
+  open.addEventListener("click", function () { show(panel.hidden); });
+  panel.querySelector("[data-readme-close]").addEventListener("click", function () { show(false); });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && !panel.hidden) { e.stopPropagation(); show(false); }
+  });
+  panel.querySelectorAll("[data-copy-code]").forEach(function (button) {
+    button.addEventListener("click", function () {
+      const text = button.parentElement.querySelector("code").textContent;
+      if (!navigator.clipboard) return;
+      navigator.clipboard.writeText(text).then(function () {
+        button.textContent = "Copied";
+        setTimeout(function () { button.textContent = "Copy"; }, 1500);
+      }, function () {});
+    });
+  });
 })();

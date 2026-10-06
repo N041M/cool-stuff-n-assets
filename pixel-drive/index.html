@@ -4,112 +4,914 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Pixel drive</title>
-  <link rel="preload" href="fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="demo.css">
-  <script defer src="js/core.js"></script>
-  <script defer src="js/art-nature.js"></script>
-  <script defer src="js/art-built.js"></script>
-  <script defer src="js/art-beings.js"></script>
-  <script defer src="js/world.js"></script>
-  <script defer src="js/weather.js"></script>
-  <script defer src="js/scenes.js"></script>
-  <script defer src="js/ascii.js"></script>
-  <script defer src="js/engine.js"></script>
-  <script defer src="demo.js"></script>
+  <link rel="preload" href="fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <style>
+    /* IBM Plex Mono in two weights. Each weight comes as a Latin file and a
+       Latin Extended file, which holds the Czech letters. A browser downloads
+       the second file only when the page uses one of its characters. */
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-400-latin-ext.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-600-latin.woff2") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-600-latin-ext.woff2") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+
+    :root {
+      --bg: #050608;
+      --ink: #eceae4;
+      --ink-2: #a8a9ae;
+      --ink-3: #7a7c83;
+      --ink-4: #33353b;
+      --accent: #f0a14a;
+      --accent-ink: #1a1107;
+      --font: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --fs: 0.8125rem;
+      --fs-sm: 0.6875rem;
+      --lh: 1.25rem;
+      --bar-h: 2.75rem;
+      --gutter: 2rem;
+      color-scheme: dark;
+    }
+    @media (max-width: 45em) { :root { --gutter: 1rem; --bar-h: 2.5rem; } }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-padding-top: calc(var(--bar-h) + var(--lh)); }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 400 var(--fs) / var(--lh) var(--font); font-variant-ligatures: none; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 3px; }
+    a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+    h1, h2, h3 { margin: 0; font-size: inherit; font-weight: 600; }
+    button { font: inherit; color: inherit; }
+    code { font: inherit; color: var(--ink-2); }
+    ::selection { background: var(--accent); color: var(--accent-ink); }
+    :focus-visible { outline: 1px dashed var(--accent); outline-offset: 3px; }
+
+    /* The bar: the way back to the list, the demo's name and the full demo.
+       The page scrolls under it, so it blurs what is behind it. */
+    .bar { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 1.75rem; height: var(--bar-h); padding: 0 var(--gutter); border-bottom: 1px solid var(--ink-4); background: linear-gradient(180deg, rgba(5, 6, 8, 0.94), rgba(5, 6, 8, 0.72)); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); font-size: var(--fs-sm); }
+    .back { color: var(--ink-2); text-decoration: none; white-space: nowrap; }
+    .back:hover { color: var(--ink); }
+    .brand { margin: 0 auto 0 0; min-width: 0; overflow: hidden; font-weight: 600; white-space: nowrap; text-overflow: ellipsis; }
+    @media (max-width: 45em) { .bar { gap: 0.75rem; } .back span { display: none; } }
+
+    .btn { display: inline-flex; align-items: center; height: 1.75rem; padding: 0 1ch; border: 1px solid var(--ink-4); border-radius: 0; background: none; color: var(--ink); font: inherit; font-size: var(--fs-sm); white-space: nowrap; text-decoration: none; cursor: pointer; transition: background 0.12s, color 0.12s; }
+    @media (hover: hover) { .btn:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); } }
+    .btn:focus-visible { background: var(--ink); color: var(--bg); }
+
+    .label { color: var(--ink-3); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    main { max-width: 72.5rem; margin: 0 auto; padding: calc(var(--lh) * 3) var(--gutter); }
+    main p { max-width: 64ch; margin: 0 0 var(--lh); color: var(--ink-2); }
+    main p code, main li code, main dd code, main dt code { color: var(--ink); }
+    h1 { margin-bottom: var(--lh); font-size: clamp(1.75rem, 5vw, 3rem); line-height: 1.1; font-weight: 600; letter-spacing: -0.01em; }
+    .intro > p:first-of-type { color: var(--ink); }
+
+    /* The features under the intro: a row of plain links. */
+    .features { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 2.5ch; max-width: none; }
+    .features .label { margin: 0; }
+
+    /* One section per feature, with a rule above it. */
+    .doc { margin-top: calc(var(--lh) * 4); padding-top: calc(var(--lh) * 2); border-top: 1px solid var(--ink-4); }
+    .doc h2 { margin-bottom: var(--lh); font-size: calc(var(--fs) * 1.7); line-height: calc(var(--lh) * 2); font-weight: 600; }
+    main p.label { margin: calc(var(--lh) * 1.5) 0 calc(var(--lh) * 0.5); color: var(--ink-3); }
+
+    .frame { margin: var(--lh) 0; }
+    .frame iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--ink-4); background: var(--bg); }
+    .frame--intro iframe { aspect-ratio: 16 / 10; }
+    .frame figcaption { margin-top: 0.5rem; font-size: var(--fs-sm); color: var(--ink-3); }
+    /* A frame for an effect that waits for the pointer is lower, so it is not
+       mostly empty. */
+    .frame--low iframe { aspect-ratio: 21 / 9; }
+    @media (max-width: 45em) { .frame iframe, .frame--intro iframe { aspect-ratio: 4 / 5; } .frame--low iframe { aspect-ratio: 1 / 1; } }
+
+    .needs { max-width: 64ch; margin: 0 0 var(--lh); padding-left: 2ch; color: var(--ink-2); list-style: square; }
+    .needs li::marker { color: var(--ink-3); }
+    .needs li + li { margin-top: 0.25rem; }
+
+    /* Code blocks, as in the demos' Read me panels. */
+    .file { margin-bottom: 0.5rem; color: var(--ink-3); font-size: var(--fs-sm); }
+    .code { position: relative; margin: 0 0 var(--lh); }
+    .code pre { margin: 0; padding: 1ch 1.5ch; padding-right: 8ch; overflow-x: auto; border: 1px solid var(--ink-4); background: rgba(127, 127, 127, 0.06); font-size: var(--fs-sm); line-height: 1.5; white-space: pre; }
+    .code code { color: var(--ink); }
+    .code .btn { position: absolute; top: 0.5ch; right: 0.5ch; height: 1.5rem; background: var(--bg); }  /* solid, because long lines scroll under it */
+    /* The solid background above would otherwise hide the Copy button's text
+       on hover, where the text takes the page colour. */
+    @media (hover: hover) { .code .btn:hover { background: var(--ink); } }
+    .code .btn:focus-visible { background: var(--ink); }
+
+    .steps { margin: 0 0 var(--lh); padding-left: 3ch; color: var(--ink-2); }
+    .steps li { margin-bottom: var(--lh); }
+    .steps li::marker { color: var(--accent); }
+    .steps p { margin-bottom: calc(var(--lh) * 0.5); }
+    .steps .code { margin-bottom: calc(var(--lh) * 0.5); }
+
+    /* Options: a name column and its meaning. */
+    .kv { max-width: 80ch; margin: 0 0 var(--lh); }
+    .kv div { display: flex; gap: 2ch; padding: 0.375rem 0; border-top: 1px solid var(--ink-4); }
+    .kv div:last-child { border-bottom: 1px solid var(--ink-4); }
+    .kv dt { flex: none; width: 10ch; }
+    .kv dd { margin: 0; color: var(--ink-2); }
+
+    .foot { max-width: 72.5rem; margin: 0 auto; padding: var(--lh) var(--gutter) calc(var(--lh) * 3); }
+    .foot p { max-width: 64ch; margin: 0; padding-top: var(--lh); border-top: 1px solid var(--ink-4); color: var(--ink-3); font-size: var(--fs-sm); }
+    .foot a { color: var(--ink-2); }
+  </style>
+  <link rel="stylesheet" href="../assets/code.css">
+  <script defer src="../assets/code.js"></script>
 </head>
 <body>
-  <canvas id="drive" aria-hidden="true"></canvas>
-
-  <header class="top">
-    <div class="bar">
-      <a class="back" href="../" aria-label="All demos">← <span>All demos</span></a>
-      <h1 class="brand">Pixel drive</h1>
-      <div class="seg" role="group" aria-label="Look">
-        <button type="button" data-set-style="pixel" aria-pressed="true">Pixel</button>
-        <button type="button" data-set-style="ascii" aria-pressed="false">ASCII</button>
-      </div>
-      <div class="seg" role="group" aria-label="Theme">
-        <button type="button" data-set-theme="light" aria-pressed="false">Light</button>
-        <button type="button" data-set-theme="dark" aria-pressed="false">Dark</button>
-        <button type="button" data-set-theme="system" aria-pressed="true">Auto</button>
-      </div>
-    </div>
+  <header class="bar">
+    <a class="back" href="../" aria-label="All demos">← <span>All demos</span></a>
+    <p class="brand">Pixel drive</p>
+    <a class="btn" href="demo.html">Open full screen</a>
   </header>
 
   <main>
-    <section class="hero" data-hero>
-      <div class="hero-inner">
-        <form class="panel" data-jump>
-          <div class="panel-head">
-            <span class="label speed-label">Speed</span>
-            <div class="seg speed" role="group" aria-label="Speed">
-              <button type="button" data-set-rate="1" aria-pressed="true">1×</button>
-              <button type="button" data-set-rate="2" aria-pressed="false">2×</button>
-              <button type="button" data-set-rate="4" aria-pressed="false">4×</button>
-              <button type="button" data-set-rate="8" aria-pressed="false">8×</button>
-            </div>
-            <button type="button" class="btn btn-small" data-hop>Hop</button>
-            <button type="button" class="btn btn-small" data-toggle-setup aria-expanded="true" aria-controls="setup">Hide setup</button>
-          </div>
-          <div class="setup" id="setup">
-          <div class="fields">
-            <label>
-              <span class="label">Place</span>
-              <select name="place">
-                <option value="">Any</option>
-                <option value="city">City</option>
-                <option value="highway">Highway</option>
-                <option value="bridge">Bridge</option>
-                <option value="shore">Coast</option>
-                <option value="desert">Desert</option>
-                <option value="rally">Rally stage</option>
-                <option value="country">Farmland</option>
-                <option value="village">Village</option>
-                <option value="forest">Forest</option>
-                <option value="mountains">Mountain pass</option>
-                <option value="winter">Winter valley</option>
-              </select>
-            </label>
-            <label>
-              <span class="label">Time</span>
-              <select name="hour">
-                <option value="">Now</option>
-                <option value="6">06:00</option>
-                <option value="9">09:00</option>
-                <option value="12">12:00</option>
-                <option value="16">16:00</option>
-                <option value="19.5">19:30</option>
-                <option value="23">23:00</option>
-              </select>
-            </label>
-            <label>
-              <span class="label">Weather</span>
-              <select name="weather">
-                <option value="">Changing</option>
-                <option value="clear">Clear</option>
-                <option value="cloudy">Cloudy</option>
-                <option value="rain">Rain</option>
-                <option value="snow">Snow</option>
-                <option value="fog">Fog</option>
-              </select>
-            </label>
-            <button type="submit" class="btn btn-solid">Go</button>
-          </div>
-          <div class="scenes">
-            <span class="label">Scenes</span>
-            <button type="button" class="btn" data-scene="pitch">Football pitch</button>
-            <button type="button" class="btn" data-scene="jested">Ještěd</button>
-            <button type="button" class="btn" data-scene="ufo">UFO</button>
-          </div>
-          <p class="status">
-            <span class="label">Seed <span data-seed>–</span></span>
-            <a class="label" href="?" data-link>Link</a>
-            <button type="button" class="btn btn-small" data-new>New route</button>
-          </p>
-          </div>
-        </form>
-      </div>
-    </section>
+<div class="intro">
+<h1>Pixel drive</h1>
+<p>Use it as a moving scene at the top of a landing page or a personal site. It draws an endless generated drive on a canvas fixed under your content and fades into your page colour at the bottom. It needs no libraries.</p>
+<figure class="frame frame--intro">
+  <iframe data-src="demo.html?embed" title="Pixel drive" loading="lazy" data-live></iframe>
+  <figcaption><a href="demo.html">Open on its own</a></figcaption>
+</figure>
+</div>
+
+<nav class="features" aria-label="Features">
+  <span class="label">Features</span>
+  <a href="#setup">Set up the drive</a>
+  <a href="#ascii">Character look</a>
+  <a href="#jump">Place, time and weather</a>
+  <a href="#rain">Rain</a>
+  <a href="#snow">Snow</a>
+  <a href="#fog">Fog</a>
+  <a href="#pitch">Football pitch</a>
+  <a href="#jested">Ještěd</a>
+  <a href="#ufo">UFO</a>
+  <a href="#sprint">Highway sprint</a>
+  <a href="#speed">Speed</a>
+  <a href="#hop">Hop</a>
+  <a href="#layout">Room for your content</a>
+</nav>
+
+<section class="doc" id="setup" aria-labelledby="setup-h">
+<h2 id="setup-h">Set up the drive</h2>
+<p>Use this setup to put the drive behind your page. Every section below starts from it, and the frame above shows it with the demo's controls.</p>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>The <code>js</code> folder, nine scripts of 377 KB in all.</li>
+  <li>A <code>&lt;canvas id="drive"&gt;</code> fixed behind the page.</li>
+  <li><code>--bg</code>, <code>--fg</code> and <code>--accent</code> on <code>:root</code>, written as six-digit hex colours. The car takes <code>--accent</code>, and the scene fades into <code>--bg</code>.</li>
+  <li>IBM Plex Mono, for the <a href="#ascii">character look</a>. The drive waits up to 1.5 s for it before it starts.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">js/engine.js</p>
+<div class="code"><pre><code>// Each plane's depth, its extent above and below its ground line in sprite
+// pixels, its distance tint and how much fog adds to it, and its scale in
+// pixels per metre.
+const PLANE_DEFS = [
+  { name: "far", d: 0.1, top: -150, bot: 120, haze: 0.45, fogPlane: 0.9, scale: 0.05, rows: 1 },
+  { name: "mid", d: 0.3, top: -150, bot: 3, haze: 0.18, fogPlane: 0.6, scale: 3, rows: 1 },
+  { name: "roadside", d: 0.6, top: -150, bot: 4, haze: 0.05, fogPlane: 0.3, scale: 6, rows: 3 },
+  { name: "road", d: 1, top: -2, bot: 220, haze: 0, fogPlane: 0.12, scale: 10, rows: 0 },
+];
+// …
+function frame(now) {
+  raf = requestAnimationFrame(frame);
+  const dt = lastNow ? Math.min(0.1, (now - lastNow) / 1000) : 1 / 60;
+  lastNow = now;
+  const scroll = window.scrollY || 0;
+  // Nothing to do once the scene has scrolled away.
+  if (scroll * (1 - PARALLAX) &gt; (E.L.groundEnd * E.P) + 40) {
+    if (!E.cleared) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      E.cleared = true;
+    }
+    return;
+  }
+  E.cleared = false;
+  for (let i = 0; i &lt; E.rate; i++) update(dt);
+  draw();
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p>The scene is four planes of scenery at different depths. Each plane is built in pieces just past the right edge of the screen as the camera moves along the route. Every frame moves the camera, updates the weather and the traffic, and draws the sky, the planes, the car and a fade into <code>--bg</code>. The drive stops drawing once the page has scrolled past the scene.</p>
+<p>When the system asks for reduced motion, the drive shows one still picture.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Copy the <code>js</code> folder next to your page.</p>
+  </li>
+  <li>
+    <p>Load the nine scripts at the end of the head, in this order.</p>
+    <div class="code"><pre><code>&lt;script defer src="js/core.js"&gt;&lt;/script&gt;
+&lt;script defer src="js/art-nature.js"&gt;&lt;/script&gt;
+&lt;script defer src="js/art-built.js"&gt;&lt;/script&gt;
+&lt;script defer src="js/art-beings.js"&gt;&lt;/script&gt;
+&lt;script defer src="js/world.js"&gt;&lt;/script&gt;
+&lt;script defer src="js/weather.js"&gt;&lt;/script&gt;
+&lt;script defer src="js/scenes.js"&gt;&lt;/script&gt;
+&lt;script defer src="js/ascii.js"&gt;&lt;/script&gt;
+&lt;script defer src="js/engine.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>Put the canvas first in the body.</p>
+    <div class="code"><pre><code>&lt;canvas id="drive" aria-hidden="true"&gt;&lt;/canvas&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>Fix the canvas behind the page and set the colours the drive reads. Write all three as six-digit hex colours.</p>
+    <div class="code"><pre><code>:root { --bg: #050608; --fg: #eceae4; --accent: #f0a14a; }
+body { margin: 0; background: var(--bg); }
+#drive { position: fixed; inset: 0; width: 100%; height: 100vh; pointer-events: none; z-index: 0; }
+main { position: relative; z-index: 1; }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
+
+<section class="doc" id="ascii" aria-labelledby="ascii-h">
+<h2 id="ascii-h">Character look</h2>
+<p>Use the character look to draw the same scene in text characters, to suit a page set in a monospace font.</p>
+<figure class="frame">
+  <iframe data-src="demo.html?feature=ascii&amp;embed" title="Character look" loading="lazy" data-live></iframe>
+  <figcaption><a href="demo.html?feature=ascii">Open on its own</a></figcaption>
+</figure>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>The drive, set up as under <a href="#setup">Set up the drive</a>.</li>
+  <li>IBM Plex Mono. Characters it lacks, such as the box-drawing lines, come from the system's monospace font.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">js/engine.js</p>
+<div class="code"><pre><code>E.style = params.get("drive") === "ascii" ? "ascii" : "pixel";
+E.ascii = E.style !== "pixel";
+K.asciiText = E.ascii;
+// …
+setStyle: function (style) {
+  style = style === "pixel" ? "pixel" : "ascii";
+  if (style === E.style) return;
+  E.style = style;
+  E.ascii = style !== "pixel";
+  K.asciiText = E.ascii;
+  if (!started) return;
+  rebuildPlanes();
+  backdropKey = "";
+  updateLook(0, true);
+  if (E.still) drawStill();
+},</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p><code>js/ascii.js</code> reads each picture of the scene in cells of 7 × 14 px. Each cell takes the material that covers most of it and draws the character for that material at one of three strengths. Every row of the scene has one flat tone. <code>Drive.setStyle</code> builds the scenery again in the other look.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Set up the drive as under <a href="#setup">Set up the drive</a>.</p>
+  </li>
+  <li>
+    <p>Copy the <code>fonts</code> folder next to your page and add IBM Plex Mono to your CSS. The second file holds the letters with accents and loads only when the scene uses one.</p>
+    <div class="code"><pre><code>@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: url("fonts/ibm-plex-mono-400-latin-ext.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>Switch to the character look once the scripts have run. Adding <code>?drive=ascii</code> to the address does the same.</p>
+    <div class="code"><pre><code>&lt;script&gt;
+  document.addEventListener("DOMContentLoaded", function () {
+    Drive.setStyle("ascii");
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
+
+<section class="doc" id="jump" aria-labelledby="jump-h">
+<h2 id="jump-h">Place, time and weather</h2>
+<p>Use <code>Drive.jump</code> to open the drive on a place, an hour and a weather that suit your page.</p>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>The drive, set up as under <a href="#setup">Set up the drive</a>.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">js/engine.js</p>
+<div class="code"><pre><code>jump: function (o) {
+  o = o || {};
+  if (o.seed === undefined) o.seed = seed;
+  reset(o);
+  E.moonPhase = moonPhaseNow();
+  makeStars();
+  if (E.still) drawStill();
+},</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p class="file">demo.js</p>
+<div class="code"><pre><code>// The drive starts once its font has loaded.
+(function waitForStart() {
+  if (!Drive.seed) return requestAnimationFrame(waitForStart);
+  if (feature &amp;&amp; feature.jump) Drive.jump(feature.jump);
+  if (feature &amp;&amp; feature.ufo) jumpToUfo(feature.ufo);
+  if (feature &amp;&amp; feature.sprint) jumpToSprint(feature.sprint);
+  if (feature || embed) Drive.refresh();
+  press("data-set-style", Drive.style);
+  showSeed();
+})();</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p><code>Drive.jump</code> starts a new route from the options it is given. A weather passed to it holds until the next jump. Without one, the weather drifts toward the climate of each place. The drive starts once its font has loaded, so a page waits for <code>Drive.seed</code> before it jumps.</p>
+<p>Every option can be left out.</p>
+<dl class="kv">
+  <div><dt><code>place</code></dt><dd><code>city</code>, <code>highway</code>, <code>bridge</code>, <code>shore</code> (coast), <code>desert</code>, <code>rally</code>, <code>country</code> (farmland), <code>village</code>, <code>forest</code>, <code>mountains</code> or <code>winter</code>.</dd></div>
+  <div><dt><code>region</code></dt><dd><code>coast</code>, <code>lowland</code>, <code>hills</code>, <code>dry</code> or <code>mountains</code>, for a place that belongs to more than one.</dd></div>
+  <div><dt><code>hour</code></dt><dd>The hour of the day from 0 to 24, for example <code>19.5</code> for 19:30.</dd></div>
+  <div><dt><code>weather</code></dt><dd><code>cover</code>, <code>precip</code> and <code>fog</code> from 0 to 1, <code>temp</code> in °C, and <code>snow</code> and <code>wet</code> from 0 to 1.</dd></div>
+  <div><dt><code>seed</code></dt><dd>The seed of the route. It stays the same when left out.</dd></div>
+</dl>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Set up the drive as under <a href="#setup">Set up the drive</a>.</p>
+  </li>
+  <li>
+    <p>Jump once the drive has started, at the end of the body.</p>
+    <div class="code"><pre><code>&lt;script&gt;
+  // The drive starts once its font has loaded.
+  (function wait() {
+    if (!window.Drive || !Drive.seed) return requestAnimationFrame(wait);
+    Drive.jump({ place: "village", hour: 21, weather: { precip: 1, temp: -3 } });
+  })();
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
+
+<section class="doc" id="rain" aria-labelledby="rain-h">
+<h2 id="rain-h">Rain</h2>
+<p>Use these options to open the drive on farmland in rain.</p>
+<figure class="frame">
+  <iframe data-src="demo.html?feature=rain&amp;embed" title="Rain" loading="lazy" data-live></iframe>
+  <figcaption><a href="demo.html?feature=rain">Open on its own</a></figcaption>
+</figure>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>The drive, set up as under <a href="#setup">Set up the drive</a>.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">demo.js</p>
+<div class="code"><pre><code>rain: { cover: 0.95, precip: 0.8, temp: 10, wet: 1 },
+// …
+rain: { name: "Rain", jump: { place: "country", hour: 11, weather: WEATHER.rain } },</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p class="file">js/weather.js</p>
+<div class="code"><pre><code>// Rain wets the ground within a minute and it dries over five. Snow
+// settles over a couple of minutes and melts over four.
+const rain = this.precip * K.smooth(0, 2, this.temp);
+const snowing = this.precip * (1 - K.smooth(-0.5, 1.5, this.temp));</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p><code>cover</code> is the share of the sky under cloud, and <code>precip</code> is how hard it rains. Above 2 °C everything that falls is rain. Rain wets the road within a minute, so <code>wet: 1</code> starts the view with the road already wet.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Set up the drive as under <a href="#setup">Set up the drive</a>.</p>
+  </li>
+  <li>
+    <p>Jump there once the drive has started, at the end of the body.</p>
+    <div class="code"><pre><code>&lt;script&gt;
+  // The drive starts once its font has loaded.
+  (function wait() {
+    if (!window.Drive || !Drive.seed) return requestAnimationFrame(wait);
+    Drive.jump({ place: "country", hour: 11, weather: { cover: 0.95, precip: 0.8, temp: 10, wet: 1 } });
+  })();
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
+
+<section class="doc" id="snow" aria-labelledby="snow-h">
+<h2 id="snow-h">Snow</h2>
+<p>Use these options to open the drive on a village in snow.</p>
+<figure class="frame">
+  <iframe data-src="demo.html?feature=snow&amp;embed" title="Snow" loading="lazy" data-live></iframe>
+  <figcaption><a href="demo.html?feature=snow">Open on its own</a></figcaption>
+</figure>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>The drive, set up as under <a href="#setup">Set up the drive</a>.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">demo.js</p>
+<div class="code"><pre><code>snow: { cover: 0.95, precip: 0.7, temp: -4, snow: 1 },
+// …
+snow: { name: "Snow", jump: { place: "village", hour: 10, weather: WEATHER.snow } },</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p class="file">js/weather.js</p>
+<div class="code"><pre><code>// Rain wets the ground within a minute and it dries over five. Snow
+// settles over a couple of minutes and melts over four.
+const rain = this.precip * K.smooth(0, 2, this.temp);
+const snowing = this.precip * (1 - K.smooth(-0.5, 1.5, this.temp));</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p>Below −0.5 °C everything that falls is snow. Snow settles over a couple of minutes, so <code>snow: 1</code> starts the view with the ground already white.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Set up the drive as under <a href="#setup">Set up the drive</a>.</p>
+  </li>
+  <li>
+    <p>Jump there once the drive has started, at the end of the body.</p>
+    <div class="code"><pre><code>&lt;script&gt;
+  // The drive starts once its font has loaded.
+  (function wait() {
+    if (!window.Drive || !Drive.seed) return requestAnimationFrame(wait);
+    Drive.jump({ place: "village", hour: 10, weather: { cover: 0.95, precip: 0.7, temp: -4, snow: 1 } });
+  })();
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
+
+<section class="doc" id="fog" aria-labelledby="fog-h">
+<h2 id="fog-h">Fog</h2>
+<p>Use these options to open the drive on a forest in fog.</p>
+<figure class="frame">
+  <iframe data-src="demo.html?feature=fog&amp;embed" title="Fog" loading="lazy" data-live></iframe>
+  <figcaption><a href="demo.html?feature=fog">Open on its own</a></figcaption>
+</figure>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>The drive, set up as under <a href="#setup">Set up the drive</a>.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">demo.js</p>
+<div class="code"><pre><code>fog: { cover: 0.5, precip: 0, fog: 0.75 },
+// …
+fog: { name: "Fog", jump: { place: "forest", hour: 9, weather: WEATHER.fog } },</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p class="file">js/weather.js</p>
+<div class="code"><pre><code>if (force) {
+  if (force.cover !== undefined) this.cover = force.cover;
+  if (force.precip !== undefined) this.precip = force.precip;
+  if (force.fog !== undefined) this.fog = force.fog;
+  if (force.temp !== undefined) this.temp = force.temp;
+  if (force.snow !== undefined) this.snow = force.snow;
+  if (force.wet !== undefined) this.wet = force.wet;
+} else {
+  this.cover = approach(this.cover, tCover, dt, 60);
+  this.precip = approach(this.precip, Math.min(tPrecip, this.cover * 1.1), dt, 40);
+  this.fog = approach(this.fog, tFog, dt, 70);
+  this.temp = approach(this.temp, tTemp, dt, 90);
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p><code>fog</code> is the thickness of the fog from 0 to 1. A weather passed to <code>Drive.jump</code> holds still, so the fog stays until the next jump.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Set up the drive as under <a href="#setup">Set up the drive</a>.</p>
+  </li>
+  <li>
+    <p>Jump there once the drive has started, at the end of the body.</p>
+    <div class="code"><pre><code>&lt;script&gt;
+  // The drive starts once its font has loaded.
+  (function wait() {
+    if (!window.Drive || !Drive.seed) return requestAnimationFrame(wait);
+    Drive.jump({ place: "forest", hour: 9, weather: { cover: 0.5, precip: 0, fog: 0.75 } });
+  })();
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
+
+<section class="doc" id="pitch" aria-labelledby="pitch-h">
+<h2 id="pitch-h">Football pitch</h2>
+<p>Use these options to open the drive just before a village football pitch.</p>
+<figure class="frame">
+  <iframe data-src="demo.html?feature=pitch&amp;embed" title="Football pitch" loading="lazy" data-live></iframe>
+  <figcaption><a href="demo.html?feature=pitch">Open on its own</a></figcaption>
+</figure>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>The drive, set up as under <a href="#setup">Set up the drive</a>.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">demo.js</p>
+<div class="code"><pre><code>pitch: { place: "village", pitch: true },
+// …
+pitch: { name: "Football pitch", jump: Object.assign({ hour: 15 }, SCENES.pitch) },</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p class="file">js/engine.js</p>
+<div class="code"><pre><code>if (opts.pitch) E.route.segs[0].pitch = { at: -(E.Wsp * 0.32) / 0.6, first: true, silence: opts.silence };</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p><code>pitch: true</code> puts a football pitch on the first stretch of road, just ahead of the car. With it, <code>silence: true</code> chooses the minute's silence and <code>silence: false</code> one of the other moments of the match.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Set up the drive as under <a href="#setup">Set up the drive</a>.</p>
+  </li>
+  <li>
+    <p>Jump there once the drive has started, at the end of the body.</p>
+    <div class="code"><pre><code>&lt;script&gt;
+  // The drive starts once its font has loaded.
+  (function wait() {
+    if (!window.Drive || !Drive.seed) return requestAnimationFrame(wait);
+    Drive.jump({ place: "village", hour: 15, pitch: true });
+  })();
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
+
+<section class="doc" id="jested" aria-labelledby="jested-h">
+<h2 id="jested-h">Ještěd</h2>
+<p>Use these options to open the drive with Ještěd on the horizon.</p>
+<figure class="frame">
+  <iframe data-src="demo.html?feature=jested&amp;embed" title="Ještěd" loading="lazy" data-live></iframe>
+  <figcaption><a href="demo.html?feature=jested">Open on its own</a></figcaption>
+</figure>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>The drive, set up as under <a href="#setup">Set up the drive</a>.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">demo.js</p>
+<div class="code"><pre><code>jested: { place: "village", region: "hills", jested: true },
+// …
+jested: { name: "Ještěd", jump: Object.assign({ hour: 16 }, SCENES.jested) },</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p class="file">js/engine.js</p>
+<div class="code"><pre><code>if (opts.jested) E.route.segs[0].jested = { at: 300 };</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p><code>jested: true</code> puts Ještěd on the horizon of the first stretch of road. It needs the <code>hills</code> region, which holds farmland, villages, forest and the rally stage.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Set up the drive as under <a href="#setup">Set up the drive</a>.</p>
+  </li>
+  <li>
+    <p>Jump there once the drive has started, at the end of the body.</p>
+    <div class="code"><pre><code>&lt;script&gt;
+  // The drive starts once its font has loaded.
+  (function wait() {
+    if (!window.Drive || !Drive.seed) return requestAnimationFrame(wait);
+    Drive.jump({ place: "village", region: "hills", jested: true, hour: 16 });
+  })();
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
+
+<section class="doc" id="ufo" aria-labelledby="ufo-h">
+<h2 id="ufo-h">UFO</h2>
+<p>Use these options to open the drive at night with a UFO coming down over farmland.</p>
+<figure class="frame">
+  <iframe data-src="demo.html?feature=ufo&amp;embed" title="UFO" loading="lazy" data-live></iframe>
+  <figcaption><a href="demo.html?feature=ufo">Open on its own</a></figcaption>
+</figure>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>The drive, set up as under <a href="#setup">Set up the drive</a>.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">demo.js</p>
+<div class="code"><pre><code>clear: { cover: 0.05, precip: 0, fog: 0 },
+// …
+ufo: { place: "country", hour: 23, weather: WEATHER.clear, ufo: true },
+// …
+// The UFO comes down over a pasture in the middle distance once the
+// pasture is just right of the middle of the screen. The demo tries routes
+// until one has such a pasture ahead, so the UFO comes within seconds.
+function jumpToUfo(o) {
+  const E = Drive.engine;
+  for (let i = 0; i &lt; 200; i++) {
+    Drive.jump(Object.assign({}, o, { seed: Math.floor(Math.random() * 4294967295) }));
+    const ahead = E.planes.mid.objs.some(function (obj) {
+      const x = E.screenXsp(E.planes.mid.d, obj.u) / E.Wsp;
+      return obj.ufo &amp;&amp; x &gt; 0.5 &amp;&amp; x &lt; 1;
+    });
+    if (ahead) return;
+  }
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p><code>ufo: true</code> sends the UFO to the next pasture in the middle distance. It only comes at night in clear air, and the next pasture can be a minute or two away. <code>jumpToUfo</code> tries random seeds until a route has the UFO's pasture in the right half of the screen. A click on the UFO sends it away.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Set up the drive as under <a href="#setup">Set up the drive</a>.</p>
+  </li>
+  <li>
+    <p>Add the function and call it once the drive has started, at the end of the body.</p>
+    <div class="code"><pre><code>&lt;script&gt;
+  function jumpToUfo(o) {
+    const E = Drive.engine;
+    for (let i = 0; i &lt; 200; i++) {
+      Drive.jump(Object.assign({}, o, { seed: Math.floor(Math.random() * 4294967295) }));
+      const ahead = E.planes.mid.objs.some(function (obj) {
+        const x = E.screenXsp(E.planes.mid.d, obj.u) / E.Wsp;
+        return obj.ufo &amp;&amp; x &gt; 0.5 &amp;&amp; x &lt; 1;
+      });
+      if (ahead) return;
+    }
+  }
+  // The drive starts once its font has loaded.
+  (function wait() {
+    if (!window.Drive || !Drive.seed) return requestAnimationFrame(wait);
+    jumpToUfo({ place: "country", hour: 23, weather: { cover: 0.05, precip: 0, fog: 0 }, ufo: true });
+  })();
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>For touch screens, add a button inside <code>main</code> that sends the UFO away, as a click on it does.</p>
+    <div class="code"><pre><code>&lt;button type="button" data-shoo&gt;Send away&lt;/button&gt;
+&lt;script&gt;
+  document.querySelector("[data-shoo]").addEventListener("click", function () {
+    const K = window.DriveKit;
+    const mid = Drive.engine.planes &amp;&amp; Drive.engine.planes.mid;
+    if (!mid || !K.Ufo) return;
+    const ufo = mid.actors.find(function (a) {
+      return a instanceof K.Ufo &amp;&amp; !a.gone &amp;&amp; a.stage !== "up" &amp;&amp; a.stage !== "away";
+    });
+    if (ufo) ufo.shoo();
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
+
+<section class="doc" id="sprint" aria-labelledby="sprint-h">
+<h2 id="sprint-h">Highway sprint</h2>
+<p>Use the sprint to open the drive on a highway where the car weaves through slower traffic.</p>
+<figure class="frame">
+  <iframe data-src="demo.html?feature=sprint&amp;embed" title="Highway sprint" loading="lazy" data-live></iframe>
+  <figcaption><a href="demo.html?feature=sprint">Open on its own</a></figcaption>
+</figure>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>The drive, set up as under <a href="#setup">Set up the drive</a>.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">demo.js</p>
+<div class="code"><pre><code>// The sprint comes once per stretch of highway, when the car is a quarter
+// of the way in and the road around it is clear. The view picks a route
+// that starts the car just past the quarter, and runs the drive at four
+// times its speed until the sprint begins, which takes about three
+// seconds. A route whose road does not clear in eight seconds is swapped
+// for another.
+function jumpToSprint(o) {
+  const E = Drive.engine;
+  for (let i = 0; i &lt; 200; i++) {
+    Drive.jump(Object.assign({}, o, { seed: Math.floor(Math.random() * 4294967295) }));
+    const seg = E.route.segAt(E.carWorldX());
+    const f = (E.carWorldX() - seg.x0) / (seg.x1 - seg.x0);
+    if (seg.place === "highway" &amp;&amp; f &gt; 0.26 &amp;&amp; f &lt; 0.4) break;
+  }
+  if (E.still) return;
+  Drive.setRate(4);
+  const t0 = performance.now();
+  (function wait() {
+    if (E.pace &gt; 1.3) return Drive.setRate(1);
+    if (performance.now() - t0 &gt; 8000) return jumpToSprint(o);
+    setTimeout(wait, 100);
+  })();
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p>The sprint comes once per stretch of highway, when the car is a quarter of the way in and the road around it is clear. <code>jumpToSprint</code> picks a route that starts the car just past that point and runs the drive at four times its speed until the sprint begins. A route whose road does not clear within eight seconds is swapped for another.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Set up the drive as under <a href="#setup">Set up the drive</a>.</p>
+  </li>
+  <li>
+    <p>Add the function and call it once the drive has started, at the end of the body.</p>
+    <div class="code"><pre><code>&lt;script&gt;
+  function jumpToSprint(o) {
+    const E = Drive.engine;
+    for (let i = 0; i &lt; 200; i++) {
+      Drive.jump(Object.assign({}, o, { seed: Math.floor(Math.random() * 4294967295) }));
+      const seg = E.route.segAt(E.carWorldX());
+      const f = (E.carWorldX() - seg.x0) / (seg.x1 - seg.x0);
+      if (seg.place === "highway" &amp;&amp; f &gt; 0.26 &amp;&amp; f &lt; 0.4) break;
+    }
+    if (E.still) return;
+    Drive.setRate(4);
+    const t0 = performance.now();
+    (function wait() {
+      if (E.pace &gt; 1.3) return Drive.setRate(1);
+      if (performance.now() - t0 &gt; 8000) return jumpToSprint(o);
+      setTimeout(wait, 100);
+    })();
+  }
+  // The drive starts once its font has loaded.
+  (function wait() {
+    if (!window.Drive || !Drive.seed) return requestAnimationFrame(wait);
+    jumpToSprint({ place: "highway", hour: 13 });
+  })();
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
+
+<section class="doc" id="speed" aria-labelledby="speed-h">
+<h2 id="speed-h">Speed</h2>
+<p>Use <code>Drive.setRate</code> to run the drive faster, for example to show the light change through a whole day.</p>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>The drive, set up as under <a href="#setup">Set up the drive</a>.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">js/engine.js</p>
+<div class="code"><pre><code>// How many steps of the scene each frame runs. Above 1 the drive, the
+// day and the weather all run faster. Drive.setRate sets it.
+rate: 1,
+// …
+for (let i = 0; i &lt; E.rate; i++) update(dt);
+// …
+// Runs the drive at 1 to 8 times its speed.
+setRate: function (n) {
+  E.rate = Math.max(1, Math.min(8, Math.round(n) || 1));
+},</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p><code>Drive.setRate(n)</code> takes a whole number from 1 to 8, and <code>Drive.rate</code> reads it back. Each frame then runs that many steps of the scene, so the day, the weather and the traffic run faster too. A day takes 10 minutes at 1× and 75 seconds at 8×.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Set up the drive as under <a href="#setup">Set up the drive</a>.</p>
+  </li>
+  <li>
+    <p>Add buttons inside <code>main</code> and set the speed from them, at the end of the body.</p>
+    <div class="code"><pre><code>&lt;button type="button" data-set-rate="1"&gt;1×&lt;/button&gt;
+&lt;button type="button" data-set-rate="4"&gt;4×&lt;/button&gt;
+&lt;script&gt;
+  document.querySelectorAll("[data-set-rate]").forEach(function (button) {
+    button.addEventListener("click", function () {
+      Drive.setRate(Number(button.getAttribute("data-set-rate")));
+    });
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
+
+<section class="doc" id="hop" aria-labelledby="hop-h">
+<h2 id="hop-h">Hop</h2>
+<p>Use the hop to give visitors something to play with. A click on the car makes it hop, and <code>Drive.hop()</code> does the same from a button.</p>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>The drive, set up as under <a href="#setup">Set up the drive</a>.</li>
+  <li>The <a href="../cursor-trail/">cursor trail</a>, if each hop should also send a ripple.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">js/engine.js</p>
+<div class="code"><pre><code>function hop() {
+  if (E.t - hopT &gt; 0.55) hopT = E.t;
+  if (window.Field &amp;&amp; carRect) window.Field.pulse(carRect.x + carRect.w / 2, carRect.y + carRect.h / 2);
+}
+// …
+window.addEventListener("click", function (e) {
+  if (!started || E.still) return;
+  if (e.target instanceof Element &amp;&amp; e.target.closest("a, button, input, label")) return;
+  if (overUfo(e.clientX, e.clientY)) {
+    ufo.shoo();
+    return;
+  }
+  if (overCar(e.clientX, e.clientY)) hop();
+});</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p>A click on the car starts a hop unless the last one began less than 0.55 s ago. Clicks on links, buttons and form fields are left alone. When the page has <code>window.Field.pulse</code>, each hop also sends a ripple from the car, and the cursor trail provides it. Under reduced motion the car does not hop.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Set up the drive as under <a href="#setup">Set up the drive</a>.</p>
+  </li>
+  <li>
+    <p>For touch screens, add a button inside <code>main</code> that makes the car hop, at the end of the body.</p>
+    <div class="code"><pre><code>&lt;button type="button" data-hop&gt;Hop&lt;/button&gt;
+&lt;script&gt;
+  document.querySelector("[data-hop]").addEventListener("click", function () {
+    Drive.hop();
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>To send a ripple from the car on each hop, copy <code>cursor-trail.js</code> from the cursor trail next to your page and load it after the drive.</p>
+    <div class="code"><pre><code>&lt;script defer src="cursor-trail.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
+
+<section class="doc" id="layout" aria-labelledby="layout-h">
+<h2 id="layout-h">Room for your content</h2>
+<p>Use these hooks when your page has a heading or a panel over the scene and the car should not drive behind it.</p>
+<p class="label">What you need</p>
+<ul class="needs">
+  <li>The drive, set up as under <a href="#setup">Set up the drive</a>.</li>
+  <li>An element with <code>data-hero</code> round the top of your page, with your blocks in <code>.hero-inner</code>.</li>
+  <li>A fixed <code>.top</code> bar, if your page has one.</li>
+</ul>
+<p class="label">The code</p>
+<p class="file">js/engine.js</p>
+<div class="code"><pre><code>heroEl = document.querySelector("[data-hero]");
+heroH = heroEl ? heroEl.offsetHeight : vh;
+const bar = document.querySelector(".top");
+barBottom = bar ? Math.round(bar.getBoundingClientRect().bottom) : 56;
+// …
+heroBlocks = heroEl
+  ? Array.from(heroEl.querySelectorAll(".hero-inner &gt; *")).map(function (el) {
+      const r = el.getBoundingClientRect();
+      return { left: r.left, right: r.right, top: r.top + window.scrollY, bottom: r.bottom + window.scrollY };
+    }).filter(function (b) { return b.right &gt; b.left; })
+  : [];
+// …
+// The road sits at 80% of the hero, or lower if the car would otherwise
+// drive behind the hero text above it.
+let clear = 0;
+for (let i = 0; i &lt; heroBlocks.length; i++) {
+  const b = heroBlocks[i];
+  if (b.right &gt; carXcss - 8 &amp;&amp; b.left &lt; carXcss + carCss + 8) clear = Math.max(clear, b.bottom);
+}
+const roadCss = Math.max(heroH * 0.8, clear ? clear + 14 + carHCss - 13 * E.P : 0);
+// …
+L.skyTop = Math.ceil((barBottom + 6) / E.P);</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+<p>The scene is as tall as the <code>data-hero</code> element, or as the window when there is none. The road sits at 80% of that height and moves lower when a block in <code>.hero-inner</code> stands above the car. The sky starts 6 px below a <code>.top</code> bar, or 56 px from the top without one. The drive measures these when it starts and whenever the page changes size.</p>
+<p class="label">Add it to your page</p>
+<ol class="steps">
+  <li>
+    <p>Set up the drive as under <a href="#setup">Set up the drive</a>.</p>
+  </li>
+  <li>
+    <p>Mark the top of your page with <code>data-hero</code> and put its blocks in <code>.hero-inner</code>.</p>
+    <div class="code"><pre><code>&lt;main&gt;
+  &lt;section class="hero" data-hero&gt;
+    &lt;div class="hero-inner"&gt;
+      &lt;h1&gt;Your name&lt;/h1&gt;
+      &lt;p&gt;One line about your work.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+&lt;/main&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>Give the section its height. The road sits at 80% of it.</p>
+    <div class="code"><pre><code>.hero { box-sizing: border-box; min-height: 100vh; padding: 6rem 2rem 120px; }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+  <li>
+    <p>If you show or hide blocks in <code>.hero-inner</code> without a resize, call this afterwards so the road moves.</p>
+    <div class="code"><pre><code>Drive.refresh();</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+  </li>
+</ol>
+</section>
   </main>
+
+  <footer class="foot">
+    <p>The full API and every option are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/pixel-drive#readme">README</a>. The code is under the <a href="https://github.com/N041M/cool-stuff-n-assets/blob/main/LICENSE">MIT licence</a>.</p>
+  </footer>
+
+  <script>
+    // Copy buttons copy the code block they sit in.
+    document.querySelectorAll("[data-copy-code]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        const text = button.parentElement.querySelector("code").textContent;
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          button.textContent = "Copied";
+          setTimeout(function () { button.textContent = "Copy"; }, 1500);
+        }, function () {});
+      });
+    });
+
+    // A frame with data-src loads when it comes within one screen of the
+    // window, and empties again when it moves further away, because its demo
+    // keeps drawing while it is off screen. The address is replaced so the
+    // frames add nothing to the browser's history.
+    (function () {
+      const frames = document.querySelectorAll("iframe[data-src]");
+      function load(frame, url) {
+        if (frame.dataset.at === url) return;
+        if (!frame.dataset.at && url === "about:blank") return;
+        frame.dataset.at = url;
+        if (frame.contentWindow && frame.hasAttribute("src")) frame.contentWindow.location.replace(url);
+        else frame.src = url;
+      }
+      if (!("IntersectionObserver" in window)) {
+        frames.forEach(function (frame) { frame.src = frame.dataset.src; });
+        return;
+      }
+      const io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          const frame = entry.target;
+          load(frame, entry.isIntersecting ? new URL(frame.dataset.src, location.href).href : "about:blank");
+        });
+      }, { rootMargin: "100% 0px" });
+      frames.forEach(function (frame) { io.observe(frame); });
+    })();
+  </script>
 </body>
 </html>

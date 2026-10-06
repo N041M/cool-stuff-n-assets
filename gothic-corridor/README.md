@@ -12,7 +12,9 @@ From the root of this repository:
 python3 -m http.server
 ```
 
-Then open http://localhost:8000/gothic-corridor/. The page fetches its shaders, so it has to come from a server and not straight from the file.
+Then open http://localhost:8000/gothic-corridor/ for the documentation page, or http://localhost:8000/gothic-corridor/demo.html for the demo. The scene fetches its shaders, so open the pages from a web server.
+
+Add `?still` to the address of the demo to see the still image that shows when the scene cannot run. `?embed` shows only the scene, and the documentation page uses it for its frames.
 
 The scene fills the window. Until the shaders have compiled and the hall has been baked, which takes about a second on a recent GPU, the page shows `preview.webp`, and the live scene fades in over it. Then the candles flicker, the censer swings, its smoke rises into the light and dust drifts through the shafts. It stops drawing while the tab is hidden or the scene is scrolled away. When the system asks for reduced motion, it draws one still frame.
 
@@ -42,7 +44,9 @@ The scene never sends work to the GPU while the last strip or frame is still run
 
 ## Files
 
-- `js/main.js` fetches the shaders and starts the scene in the `.scene` element.
+- `index.html` is the documentation page. It covers the scene, the still image and putting the scene behind a page, with the code and the steps for each.
+- `demo.html` is the demo.
+- `js/main.js` fetches the shaders and starts the scene in the `.scene` element. The scene reads two colours from the page, written as `#rrggbb`. `--bg` is the background, and `--scene-accent` is the glass of the votive candles and the servitor's optic. When `--scene-accent` is not set, the scene uses `--accent`.
 - `js/backdrop.js` decides when to bake, when to draw and when to slow down.
 - `js/renderer.js` runs the passes.
 - `js/scene.js` holds the hall's measurements, where the servitor stands, every candle, the censer's swing, the camera and the flicker.
@@ -50,8 +54,8 @@ The scene never sends work to the GPU while the last strip or frame is still run
 - `shaders/hall.glsl` and `shaders/servitor.glsl` are the shapes and materials. `bake.frag` is the bake and `volume.frag` the light volume. `air.frag`, `smoke.glsl` and `motion.glsl` are the air, `frame.frag` and `censer.glsl` the frame, `sprite.vert` and `sprite.frag` the flames and dust. `bloom.frag`, `grade.glsl` and `final.frag` are the grade, and `common.glsl` holds the noise, distance functions, camera and windows they share.
 - `preview.webp` is one frame of the scene.
 
-The shaders also hold a `LIVE` mode that adds the light and the sprites over a rendered image of the scene, reading the scene's depth from a map. This page does not use it.
+The shaders also hold a `LIVE` mode that adds the light and the sprites over a rendered image of the scene, reading the scene's depth from a map. The demo does not use it.
 
 ## Font
 
-[Departure Mono](https://departuremono.com) by Helena Zhang, under the SIL Open Font License 1.1. The licence text is in `fonts/LICENSE-DepartureMono.txt`.
+[IBM Plex Mono](https://github.com/IBM/plex) by IBM, under the SIL Open Font License 1.1. The licence text is in `fonts/LICENSE-IBMPlexMono.txt`.

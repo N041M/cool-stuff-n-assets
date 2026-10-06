@@ -2,82 +2,907 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
   <title>Solar system</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23050608'/%3E%3Ccircle cx='16' cy='16' r='7' fill='%23f0a14a'/%3E%3Cellipse cx='16' cy='16' rx='13' ry='4' fill='none' stroke='%23eceae4' stroke-width='1.5' transform='rotate(-20 16 16)'/%3E%3C/svg%3E">
   <link rel="preload" href="fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="demo.css">
-  <script defer src="js/ephemeris.js"></script>
-  <script defer src="js/earth-map.js"></script>
-  <script defer src="js/surfaces.js"></script>
-  <script defer src="js/bodies.js"></script>
-  <script defer src="js/orrery.js"></script>
-  <script defer src="demo.js"></script>
+  <style>
+    /* IBM Plex Mono in two weights. Each weight comes as a Latin file and a
+       Latin Extended file, which holds the Czech letters. A browser downloads
+       the second file only when the page uses one of its characters. */
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-400-latin.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-400-latin-ext.woff2") format("woff2");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-600-latin.woff2") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+    }
+    @font-face {
+      font-family: "IBM Plex Mono";
+      src: url("fonts/ibm-plex-mono-600-latin-ext.woff2") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+      unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+    }
+
+    :root {
+      --bg: #050608;
+      --ink: #eceae4;
+      --ink-2: #a8a9ae;
+      --ink-3: #7a7c83;
+      --ink-4: #33353b;
+      --accent: #f0a14a;
+      --accent-ink: #1a1107;
+      --font: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      --fs: 0.8125rem;
+      --fs-sm: 0.6875rem;
+      --lh: 1.25rem;
+      --bar-h: 2.75rem;
+      --gutter: 2rem;
+      color-scheme: dark;
+    }
+    @media (max-width: 45em) { :root { --gutter: 1rem; --bar-h: 2.5rem; } }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--ink); font: 400 var(--fs) / var(--lh) var(--font); font-variant-ligatures: none; -webkit-font-smoothing: antialiased; }
+    a { color: inherit; text-decoration: underline; text-decoration-color: var(--ink-3); text-underline-offset: 3px; }
+    a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+    h1, h2, h3 { margin: 0; font-size: inherit; font-weight: 600; }
+    button { font: inherit; color: inherit; }
+    code { font: inherit; color: var(--ink-2); }
+    ::selection { background: var(--accent); color: var(--accent-ink); }
+    :focus-visible { outline: 1px dashed var(--accent); outline-offset: 3px; }
+
+    /* The status bar: back link, demo name, then the full screen link. */
+    .bar { display: flex; align-items: center; gap: 1.75rem; height: var(--bar-h); padding: 0 var(--gutter); border-bottom: 1px solid var(--ink-4); background: linear-gradient(180deg, rgba(5, 6, 8, 0.94), rgba(5, 6, 8, 0.72)); font-size: var(--fs-sm); }
+    .back { color: var(--ink-2); text-decoration: none; white-space: nowrap; }
+    .back:hover { color: var(--ink); }
+    .brand { margin: 0 auto 0 0; font-weight: 600; white-space: nowrap; }
+    @media (max-width: 45em) { .bar { gap: 0.75rem; } .back span { display: none; } }
+
+    /* Buttons: text in a thin box that inverts on hover. */
+    .btn { height: 1.75rem; padding: 0 1ch; border: 1px solid var(--ink-4); border-radius: 0; background: none; color: var(--ink); font: inherit; font-size: var(--fs-sm); white-space: nowrap; cursor: pointer; transition: background 0.12s, color 0.12s; }
+    @media (hover: hover) { .btn:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); } }
+    .btn:focus-visible { background: var(--ink); color: var(--bg); }
+    a.btn { display: inline-flex; align-items: center; text-decoration: none; }
+
+    .label { color: var(--ink-3); font-size: var(--fs-sm); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    /* The page: an intro with the whole explorer, then one section per
+       feature. */
+    main { max-width: 72.5rem; margin: 0 auto; padding: calc(var(--lh) * 3) var(--gutter); color: var(--ink-2); }
+    main p { max-width: 64ch; margin: 0 0 var(--lh); }
+    main code { color: var(--ink); }
+    h1 { margin-bottom: var(--lh); color: var(--ink); font-size: clamp(1.75rem, 5vw, 3rem); line-height: 1.1; font-weight: 600; letter-spacing: -0.01em; }
+    h2 { margin-bottom: calc(var(--lh) * 0.5); color: var(--ink); font-size: calc(var(--fs) * 1.7); line-height: calc(var(--lh) * 2); font-weight: 600; }
+    h2[id] { scroll-margin-top: var(--lh); }
+    section { margin-top: calc(var(--lh) * 4); padding-top: var(--lh); border-top: 1px solid var(--ink-4); }
+    section[id] { scroll-margin-top: var(--lh); }
+    .lede { color: var(--ink); }
+    main p.label { margin: calc(var(--lh) * 1.5) 0 calc(var(--lh) * 0.5); }
+    .features { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 2.5ch; }
+    .features .label { margin-right: 0.5ch; }
+    .needs { max-width: 64ch; margin: 0 0 var(--lh); padding-left: 3ch; }
+    .needs li + li { margin-top: 0.25rem; }
+    .needs li::marker { color: var(--ink-3); }
+    .steps { margin: 0 0 var(--lh); padding-left: 3ch; }
+    .steps li { margin-bottom: var(--lh); }
+    .steps li::marker { color: var(--accent); }
+    .steps p { margin-bottom: calc(var(--lh) * 0.5); }
+    .steps .code + .code { margin-top: calc(var(--lh) * 0.5); }
+    .file { margin: 0 0 0.25rem; color: var(--ink-3); font-size: var(--fs-sm); }
+    .code + p, .code + .file { margin-top: var(--lh); }
+
+    /* Live demos in frames. */
+    .frame { margin: var(--lh) 0; }
+    .frame iframe { display: block; width: 100%; aspect-ratio: 16 / 9; border: 1px solid var(--ink-4); background: var(--bg); }
+    .frame figcaption { margin-top: 0.5rem; font-size: var(--fs-sm); color: var(--ink-3); }
+    .frame--intro iframe, .frame--tall iframe { aspect-ratio: 16 / 10; }
+    @media (max-width: 45em) {
+      .frame iframe, .frame--tall iframe { aspect-ratio: 4 / 5; }
+      .frame--intro iframe { aspect-ratio: 3 / 4; }
+    }
+
+    /* Code blocks with a Copy button, as in the demo's Read me. */
+    .code { position: relative; }
+    .code pre { margin: 0; padding: 1ch 1.5ch; padding-right: 8ch; overflow-x: auto; border: 1px solid var(--ink-4); background: rgba(127, 127, 127, 0.06); color: var(--ink); font-size: var(--fs-sm); line-height: 1.5; white-space: pre; }
+    .code code { color: inherit; }
+    .code .btn { position: absolute; top: 0.5ch; right: 0.5ch; height: 1.5rem; background: var(--bg); }
+    .code .btn:hover, .code .btn:focus-visible { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+
+    footer { max-width: 72.5rem; margin: 0 auto; padding: 0 var(--gutter) calc(var(--lh) * 2); }
+    footer p { margin: 0; padding-top: var(--lh); border-top: 1px solid var(--ink-4); color: var(--ink-3); font-size: var(--fs-sm); }
+    footer a { color: var(--ink-2); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { transition: none !important; }
+    }
+  </style>
+  <link rel="stylesheet" href="../assets/code.css">
+  <script defer src="../assets/code.js"></script>
 </head>
 <body>
-  <canvas id="sky" aria-hidden="true"></canvas>
-  <canvas id="hud" aria-hidden="true"></canvas>
-  <div class="stage" id="stage" tabindex="0" role="application" aria-label="Solar system view" aria-describedby="keys"></div>
-  <p class="sr-only" id="keys">The arrow keys turn and zoom. Keys 0 to 8 fly to the Sun and the planets, M to the Moon, and Home shows the whole system.</p>
-  <p class="sr-only" id="said" aria-live="polite"></p>
-
-  <header class="top" id="top">
+  <header class="bar">
     <a class="back" href="../" aria-label="All demos">← <span>All demos</span></a>
-    <h1 class="brand">Solar system</h1>
-    <p class="clock" aria-live="off"><span id="date">----------</span> <span id="rate">Live</span></p>
+    <span class="brand">Solar system</span>
+    <a class="btn" href="demo.html">Open full screen</a>
   </header>
 
-  <nav class="panel bodies" id="bodies" aria-label="Bodies" hidden></nav>
+  <main>
+    <header class="intro">
+      <h1>Solar system</h1>
+      <p class="lede">Use it as a page where visitors explore space, from the planets where they are today out to the nearest stars and the whole galaxy, drawn in text characters. Each feature below comes from a folder of its own that you can copy into your project without the rest.</p>
+      <figure class="frame frame--intro">
+        <iframe data-src="demo.html?embed" title="Solar system"></iframe>
+        <figcaption><a href="demo.html">Open on its own</a></figcaption>
+      </figure>
+      <nav class="features" aria-label="Features">
+        <span class="label">Features</span>
+        <a href="#positions">Planets where they are today</a>
+        <a href="#maps">Planet maps</a>
+        <a href="#characters">Drawing in characters</a>
+        <a href="#stars">The starry background</a>
+        <a href="#deep-sky">Nebulae, the galaxy and the black hole</a>
+        <a href="#comet">Comet tails</a>
+        <a href="#spacecraft">Spacecraft</a>
+        <a href="#flights">Flying the camera</a>
+        <a href="#shadows">Rings, shadows and eclipses</a>
+      </nav>
+    </header>
 
-  <section class="panel info" id="info" aria-labelledby="info-name">
-    <p class="info-name" id="info-name">Saturn</p>
-    <button type="button" class="info-close" id="info-close" aria-label="Close" title="Close">
-      <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg>
-    </button>
-    <dl class="rows" id="info-rows"></dl>
-    <p class="note" id="info-note" hidden></p>
-    <button type="button" class="link" id="info-back" hidden></button>
-  </section>
+    <section id="positions" aria-labelledby="positions-title">
+      <h2 id="positions-title">Planets where they are today</h2>
+      <p class="lede">Use it to place the planets on a date in your own page, for example in a map of the Solar System or a sky chart. It gives positions as numbers, and your own code draws them.</p>
+      <figure class="frame">
+        <iframe src="planet-positions/?embed" loading="lazy" title="Planet positions"></iframe>
+        <figcaption><a href="planet-positions/">Open on its own</a></figcaption>
+      </figure>
+      <p class="label">What you need</p>
+      <ul class="needs">
+        <li><code>planet-positions/ephemeris.js</code>, 41 KB. It has no dependencies.</li>
+      </ul>
+      <p class="label">The code</p>
+      <p class="file">planet-positions/ephemeris.js</p>
+      <div class="code"><pre><code>// orbital elements at T (Julian centuries from J2000)
+function elementsAt(name, T) {
+  var e0 = ELEMENTS[name][0], r = ELEMENTS[name][1];
+  var a = e0[0] + r[0] * T, e = e0[1] + r[1] * T, I = (e0[2] + r[2] * T) * DEG;
+  var L = e0[3] + r[3] * T, peri = e0[4] + r[4] * T, node = e0[5] + r[5] * T;
+  return { a: a, e: e, I: I, L: L * DEG, w: (peri - node) * DEG, node: node * DEG, M: norm360(L - peri) * DEG };
+}
 
-  <div class="controls" id="controls">
-    <div class="group panels" role="group" aria-label="Panels">
-      <button type="button" class="text" id="open-bodies" aria-expanded="false" aria-controls="bodies">Bodies</button>
-      <button type="button" class="text" id="open-info" aria-expanded="true" aria-controls="info">Info</button>
-    </div>
-    <div class="group view" role="group" aria-label="View">
-      <button type="button" data-zoom="1" aria-label="Zoom out" title="Zoom out">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10"/></svg>
-      </button>
-      <button type="button" data-zoom="-1" aria-label="Zoom in" title="Zoom in">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M8 3v10"/></svg>
-      </button>
-      <button type="button" data-turn="-1" aria-label="Turn left" title="Turn left">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M12.5 10.5A5 5 0 1 0 6 12.6"/><path d="M3 10.2l3 2.4-2.6 2.6"/></svg>
-      </button>
-      <button type="button" data-turn="1" aria-label="Turn right" title="Turn right">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 10.5A5 5 0 1 1 10 12.6"/><path d="M13 10.2l-3 2.4 2.6 2.6"/></svg>
-      </button>
-      <button type="button" data-tilt="-1" aria-label="Tilt up" title="Tilt up">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 13V3M4 7l4-4 4 4"/></svg>
-      </button>
-      <button type="button" data-tilt="1" aria-label="Tilt down" title="Tilt down">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M4 9l4 4 4-4"/></svg>
-      </button>
-    </div>
-    <div class="group time" role="group" aria-label="Time">
-      <button type="button" data-warp="-1" aria-label="Slower or backwards" title="Slower or backwards">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path class="fill" d="M8 4v8L3 8zM13 4v8L8 8z"/></svg>
-      </button>
-      <button type="button" id="pause" aria-label="Pause" title="Pause">
-        <svg class="if-playing" viewBox="0 0 16 16" aria-hidden="true"><path class="fill" d="M4 3h3v10H4zM9 3h3v10H9z"/></svg>
-        <svg class="if-paused" viewBox="0 0 16 16" aria-hidden="true"><path class="fill" d="M5 3l8 5-8 5z"/></svg>
-      </button>
-      <button type="button" data-warp="1" aria-label="Faster" title="Faster">
-        <svg viewBox="0 0 16 16" aria-hidden="true"><path class="fill" d="M3 4v8l5-4zM8 4v8l5-4z"/></svg>
-      </button>
-      <button type="button" class="text" id="now">Now</button>
-    </div>
-  </div>
+function solveKepler(M, e) {
+  if (M &gt; Math.PI) M -= 2 * Math.PI;
+  var E = M + e * Math.sin(M);
+  for (var i = 0; i &lt; 8; i++) E -= (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+  return E;
+}
+
+// position on an orbit at eccentric anomaly E, in the ecliptic frame
+function orbitPoint(el, E) {
+  var xp = el.a * (Math.cos(E) - el.e), yp = el.a * Math.sqrt(1 - el.e * el.e) * Math.sin(E);
+  var cw = Math.cos(el.w), sw = Math.sin(el.w), cn = Math.cos(el.node), sn = Math.sin(el.node);
+  var ci = Math.cos(el.I), si = Math.sin(el.I);
+  return [
+    (cw * cn - sw * sn * ci) * xp + (-sw * cn - cw * sn * ci) * yp,
+    (cw * sn + sw * cn * ci) * xp + (-sw * sn + cw * cn * ci) * yp,
+    (sw * si) * xp + (cw * si) * yp
+  ];
+}
+
+// a planet's position at jde (a Julian day in Terrestrial Time); for
+// 'earth' the table gives the Earth-Moon barycentre
+function planetAt(name, jde) {
+  var el = elementsAt(name, (jde - 2451545.0) / 36525);
+  return orbitPoint(el, solveKepler(el.M, el.e));
+}
+function planetPosition(name, date) { return planetAt(name, ttDay(date)); }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>Each planet's orbit is six elements that change slowly over the centuries, from JPL's approximate elements. <code>planetAt</code> takes them at the date, solves Kepler's equation for the eccentric anomaly with Newton's method and turns the point on the ellipse into ecliptic coordinates in AU.</p>
+      <p>The same file places the Moon, 20 other moons, Pluto, Halley's Comet, seven spacecraft and the nearest stars, and gives how each body is turned.</p>
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Copy <code>ephemeris.js</code> next to your page.</p>
+        </li>
+        <li>
+          <p>Load it before your own script.</p>
+          <div class="code"><pre><code>&lt;script src="ephemeris.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Ask for a planet's position on a date. This finds how far Mars was from the Earth when it came closest in January 2025.</p>
+          <div class="code"><pre><code>const date = new Date('2025-01-12T00:00:00Z');
+const mars = Ephemeris.planetPosition('mars', date);
+const earth = Ephemeris.planetPosition('earth', date);
+const au = Math.hypot(mars[0] - earth[0], mars[1] - earth[1], mars[2] - earth[2]);
+console.log(au.toFixed(3) + ' AU');   // 0.642 AU</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="maps" aria-labelledby="maps-title">
+      <h2 id="maps-title">Planet maps</h2>
+      <p class="lede">Use it to give a planet, moon or star in your own scene its surface. Each map is made in the browser from code, with no image files, and comes as RGB bytes for a canvas or a texture.</p>
+      <figure class="frame">
+        <iframe src="planet-surfaces/?embed" loading="lazy" title="Planet surfaces"></iframe>
+        <figcaption><a href="planet-surfaces/">Open on its own</a></figcaption>
+      </figure>
+      <p class="label">What you need</p>
+      <ul class="needs">
+        <li><code>planet-surfaces/surfaces.js</code>, 69 KB.</li>
+        <li><code>planet-surfaces/earth-map.js</code>, 25 KB, for the Earth's map only. It is the Earth's land and ice from Natural Earth.</li>
+      </ul>
+      <p class="label">The code</p>
+      <p class="file">planet-surfaces/surfaces.js</p>
+      <div class="code"><pre><code>function fillRow(gen, L, y) {
+  var lat = 90 - (y + 0.5) / L.h * 180, cl = Math.cos(lat * DEG), sl = Math.sin(lat * DEG);
+  for (var x = 0; x &lt; L.w; x++) {
+    var lon = (x + 0.5) / L.w * 360 - 180;
+    gen(lon, lat, cl * Math.cos(lon * DEG), cl * Math.sin(lon * DEG), sl, px3);
+    var o = (y * L.w + x) * 3;
+    L.d[o] = px3[0] * 255; L.d[o + 1] = px3[1] * 255; L.d[o + 2] = px3[2] * 255;
+  }
+}
+
+// ...
+
+// compute full-size rows for up to budgetMs; returns progress 0..1
+function refine(key, budgetMs) {
+  var T = texture(key);
+  if (T.ready) return 1;
+  var gen = spec(key).gen, top = T.levels[0], t0 = performance.now(), start = T.row;
+  while (T.row &lt; T.h &amp;&amp; performance.now() - t0 &lt; budgetMs) fillRow(gen, top, T.row++);
+  chain(T.levels, start &amp; ~7, (T.row + 7) &amp; ~7);
+  if (T.row &gt;= T.h) T.ready = true;
+  T.progress = T.row / T.h;
+  return T.progress;
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>Each body has a function that gives the colour at a longitude and latitude, from noise, craters, bands and spots placed at their real coordinates. <code>fillRow</code> calls it for every pixel of one row of the map. <code>refine</code> fills the full-size map a few rows at a time within a budget of milliseconds, so a page stays responsive while a large map is made.</p>
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Copy <code>surfaces.js</code> next to your page. For the Earth, copy <code>earth-map.js</code> as well.</p>
+        </li>
+        <li>
+          <p>Load them in the head, the Earth's map first.</p>
+          <div class="code"><pre><code>&lt;script src="earth-map.js"&gt;&lt;/script&gt;
+&lt;script src="surfaces.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Get a body's map at full size. The pixels are RGB bytes in <code>d</code>, row by row from the north pole, with east longitude running from −180° to 180° across.</p>
+          <div class="code"><pre><code>const map = Surfaces.texture("mars");
+Surfaces.refine("mars", Infinity);
+const { w, h, d } = map.levels[0];</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Copy the pixels into a canvas.</p>
+          <div class="code"><pre><code>const canvas = document.createElement("canvas");
+canvas.width = w;
+canvas.height = h;
+const image = new ImageData(w, h);
+for (let i = 0, j = 0; i &lt; d.length; i += 3, j += 4) {
+  image.data[j] = d[i];
+  image.data[j + 1] = d[i + 1];
+  image.data[j + 2] = d[i + 2];
+  image.data[j + 3] = 255;
+}
+canvas.getContext("2d").putImageData(image, 0, 0);</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
+      <p>The <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/solar-system/planet-surfaces#readme">README</a> also shows the map as a texture in three.js and in WebGL.</p>
+    </section>
+
+    <section id="characters" aria-labelledby="characters-title">
+      <h2 id="characters-title">Drawing in characters</h2>
+      <p class="lede">Use it to show a 3D shape, a logo or any other picture in text characters. Your code gives the light at each point of a canvas, and the renderer picks a character and a colour for every cell.</p>
+      <figure class="frame">
+        <iframe data-src="glyph-renderer/?embed" title="Glyph renderer"></iframe>
+        <figcaption><a href="glyph-renderer/">Open on its own</a></figcaption>
+      </figure>
+      <p>The renderer draws with WebGL where the browser has it and on a 2D canvas where it does not. The explorer below switches between the two while it runs, and the picture is the same on both.</p>
+      <figure class="frame">
+        <iframe data-src="demo.html?feature=renderer&amp;embed" title="WebGL and Canvas 2D"></iframe>
+        <figcaption><a href="demo.html?feature=renderer">Open on its own</a></figcaption>
+      </figure>
+      <p class="label">What you need</p>
+      <ul class="needs">
+        <li><code>glyph-renderer/glyph-renderer.js</code>, 40 KB. It has no dependencies.</li>
+        <li>A canvas. WebGL is optional.</li>
+      </ul>
+      <p class="label">The code</p>
+      <p class="file">glyph-renderer/glyph-renderer.js</p>
+      <div class="code"><pre><code>var state = 0;
+if (maxL &gt;= 0.035) {
+  var gi, mean = sumL / 6, spread = maxL - minL;
+  if (spread &gt; tune.edge &amp;&amp; spread &gt; tune.edgeRel * maxL) {
+    var key = 0;
+    for (k = 0; k &lt; 6; k++) {
+      var vr = v6[k] / maxL, q = maxL * (tune.contrast === 2 ? vr * vr : Math.pow(vr, tune.contrast));
+      key |= Math.round(clamp(q, 0, 1) * Q7) &lt;&lt; (k * 3);
+    }
+    gi = matchGlyph(key);
+  } else {
+    gi = rampLUT[clamp(Math.round(mean * 255), 0, 255)];
+  }
+  if (gi) {
+    var aq = alphaLevel(mean);
+    if (aq) state = gi | (rowFor(ar, ag, ab) &lt;&lt; 7) | (aq &lt;&lt; 15);
+  }
+}
+if (!state &amp;&amp; cOcc[cell] &lt; 0.35 &amp;&amp; bg) state = bg.state(cell);
+putCell(cell, state);</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>Each cell is sampled at six points, two across and three down. Where the samples differ enough, the cell holds an edge and takes the glyph whose shape matches them best. Elsewhere it takes a glyph from a density ramp by its mean brightness, and its colour comes from a palette of 36 hues and 7 saturations.</p>
+      <p class="file">glyph-renderer/glyph-renderer.js</p>
+      <div class="code"><pre><code>mctx = document.createElement('canvas').getContext('2d');
+if (!glStart()) {
+  gl = null;
+  ctx = canvas.getContext('2d');
+  // A canvas that has handed out a WebGL context cannot give a 2D one,
+  // so when WebGL failed after that point a fresh copy takes its place.
+  if (!ctx) {
+    var fresh = canvas.cloneNode(false);
+    canvas.replaceWith(fresh);
+    canvas = fresh;
+    ctx = canvas.getContext('2d');
+  }
+}
+api.canvas = canvas;
+api.gl = !!gl;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>The renderer asks the canvas for WebGL first. A canvas that already has a 2D context cannot give a WebGL one, so <code>glStart</code> fails and the renderer draws on the 2D canvas.</p>
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Copy <code>glyph-renderer.js</code> next to your page.</p>
+        </li>
+        <li>
+          <p>Add a canvas and load the script at the end of the body. The characters are light, so give the canvas a dark background.</p>
+          <div class="code"><pre><code>&lt;canvas id="art" style="background:#050608"&gt;&lt;/canvas&gt;
+&lt;script src="glyph-renderer.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Make a renderer, size it and draw. The function you give <code>draw</code> gets a point in CSS pixels from the canvas's top left and writes the red, green and blue light there into <code>out</code>. This one draws a sphere lit from the upper left.</p>
+          <div class="code"><pre><code>&lt;script&gt;
+  const g = GlyphRenderer.create(document.getElementById('art'));
+  g.resize(320, 320, devicePixelRatio, 10);
+  g.draw(function (x, y, out) {
+    const dx = (x - 160) / 140, dy = (y - 160) / 140, z = 1 - dx * dx - dy * dy;
+    if (z &gt; 0) out[0] = out[1] = out[2] = Math.max(0, 0.6 * Math.sqrt(z) - 0.5 * dx - 0.5 * dy);
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>To draw on a 2D canvas instead of with WebGL, ask the canvas for its 2D context just before the renderer is made in step 3. <code>g.gl</code> is then <code>false</code>.</p>
+          <div class="code"><pre><code>document.getElementById('art').getContext('2d');
+const g = GlyphRenderer.create(document.getElementById('art'));</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="stars" aria-labelledby="stars-title">
+      <h2 id="stars-title">The starry background</h2>
+      <p class="lede">Use it as a starry background behind your page. The stars twinkle, the sky drifts slowly past, and your content stays on top of it.</p>
+      <figure class="frame">
+        <iframe data-src="night-sky/?embed" title="Night sky"></iframe>
+        <figcaption><a href="night-sky/">Open on its own</a></figcaption>
+      </figure>
+      <p class="label">What you need</p>
+      <ul class="needs">
+        <li><code>night-sky/night-sky.js</code>, 17 KB, and <code>night-sky/night-sky-glyphs.js</code>, 10 KB.</li>
+        <li><code>glyph-renderer/glyph-renderer.js</code>, 40 KB, for the look in characters. <code>night-sky.js</code> on its own gives the stars as data.</li>
+      </ul>
+      <p class="label">The code</p>
+      <p class="file">night-sky/night-sky-glyphs.js</p>
+      <div class="code"><pre><code>function placeStars(list, base, offDisc, disc) {
+  var W = T.W, H = T.H, cw = T.cw, ch = T.ch, cols = T.cols, view = T.view;
+  var f = 0.95 * H, R = view.R, U = view.U, B = view.B, mask = offDisc &amp;&amp; !!disc &amp;&amp; Math.abs(dot(B, GAL_Z)) &gt; 0.05;
+  for (var i = 0; i &lt; list.length; i++) {
+    var d = list[i].d, zc = -(d[0] * B[0] + d[1] * B[1] + d[2] * B[2]);
+    if (zc &lt; 0.1) continue;
+    var x = W / 2 + f * (d[0] * R[0] + d[1] * R[1] + d[2] * R[2]) / zc;
+    var y = H / 2 - f * (d[0] * U[0] + d[1] * U[1] + d[2] * U[2]) / zc;
+    if (x &lt; 0 || y &lt; 0 || x &gt;= W || y &gt;= H) continue;
+    if (mask) { var gp = disc(x, y); if (smoothstep(4, 19, Math.sqrt(gp[0] * gp[0] + gp[1] * gp[1])) &lt; list[i].cut) continue; }
+    var cell = ((y / ch) | 0) * cols + ((x / cw) | 0);
+    var cur = starAt[cell];
+    if (cur &amp;&amp; starOf(cur).a &gt;= list[i].a) continue;
+    if (!cur) starCells.push(cell);
+    starAt[cell] = base + i + 1;
+  }
+}
+
+// ...
+
+// the packed state of a cell, for the renderer: 0 where there is no
+// star, else its glyph, colour and opacity as it twinkles at L.time
+// seconds, or held at its brightest while L.still is set
+L.state = function (cell) {
+  var si = starAt ? starAt[cell] : 0;
+  if (!si) return 0;
+  var sky = si &lt;= STARS.length, j = sky ? si - 1 : si - 1 - STARS.length, st = sky ? STARS[j] : GSTARS[j], fade = sky ? starFade : gStarFade;
+  var a = st.a * fade * (1 - st.amp + (L.still ? st.amp : st.amp * Math.sin(L.time * st.tw + st.ph)));
+  var aq = Math.round(clamp(a, 0, 1) * 63);
+  return aq ? T.pack(sky ? gStar[j] : gGal[j], sky ? rStar[j] : rGal[j], aq) : 0;
+};</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>Each star is a direction in the sky. <code>placeStars</code> projects it through the renderer's camera into a character cell and keeps the brightest star in each cell. <code>state</code> gives that cell its glyph, colour and opacity as the star twinkles, and the renderer draws it in every cell that nothing else covers.</p>
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Copy <code>night-sky.js</code>, <code>night-sky-glyphs.js</code> and <code>glyph-renderer.js</code> from the <code>glyph-renderer</code> folder next to your page.</p>
+        </li>
+        <li>
+          <p>Load them at the end of the head.</p>
+          <div class="code"><pre><code>&lt;script defer src="glyph-renderer.js"&gt;&lt;/script&gt;
+&lt;script defer src="night-sky.js"&gt;&lt;/script&gt;
+&lt;script defer src="night-sky-glyphs.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Put the canvas first in the body.</p>
+          <div class="code"><pre><code>&lt;canvas id="sky" aria-hidden="true"&gt;&lt;/canvas&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Fix the canvas behind the page.</p>
+          <div class="code"><pre><code>body { margin: 0; background: #050608; }
+#sky { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+main { position: relative; z-index: 1; }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Start the sky at the end of the body.</p>
+          <div class="code"><pre><code>&lt;script&gt;
+  addEventListener('DOMContentLoaded', () =&gt; {
+    const g = GlyphRenderer.create(document.getElementById('sky'));
+    const sky = NightSky.layer(g);
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let lon = 4.7, laidAt = 0;
+    // look along the ecliptic at longitude lon and draw the sky
+    function draw() {
+      const c = Math.cos(lon), s = Math.sin(lon);
+      g.view.B = [-c, -s, 0]; g.view.R = [s, -c, 0]; g.view.U = [0, 0, 1];
+      sky.place();
+      g.clear();
+      NightSky.drawGalaxies(g, 1);
+      g.compose(sky);
+      g.present();
+    }
+    function size() { g.resize(innerWidth, innerHeight, devicePixelRatio, 10); draw(); }
+    addEventListener('resize', size);
+    sky.still = still;
+    size();
+    if (still) return;
+    requestAnimationFrame(function frame(ms) {
+      sky.time = ms / 1000;
+      // one turn in 15 minutes, laid out again 4 times a second
+      if (ms - laidAt &gt; 250) { laidAt = ms; lon = 4.7 + ms / 1000 * 0.007; draw(); }
+      else { g.update(sky, true); g.present(); }
+      requestAnimationFrame(frame);
+    });
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="deep-sky" aria-labelledby="deep-sky-title">
+      <h2 id="deep-sky-title">Nebulae, the galaxy and the black hole</h2>
+      <p class="lede">Use it to put the Milky Way, a nebula or the black hole at its centre on your page, as a large picture at the top or as a background.</p>
+      <figure class="frame">
+        <iframe data-src="deep-sky/?embed" title="Deep sky"></iframe>
+        <figcaption><a href="deep-sky/">Open on its own</a></figcaption>
+      </figure>
+      <p class="label">What you need</p>
+      <ul class="needs">
+        <li><code>deep-sky/deep-sky.js</code>, 58 KB, and <code>deep-sky/deep-sky-glyphs.js</code>, 16 KB.</li>
+        <li><code>glyph-renderer/glyph-renderer.js</code>, 40 KB, for the look in characters. <code>deep-sky.js</code> on its own gives the objects as points and the black hole's light.</li>
+      </ul>
+      <p class="label">The code</p>
+      <p class="file">deep-sky/deep-sky-glyphs.js</p>
+      <div class="code"><pre><code>// each star goes into the one sample it falls in, so it stays a crisp dot
+var cols2 = cols * 2, rows3 = rows * 3, isx = 2 / cw, isy = 3 / ch;
+for (i = 0; i &lt; Pt.n; i += stride) {
+  var o3 = i * 3, gx = pos[o3], gy = pos[o3 + 1], gz = pos[o3 + 2];
+  var sx = ((ox + xx * gx + xy * gy + xz * gz) * isx) | 0;
+  if (sx &lt; 0 || sx &gt;= cols2) continue;
+  var sy = ((oy + yx * gx + yy * gy + yz * gz) * isy) | 0;
+  if (sy &lt; 0 || sy &gt;= rows3) continue;
+  var si = (((sy / 3) | 0) * cols + (sx &gt;&gt; 1)) * 6 + (sy % 3) * 2 + (sx &amp; 1);
+  bR[si] += pc[o3] * pg; bG[si] += pc[o3 + 1] * pg; bB[si] += pc[o3 + 2] * pg;
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>The galaxy is 450,000 stars, made from fixed seeds a few milliseconds at a time. Each star is projected through the renderer's camera, and its light goes into the one sample it falls in, so it stays a crisp dot. The nebulae are clouds of points drawn the same way, and the black hole's light is traced along paths bent round it.</p>
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Copy <code>deep-sky.js</code>, <code>deep-sky-glyphs.js</code> and <code>glyph-renderer.js</code> from the <code>glyph-renderer</code> folder next to your page.</p>
+        </li>
+        <li>
+          <p>Add a canvas with a dark background and load the scripts at the end of the body.</p>
+          <div class="code"><pre><code>&lt;canvas id="sky" style="background:#050608"&gt;&lt;/canvas&gt;
+&lt;script src="glyph-renderer.js"&gt;&lt;/script&gt;
+&lt;script src="deep-sky.js"&gt;&lt;/script&gt;
+&lt;script src="deep-sky-glyphs.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Make the galaxy's stars a few milliseconds a frame, then draw it face-on with 40 kiloparsecs from the top of the canvas to the bottom.</p>
+          <div class="code"><pre><code>&lt;script&gt;
+  const g = GlyphRenderer.create(document.getElementById('sky'));
+  g.resize(innerWidth, innerHeight, devicePixelRatio, 6);
+  g.view.k = g.H / 40;
+  g.view.span = 40;
+  requestAnimationFrame(function make() {
+    if (!DeepSky.galaxy.prepare(10)) return requestAnimationFrame(make);
+    g.clear();
+    DeepSky.drawGalaxy(g);
+    g.compose();
+    g.present();
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>For a nebula or the black hole, draw it in place of the galaxy, with its middle and size in device pixels on the canvas. A nebula's points are made first with <code>DeepSky.nebula.prepare(key, ms)</code>, as the galaxy's stars are. The black hole needs nothing made first.</p>
+          <div class="code"><pre><code>// the Crab Nebula, a third of the canvas's height across
+DeepSky.drawNebula(g, { key: 'crab', x: g.W / 2, y: g.H / 2, radius: g.H / 6,
+  frame: { u: [1, 0, 0], v: [0, 1, 0], w: [0, 0, 1] } });
+// the black hole, its disc tipped 78° from face-on
+DeepSky.drawHole(g, { x: g.W / 2, y: g.H / 2, radius: g.H / 6,
+  frame: { N: [0, 0.98, 0.21], Q: [1, 0, 0], E: [0, 0.21, -0.98] } });</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="comet" aria-labelledby="comet-title">
+      <h2 id="comet-title">Comet tails</h2>
+      <p class="lede">Use it to show Halley's Comet, or another comet on an orbit you give it, on a page about the sky. Its coma and tails grow and turn with the date.</p>
+      <figure class="frame">
+        <iframe data-src="comet/?embed" title="Comet"></iframe>
+        <figcaption><a href="comet/">Open on its own</a></figcaption>
+      </figure>
+      <p class="label">What you need</p>
+      <ul class="needs">
+        <li><code>comet/comet.js</code>, 16 KB, and <code>comet/comet-glyphs.js</code>, 8 KB.</li>
+        <li><code>glyph-renderer/glyph-renderer.js</code>, 40 KB, for the look in characters. <code>comet.js</code> on its own gives the tails as points.</li>
+      </ul>
+      <p class="label">The code</p>
+      <p class="file">comet/comet.js</p>
+      <div class="code"><pre><code>function dustNow(key, el, jd) {
+  if (dust.key === key &amp;&amp; Math.abs(jd - dust.jd) &lt; 1 / 48) return dust;
+  var nb = DUST_BETA.length, now = smallPosition(el, jd);
+  var off = new Float64Array(DUST_N * nb * 3), w = new Float64Array(DUST_N);
+  for (var i = 0; i &lt; DUST_N; i++) {
+    var age = dustAge(i), st = cometState(el, jd - age), ia2 = 1 / (age * age);
+    w[i] = tailActivity(Math.sqrt(dot(st[0], st[0])));
+    for (var j = 0; j &lt; nb; j++) {
+      var q = st[0].slice(), v = st[1].slice(), n = Math.max(4, Math.ceil(age / 0.75)), o = (i * nb + j) * 3;
+      for (var k = 0; k &lt; n; k++) orbitStep(q, v, age / n, GM_SUN * (1 - DUST_BETA[j]));
+      off[o] = (q[0] - now[0]) * ia2; off[o + 1] = (q[1] - now[1]) * ia2; off[o + 2] = (q[2] - now[2]) * ia2;
+    }
+  }
+  dust = { key: key, jd: jd, off: off, w: w };
+  return dust;
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>Dust grains leave the nucleus over the last 45 days. Sunlight pushes each grain outward, so it moves on an orbit of its own under a share of the Sun's pull. <code>dustNow</code> follows those orbits from each grain's start to the date, and the tail fans out and curves back along the comet's path. The ion tail points straight away from the Sun, tipped by the comet's speed.</p>
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Copy <code>comet.js</code> and <code>comet-glyphs.js</code> from <code>comet/</code>, and <code>glyph-renderer.js</code> from <code>glyph-renderer/</code>, next to your page.</p>
+        </li>
+        <li>
+          <p>Give the page a dark background with no margin.</p>
+          <div class="code"><pre><code>body { margin: 0; background: #050608; }
+#sky { display: block; }</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Add a canvas, load the three scripts and draw the comet. This puts the nucleus near the top left of the window, with a tenth of an AU to the window's height.</p>
+          <div class="code"><pre><code>&lt;canvas id="sky"&gt;&lt;/canvas&gt;
+&lt;script src="glyph-renderer.js"&gt;&lt;/script&gt;
+&lt;script src="comet.js"&gt;&lt;/script&gt;
+&lt;script src="comet-glyphs.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  const g = GlyphRenderer.create(document.getElementById('sky'));
+  g.resize(innerWidth, innerHeight, devicePixelRatio, 10);
+  const jd = Date.UTC(1986, 1, 9) / 864e5 + 2440587.5;    // 9 February 1986
+  const pos = Comet.position(Comet.HALLEY, jd);
+  g.clear();
+  Comet.draw(g, {
+    elements: Comet.HALLEY, jd: jd, pos: pos,
+    x: g.W * 0.3, y: g.H * 0.25, scale: g.H * 10,
+    frame: { N: [0, 0, 1], Q: [1, 0, 0], E: [0, 1, 0] }
+  });
+  g.compose();
+  g.present();
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
+      <p>The <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/solar-system/comet#readme">README</a> also shows the tails drawn from <code>comet.js</code> alone on a plain canvas.</p>
+    </section>
+
+    <section id="spacecraft" aria-labelledby="spacecraft-title">
+      <h2 id="spacecraft-title">Spacecraft</h2>
+      <p class="lede">Use it to show a spacecraft at its real size on a page about space missions. Voyager, New Horizons, Pioneer, Parker Solar Probe and JWST are small 3D models built in metres.</p>
+      <figure class="frame">
+        <iframe data-src="spacecraft/?embed" title="Spacecraft"></iframe>
+        <figcaption><a href="spacecraft/">Open on its own</a></figcaption>
+      </figure>
+      <p class="label">What you need</p>
+      <ul class="needs">
+        <li><code>spacecraft/spacecraft.js</code>, 23 KB, and <code>spacecraft/spacecraft-glyphs.js</code>, 6 KB.</li>
+        <li><code>glyph-renderer/glyph-renderer.js</code>, 40 KB, for the look in characters. <code>spacecraft.js</code> on its own gives the models and a function that casts a ray through them.</li>
+      </ul>
+      <p class="label">The code</p>
+      <p class="file">spacecraft/spacecraft-glyphs.js</p>
+      <div class="code"><pre><code>var rayParts = SC.rayParts;
+for (var r = r0; r &lt; r1; r++) {
+  for (var c = c0; c &lt; c1; c++) {
+    var cell = r * cols + c, occ = cOcc[cell], gc = (r - r0) * gw + c - c0, i0 = cellAt[gc], i1 = cellAt[gc + 1];
+    if (i0 === i1) continue;
+    for (var k = 0; k &lt; 6; k++) {
+      var i = cell * 6 + k, x0 = sampleX(c, k) - sx0, y0 = sy0 - sampleY(r, k), cov = 0, cr = 0, cg = 0, cb2 = 0;
+      for (var j = 0; j &lt; n; j++) {
+        var x = fine ? x0 + ((j &amp; 1) ? ax : -ax) : x0, y = fine ? y0 + ((j &amp; 2) ? ay : -ay) : y0;
+        cov += rayParts(parts, cellIds, i0, i1, x * R[0] + y * U[0], x * R[1] + y * U[1], x * R[2] + y * U[2], d, L, px, so);
+        cr += so[0]; cg += so[1]; cb2 += so[2];
+      }
+      cov *= A / n;
+      if (cov &lt; 0.002) continue;
+      if (dK[i]) T.freeze(i);
+      var f = A / n;
+      bR[i] = bR[i] * (1 - cov) + cr * f; bG[i] = bG[i] * (1 - cov) + cg * f; bB[i] = bB[i] * (1 - cov) + cb2 * f;
+      if (cov &gt; occ) occ = cov;
+    }
+    cOcc[cell] = occ;
+  }
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>Each sample casts four rays through the model, or one while the camera moves, and tries only the parts whose outlines reach its cell. A ray keeps every part it passes, so a boom thinner than a sample covers some of the rays and shows as a faint line.</p>
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Copy <code>spacecraft.js</code> and <code>spacecraft-glyphs.js</code> next to your page, and <code>glyph-renderer.js</code> from the <code>glyph-renderer</code> folder.</p>
+        </li>
+        <li>
+          <p>Add a canvas with a dark background and load the three scripts at the end of the body, in this order.</p>
+          <div class="code"><pre><code>&lt;canvas id="craft" style="background:#050608"&gt;&lt;/canvas&gt;
+&lt;script src="glyph-renderer.js"&gt;&lt;/script&gt;
+&lt;script src="spacecraft.js"&gt;&lt;/script&gt;
+&lt;script src="spacecraft-glyphs.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Make a renderer, add a model to it and draw. <code>frame</code> turns the model and <code>light</code> points to the Sun, both as seen from the camera. This draws JWST with the Sun below its sunshield.</p>
+          <div class="code"><pre><code>&lt;script&gt;
+  const g = GlyphRenderer.create(document.getElementById('craft'));
+  g.resize(360, 360, devicePixelRatio, 10);
+  const M = Spacecraft.models.jwst;
+  g.clear();
+  Spacecraft.draw(g, {
+    model: M, x: g.W / 2, y: g.H / 2, metres: 2.4 * M.r / g.H,
+    frame: { N: [0, 0.8, 0.6], Q: [0.6, -0.48, 0.64], E: [0.8, 0.36, -0.48] },
+    light: [0.3, -0.8, -0.52]
+  });
+  g.compose();
+  g.present();
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
+    </section>
+
+    <section id="flights" aria-labelledby="flights-title">
+      <h2 id="flights-title">Flying the camera</h2>
+      <p class="lede">Use the whole explorer as a page of its own, with buttons or links on your page that fly the camera from one body to another.</p>
+      <figure class="frame frame--tall">
+        <iframe data-src="demo.html?feature=flights&amp;embed" title="Flights"></iframe>
+        <figcaption><a href="demo.html?feature=flights">Open on its own</a></figcaption>
+      </figure>
+      <p class="label">What you need</p>
+      <ul class="needs">
+        <li><code>js/orrery.js</code>, 139 KB, the explorer's engine.</li>
+        <li>The scripts of the seven parts above: <code>planet-positions/ephemeris.js</code>, <code>planet-surfaces/earth-map.js</code> and <code>surfaces.js</code>, <code>glyph-renderer/glyph-renderer.js</code>, <code>night-sky/night-sky.js</code> and <code>night-sky-glyphs.js</code>, <code>deep-sky/deep-sky.js</code> and <code>deep-sky-glyphs.js</code>, <code>comet/comet.js</code> and <code>comet-glyphs.js</code>, and <code>spacecraft/spacecraft.js</code> and <code>spacecraft-glyphs.js</code>. With <code>orrery.js</code> they come to about 470 KB.</li>
+        <li>WebGL where the browser has it. Without it the explorer draws on a 2D canvas.</li>
+      </ul>
+      <p class="label">The code</p>
+      <p class="file">js/orrery.js</p>
+      <div class="code"><pre><code>var RHO = 1.42;
+
+// ...
+
+var r2 = RHO * RHO, r4 = r2 * r2;
+var b0 = (w1 * w1 - w0 * w0 + r4 * u1 * u1) / (2 * w0 * r2 * u1);
+var b1 = (w1 * w1 - w0 * w0 - r4 * u1 * u1) / (2 * w1 * r2 * u1);
+fl.r0 = -Math.asinh(b0);
+fl.S = (-Math.asinh(b1) - fl.r0) / RHO;
+
+// ...
+
+// Where a flight is at progress p: its span w, the share of the way its
+// target has come (f) and the share it has left (rest). f and rest are
+// each worked out on their own, so neither loses precision near its end.
+function flightAt(fl, p, out) {
+  var c = Math.cos(Math.PI * p), s = fl.S * (0.5 - 0.5 * c), left = fl.S * (0.5 + 0.5 * c);
+  if (fl.zoomOnly) { out.w = fl.w0 * Math.exp(fl.k * RHO * s); out.f = 1; out.rest = 0; return out; }
+  var chx = Math.cosh(RHO * s + fl.r0), d = Math.sinh(RHO * fl.S) * chx;
+  out.w = fl.w0 * Math.cosh(fl.r0) / chx;
+  out.f = Math.sinh(RHO * s) * Math.cosh(fl.r0 + RHO * fl.S) / d;
+  out.rest = Math.sinh(RHO * left) * Math.cosh(fl.r0) / d;
+  return out;
+}</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>A flight pans and zooms at once along the path van Wijk and Nuij worked out in 2003. It zooms out just enough to keep both ends in sight and moves at an even speed on the screen. <code>S</code> is the length of that path, and <code>flightAt</code> gives the size of the view and how far it has come at any point of the flight. The heading, pitch and roll ease to their new values over the same time.</p>
+      <p><code>Orrery.zoom</code> and <code>Orrery.rotate</code> zoom and turn the view from your own controls. The explorer's <code>demo.js</code> ties them to the wheel, drags, pinches and keys.</p>
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Copy the files listed above into the folder of your page, keeping their subfolders.</p>
+        </li>
+        <li>
+          <p>Put two canvases in the body and fix them over the window. The second one holds the labels.</p>
+          <div class="code"><pre><code>&lt;canvas id="sky"&gt;&lt;/canvas&gt;
+&lt;canvas id="hud"&gt;&lt;/canvas&gt;
+&lt;style&gt;
+  body { margin: 0; background: #050608; }
+  #sky, #hud { position: fixed; top: 0; left: 0; display: block; }
+&lt;/style&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Load the parts and the explorer at the end of the body, in this order.</p>
+          <div class="code"><pre><code>&lt;script src="planet-positions/ephemeris.js"&gt;&lt;/script&gt;
+&lt;script src="planet-surfaces/earth-map.js"&gt;&lt;/script&gt;
+&lt;script src="planet-surfaces/surfaces.js"&gt;&lt;/script&gt;
+&lt;script src="glyph-renderer/glyph-renderer.js"&gt;&lt;/script&gt;
+&lt;script src="night-sky/night-sky.js"&gt;&lt;/script&gt;
+&lt;script src="night-sky/night-sky-glyphs.js"&gt;&lt;/script&gt;
+&lt;script src="deep-sky/deep-sky.js"&gt;&lt;/script&gt;
+&lt;script src="deep-sky/deep-sky-glyphs.js"&gt;&lt;/script&gt;
+&lt;script src="comet/comet.js"&gt;&lt;/script&gt;
+&lt;script src="comet/comet-glyphs.js"&gt;&lt;/script&gt;
+&lt;script src="spacecraft/spacecraft.js"&gt;&lt;/script&gt;
+&lt;script src="spacecraft/spacecraft-glyphs.js"&gt;&lt;/script&gt;
+&lt;script src="js/orrery.js"&gt;&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Start it after the scripts, on the body you want to open on.</p>
+          <div class="code"><pre><code>&lt;script&gt;
+  Orrery.init(document.getElementById("sky"), document.getElementById("hud"), { focus: "earth" });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+        <li>
+          <p>Add buttons that fly the camera, and put them over the canvases.</p>
+          <div class="code"><pre><code>&lt;nav style="position: fixed; top: 1rem; left: 1rem; z-index: 2"&gt;
+  &lt;button type="button" data-fly="earth"&gt;Earth&lt;/button&gt;
+  &lt;button type="button" data-fly="mars"&gt;Mars&lt;/button&gt;
+  &lt;button type="button" data-fly="saturn"&gt;Saturn&lt;/button&gt;
+&lt;/nav&gt;
+&lt;script&gt;
+  document.querySelectorAll("[data-fly]").forEach(function (button) {
+    button.addEventListener("click", function () { Orrery.flyTo(button.dataset.fly); });
+  });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
+      <p>To run the explorer itself, serve the <code>solar-system/</code> folder with a static web server, for example <code>python3 -m http.server</code>, and open <code>demo.html</code>.</p>
+    </section>
+
+    <section id="shadows" aria-labelledby="shadows-title">
+      <h2 id="shadows-title">Rings, shadows and eclipses</h2>
+      <p class="lede">Use it to show a planet with its rings, the shadows the rings and the planet cast on each other, and eclipses at the moment they happen. This part lives in the explorer's engine.</p>
+      <figure class="frame">
+        <iframe data-src="demo.html?feature=rings&amp;embed" title="Rings"></iframe>
+        <figcaption><a href="demo.html?feature=rings">Open on its own</a></figcaption>
+      </figure>
+      <p>The view above opens on Saturn in June 2017, when its rings were tilted furthest toward the Sun. The view below runs the total eclipse of the Moon of 7 September 2025 at a minute a second, over and over.</p>
+      <figure class="frame">
+        <iframe data-src="demo.html?feature=eclipse&amp;embed" title="Eclipse"></iframe>
+        <figcaption><a href="demo.html?feature=eclipse">Open on its own</a></figcaption>
+      </figure>
+      <p class="label">What you need</p>
+      <ul class="needs">
+        <li>The explorer, set up as in <a href="#flights">Flying the camera</a>. The rings come from <code>planet-surfaces/surfaces.js</code>, and the places of the Sun, the Moon and the planets from <code>planet-positions/ephemeris.js</code>.</li>
+      </ul>
+      <p class="label">The code</p>
+      <p class="file">js/orrery.js</p>
+      <div class="code"><pre><code>// shadow of the rings on the clouds, on the day side
+if (Rg &amp;&amp; Lz !== 0 &amp;&amp; lit &gt; 0) {
+  var sx2 = -hzz * (1 - b.f) / Lz;
+  if (sx2 &gt; 0) {
+    var qx = hx + sx2 * Lx, qy = hy + sx2 * Ly, rq = Math.sqrt(qx * qx + qy * qy);
+    if (rq &gt; Rg.inner &amp;&amp; rq &lt; Rg.outer) lit *= 1 - ringOp(Rg, rq, sampleR * 2) * 0.88;
+  }
+}
+
+// ...
+
+for (var si = 0; si &lt; shd.length; si++) {
+  var sd = shd[si], wx = hwx - sd.C[0], wy = hwy - sd.C[1], wz = hwz - sd.C[2];
+  var sa = wx * sd.A[0] + wy * sd.A[1] + wz * sd.A[2];
+  if (sa &lt;= 0) continue;
+  var pp = Math.sqrt(Math.max(0, wx * wx + wy * wy + wz * wz - sa * sa));
+  var ru = sd.R - sa * sd.ku, rpn = sd.R + sa * sd.kp;
+  ecl *= smoothstep(Math.max(ru, 0) - sd.R * 0.02, rpn, pp);
+  // sunlight bent through the Earth's air lights the Moon red
+  // inside the umbra, dimmest at the middle and brighter
+  // toward the edge. It is far brighter here than in the sky,
+  // so that a totally eclipsed Moon still gets characters.
+  if (b.key === 'moon' &amp;&amp; ru &gt; 0) {
+    var uu = pp / ru;
+    red = Math.max(red, uu &lt; 1 ? 0.22 + 0.25 * uu * uu : 0.47 * (1 - smoothstep(1, 1.5, uu)));
+  }
+}
+
+// ...
+
+// the planet's shadow across the rings
+var b3 = px * Lx + py * Ly, sh = 1;
+if (b3 &lt; 0) sh = smoothstep(0.965, 1.02, Math.sqrt(Math.max(0, rr2 - b3 * b3 * ia3)));
+var lt = ringLight * (0.10 + 0.90 * sh) * alpha;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p>Each sample on a planet looks back toward the Sun. Where that line crosses the ring plane inside the rings, the ring's opacity there dims the sample. A sample on the rings is dimmed where the line to the Sun passes through the planet.</p>
+      <p>A moon's shadow, or the Earth's on the Moon, is a cone of umbra inside a wider cone of penumbra, set by the size of the Sun and of the body that casts it. A sample's light falls from the outer edge of the penumbra to the edge of the umbra. Inside the Earth's umbra the Moon turns red, as sunlight bent through the Earth's air lights it.</p>
+      <p class="label">Add it to your page</p>
+      <ol class="steps">
+        <li>
+          <p>Set up the explorer as in <a href="#flights">Flying the camera</a>, steps 1 to 3.</p>
+        </li>
+        <li>
+          <p>Start it on Saturn on a date when its rings are open, or on the Moon during an eclipse. <code>time</code> is in milliseconds since 1970, and <code>setWarp</code> sets how many seconds of the clock pass each second.</p>
+          <div class="code"><pre><code>&lt;script&gt;
+  const sky = document.getElementById("sky"), hud = document.getElementById("hud");
+  Orrery.init(sky, hud, { focus: "saturn", time: Date.UTC(2017, 5, 15) });
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+          <div class="code"><pre><code>&lt;script&gt;
+  const sky = document.getElementById("sky"), hud = document.getElementById("hud");
+  Orrery.init(sky, hud, { focus: "moon", time: Date.UTC(2025, 8, 7, 16, 55) });
+  Orrery.setWarp(60);
+&lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
+      </ol>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>The full API and every option are in the <a href="https://github.com/N041M/cool-stuff-n-assets/tree/main/solar-system#readme">README</a>. The code is under the <a href="https://github.com/N041M/cool-stuff-n-assets/blob/main/LICENSE">MIT licence</a>.</p>
+  </footer>
+
+  <script>
+    // Copy a code block to the clipboard.
+    document.querySelectorAll("[data-copy-code]").forEach(function (button) {
+      button.addEventListener("click", function () {
+        const text = button.parentElement.querySelector("code").textContent;
+        if (!navigator.clipboard) return;
+        navigator.clipboard.writeText(text).then(function () {
+          button.textContent = "Copied";
+          setTimeout(function () { button.textContent = "Copy"; }, 1500);
+        }, function () {});
+      });
+    });
+
+    // WebGL frames load once they come within one screen of the window. Each
+    // demo stops drawing on its own while its frame is off screen.
+    (function () {
+      const frames = document.querySelectorAll("iframe[data-src]");
+      if (!frames.length || !("IntersectionObserver" in window)) {
+        frames.forEach(function (f) { f.src = f.getAttribute("data-src"); });
+        return;
+      }
+      const io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          io.unobserve(e.target);
+          e.target.src = e.target.getAttribute("data-src");
+        });
+      }, { rootMargin: "100% 0px" });
+      frames.forEach(function (f) { io.observe(f); });
+    })();
+  </script>
 </body>
 </html>

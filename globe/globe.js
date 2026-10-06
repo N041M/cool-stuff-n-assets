@@ -5,8 +5,16 @@
 (function () {
   "use strict";
 
-  const CW = 7;   // advance of 11px Departure Mono
-  const LH = 14;  // line height used by .plot
+  // The width and height of a cell in pixels. metrics() measures them in the
+  // .plot style once IBM Plex Mono has loaded, and again whenever the font or
+  // its size changes. These are the values for 11px Plex Mono.
+  let CW = 6.6;
+  let LH = 14;
+  // Plex Mono has no block or box-drawing glyphs, so the browser takes them
+  // from another monospace font, whose advance can differ from Plex Mono's.
+  // FIX holds the letter-spacing in pixels that brings each of those glyphs
+  // back to the width of a cell.
+  const FIX = new Map();
   const reducedMQ = window.matchMedia("(prefers-reduced-motion: reduce)");
   const STILL_T = 12;
 
@@ -50,24 +58,28 @@
       let line = "";
       let run = "";
       let runCls = -1;
+      let runFix = 0;
       for (let x = 0; x < this.cols; x++) {
         const i = y * this.cols + x;
         const c = this.cl[i];
-        if (c !== runCls) {
-          line += wrap(run, runCls);
+        const chr = this.ch[i];
+        const fix = FIX.get(chr) || 0;
+        if (c !== runCls || fix !== runFix) {
+          line += wrap(run, runCls, runFix);
           run = "";
           runCls = c;
+          runFix = fix;
         }
-        const chr = this.ch[i];
         run += chr === "<" ? "&lt;" : chr === ">" ? "&gt;" : chr === "&" ? "&amp;" : chr;
       }
-      out.push(line + wrap(run, runCls));
+      out.push(line + wrap(run, runCls, runFix));
     }
     return out.join("\n");
   };
-  function wrap(text, cls) {
+  function wrap(text, cls, fix) {
     if (!text) return "";
-    return cls > 0 ? '<span class="' + CLS[cls] + '">' + text + "</span>" : text;
+    if (!cls && !fix) return text;
+    return "<span" + (cls > 0 ? ' class="' + CLS[cls] + '"' : "") + (fix ? ' style="letter-spacing:' + fix + 'px"' : "") + ">" + text + "</span>";
   }
 
   function num(x, digits) {
@@ -635,6 +647,12 @@
               continue;
             }
           }
+          // A cell that is all land is filled with its background, which
+          // covers the whole row where a full block glyph might not.
+          if (landBits === 15) {
+            g.put(i, row, " ", cls(land + " lb"));
+            continue;
+          }
           if (landBits) {
             g.put(i, row, QUADS[landBits], cls(sea + " " + land + " sb lf"));
             continue;
@@ -797,6 +815,45 @@
     item.rows = Math.max(4, Math.floor(item.el.clientHeight / LH));
   }
 
+  // The cell size comes from a hidden copy of the first globe's <pre>, with
+  // the same classes and so the same font. Its first line is a run of digits.
+  // The lines after it hold a run of each block and box-drawing glyph the
+  // globe draws. The cell width is the width of the digits divided by their
+  // count, and the cell height is the probe's height divided by its lines.
+  const PROBE_RUN = 40;
+  const PROBE_GLYPHS = Array.from(QUADS.trim() + "│┼├┤─┌┐└┘┬┴╷■□");
+  const probe = document.createElement("pre");
+  probe.className = items[0].el.className;
+  probe.setAttribute("aria-hidden", "true");
+  probe.style.cssText = "position:absolute;left:0;top:0;width:auto;height:auto;max-width:none;visibility:hidden;pointer-events:none";
+  probe.innerHTML = ["0"].concat(PROBE_GLYPHS).map(function (c) { return "<span>" + c.repeat(PROBE_RUN) + "</span>"; }).join("\n");
+  items[0].el.parentNode.appendChild(probe);
+
+  // Returns true when the cell size changed.
+  function metrics() {
+    const spans = probe.children;
+    const cw = spans[0].getBoundingClientRect().width / PROBE_RUN;
+    const lh = probe.getBoundingClientRect().height / spans.length;
+    if (!(cw > 0 && lh > 0)) return false;
+    FIX.clear();
+    for (let i = 1; i < spans.length; i++) {
+      const fix = Math.round((cw - spans[i].getBoundingClientRect().width / PROBE_RUN) * 1000) / 1000;
+      if (fix) FIX.set(PROBE_GLYPHS[i - 1], fix);
+    }
+    const changed = cw !== CW || lh !== LH;
+    CW = cw;
+    LH = lh;
+    return changed;
+  }
+
+  // The probe changes size when the font loads or its size changes, and the
+  // globes are laid out again.
+  new ResizeObserver(function () {
+    if (!metrics()) return;
+    items.forEach(measure);
+    if (reducedMQ.matches) renderStill();
+  }).observe(probe);
+
   function render(item, t, still) {
     const g = new Grid(item.cols, item.rows);
     item.def.draw(item.state, g, t, still);
@@ -835,6 +892,7 @@
 
   function start() {
     cancelAnimationFrame(raf);
+    metrics();
     items.forEach(measure);
     if (reducedMQ.matches) renderStill();
     else {
@@ -861,6 +919,8 @@
   });
   reducedMQ.addEventListener("change", start);
 
-  const ready = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
-  ready.then(start);
+  // The globe starts once IBM Plex Mono has loaded, or without it when it
+  // cannot load.
+  const ready = document.fonts ? document.fonts.load('11px "IBM Plex Mono"') : Promise.resolve();
+  ready.then(start, start);
 })();
