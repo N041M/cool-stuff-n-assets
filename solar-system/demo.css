@@ -138,11 +138,12 @@ code { font: inherit; color: var(--ink-2); }
 }
 .group { display: flex; flex-wrap: nowrap; gap: 0.25rem; }
 /* On a narrow screen the panel buttons and the time share the first row,
-   the view takes the second and the renderer switch the third. */
+   the view takes the second, and the renderer switch and the Glyphs button
+   the third. */
 @media (max-width: 719px) {
   .controls { gap: 0.375rem 0.75rem; }
   .controls .view { order: 1; }
-  .controls .renderer { order: 2; }
+  .controls .renderer, .controls .glyphs { order: 2; }
 }
 .controls .btn {
   display: inline-flex; align-items: center; justify-content: center;

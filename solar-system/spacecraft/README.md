@@ -10,7 +10,7 @@ From the root of this repository:
 python3 -m http.server
 ```
 
-Then open http://localhost:8000/solar-system/spacecraft/. The page shows one model at a time in characters, turning slowly. Previous and Next switch between the five models. It stands still when the system asks for reduced motion.
+Then open http://localhost:8000/solar-system/spacecraft/. The page shows one model at a time in characters, turning slowly. Previous and Next switch between the five models. It stands still when the system asks for reduced motion. The Glyphs button draws the same picture without the characters.
 
 ## Using it
 

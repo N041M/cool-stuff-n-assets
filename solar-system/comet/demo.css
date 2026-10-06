@@ -134,10 +134,12 @@ code { font: inherit; color: var(--ink-2); }
   cursor: pointer;
   transition: background 0.12s, color 0.12s;
 }
-@media (hover: hover) { .btn:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); } }
-.btn:focus-visible { background: var(--ink); color: var(--bg); }
+/* A pressed button is in the accent colour. The hover and focus look comes
+   after it, so that it wins. */
 .btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
 .btn[aria-pressed="false"] { color: var(--ink-3); }
+@media (hover: hover) { .btn:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); } }
+.btn:focus-visible { background: var(--ink); color: var(--bg); }
 
 .seg { display: inline-flex; gap: 0.5ch; }
 
@@ -145,6 +147,13 @@ code { font: inherit; color: var(--ink-2); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; }
+}
+
+/* A phone has no room in the bar for the Glyphs button, so it sits in the
+   bottom right corner. */
+@media (max-width: 26em) {
+  .bar [data-glyphs] { position: fixed; right: var(--gutter); bottom: var(--gutter); }
+  .bar [data-glyphs]:not(:hover):not(:focus-visible) { background: var(--bg); }
 }
 
 /* The Read me panel. */
@@ -174,8 +183,9 @@ code { font: inherit; color: var(--ink-2); }
   .date { margin-left: auto; }
 }
 
-/* ?embed shows the comet, the date and its buttons without the back link,
-   the name and the Read me, for a frame on the documentation page. */
+/* ?embed shows the comet, the date, its buttons and the Glyphs button
+   without the back link, the name and the Read me, for a frame on the
+   documentation page. */
 :root[data-embed] .back,
 :root[data-embed] .brand,
 :root[data-embed] [data-readme-open],

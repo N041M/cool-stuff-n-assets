@@ -2254,10 +2254,10 @@
   // the browser has it and on a 2D canvas otherwise. A canvas that has
   // already given out a 2D context cannot give a WebGL one, so the renderer
   // takes the 2D path on such a canvas.
-  var rendererTune = {};
+  var rendererTune = {}, glyphsOn = true;
   function contextRestored() { sync(); needsRebuild = true; needsDraw = true; hudDirty = true; }
   function makeRenderer(el) {
-    G = GR.create(el, { font: fontFamily, weight: fontWeight, view: view, tune: rendererTune });
+    G = GR.create(el, { font: fontFamily, weight: fontWeight, view: view, tune: rendererTune, glyphs: glyphsOn });
     canvas = G.canvas;
     sampleX = G.sampleX; sampleY = G.sampleY; addBase = G.add; splat = G.splat; line = G.line; project = G.project; freeze = G.freeze;
     // a sample that shows a body's map is shaded from it as the body turns
@@ -2279,6 +2279,7 @@
       // the settings of the explorer's own drawing, and of the renderer's
       if (opts.tune) for (var tk in opts.tune) { if (tk in tune) tune[tk] = opts.tune[tk]; else rendererTune[tk] = opts.tune[tk]; }
       if (opts.renderer === '2d') el.getContext('2d');
+      if (opts.glyphs === false) glyphsOn = false;
       makeRenderer(el);
       hctx = hudCanvas.getContext('2d');
       if (opts.accent) accentRGB = hexToRgb(opts.accent);
@@ -2449,6 +2450,17 @@
       makeRenderer(fresh);
       resize(true);
       return Orrery.renderer;
+    },
+    // Whether the sky is drawn in characters. Without them the renderer
+    // draws the same light as a picture, on a grid of smaller cells.
+    get glyphs() { return glyphsOn; },
+    setGlyphs: function (on) {
+      glyphsOn = on !== false;
+      if (!G || G.glyphs === glyphsOn) return;
+      G.setGlyphs(glyphsOn);
+      sync();
+      coverMask = null;
+      needsRebuild = true; needsDraw = true; hudDirty = true;
     },
     // the size the canvases are drawn at now, and the size they would be
     // drawn at for the window as it is (see viewSize), in CSS pixels

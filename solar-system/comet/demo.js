@@ -1,7 +1,8 @@
 // The demo page. It draws Halley's Comet on a date with window.Comet
 // (comet.js and comet-glyphs.js) and the glyph renderer, seen from the north
 // of the ecliptic with x to the right and y up. While the comet has tails the
-// view frames its head and tails. Further out it shows the whole orbit.
+// view frames its head and tails. Further out it shows the whole orbit. The
+// Glyphs button shows the same picture without the characters.
 (function () {
   "use strict";
 
@@ -150,6 +151,13 @@
   }
   document.querySelectorAll("[data-go]").forEach(function (b) {
     b.addEventListener("click", function () { go(b.getAttribute("data-go")); });
+  });
+  const glyphs = document.querySelector("[data-glyphs]");
+  glyphs.addEventListener("click", function () {
+    const on = glyphs.getAttribute("aria-pressed") !== "true";
+    glyphs.setAttribute("aria-pressed", String(on));
+    G.setGlyphs(on);
+    if (started) render();
   });
 
   let resizeTimer = 0;

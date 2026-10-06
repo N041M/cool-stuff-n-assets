@@ -8,6 +8,11 @@
    saturation palette. The grid is drawn on the GPU with WebGL where the
    browser has it, and on a 2D canvas where it does not.
 
+   With the glyphs turned off, the same samples are drawn as a picture
+   instead, one pixel of colour a sample, smoothed between samples. The
+   cells are then half the size, so the picture has four times as many
+   samples.
+
    A sample can also hold a place on a map instead of a colour, with the
    light that falls on it. Those samples are shaded again each frame from
    the caller's sampler, so a body can turn under a still camera at the
@@ -58,6 +63,13 @@
     return [c[0] * 255, c[1] * 255, c[2] * 255];
   }
 
+  // every palette row's colour, 0 to 1, three to a row
+  var PAL = (function () {
+    var a = new Float32Array(256 * 3);
+    for (var row = 0; row < 256; row++) { var c = rowRGB(row); a[row * 3] = c[0] / 255; a[row * 3 + 1] = c[1] / 255; a[row * 3 + 2] = c[2] / 255; }
+    return a;
+  })();
+
   var TONE_N = 2048, TONE_MAX = 2;
   // The tone curve, light to brightness from 0 to 1: a filmic shoulder of
   // strength k, then gamma, read from a table of TONE_N steps up to a light
@@ -93,6 +105,15 @@
     '  gl_FragColor = vec4(col * a, a);',
     '}'].join('\n');
 
+  // without glyphs: the samples as a picture, smoothed between them
+  var GL_FS_PIX = [
+    'precision highp float;',
+    'uniform sampler2D uPix;',
+    'uniform vec2 uSpan; uniform float uH;',
+    'void main() { gl_FragColor = texture2D(uPix, vec2(gl_FragCoord.x, uH - gl_FragCoord.y) / uSpan); }'].join('\n');
+  // Without glyphs the cells are half the size, up to PIX_CELLS of them
+  var PIX_CELLS = 120000;
+
   function create(canvas, opts) {
     opts = opts || {};
     var tune = {
@@ -101,9 +122,13 @@
     };
     if (opts.tune) for (var tk in opts.tune) if (tk in tune) tune[tk] = opts.tune[tk];
     var fontFamily = opts.font || 'monospace', fontWeight = String(opts.weight || '400');
+    var glyphsOn = opts.glyphs !== false;
 
     var ctx = null, mctx = null, dpr = 1;
     var cw = 0, ch = 0, cols = 0, rows = 0, fontPx = 10;
+    // the size of a character, which is also the size of a cell while the
+    // glyphs are on
+    var fcw = 0, fch = 0;
     var W = 0, H = 0;
     // the camera: the point it looks at (T), its right, up and backward
     // directions (R, U, B), the pixels per unit of length (k), and where T
@@ -111,6 +136,8 @@
     var view = opts.view || { T: [0, 0, 0], R: [1, 0, 0], U: [0, 1, 0], B: [0, 0, 1], span: 1, k: 1, ax: 0.5, ay: 0.5 };
 
     var shapeIdx = [], rampLUT = new Uint8Array(256);
+    // how much of a cell each glyph covers, 0 to 1
+    var ink = new Float32Array(NG);
     var SHAPE = null;
     var LUT = new Int16Array(1 << 18);
     var pages = [], rowReady = new Uint8Array(256);
@@ -438,7 +465,7 @@
 
     function analyseGlyphs() {
       var c = document.createElement('canvas');
-      c.width = cw; c.height = ch;
+      c.width = fcw; c.height = fch;
       var g = c.getContext('2d', { willReadFrequently: true });
       g.font = glyphFont();
       g.textBaseline = 'middle';
@@ -446,19 +473,20 @@
       var raw = new Float32Array(NG * 6), cov = new Float32Array(NG);
       var max = 0, i, k;
       for (i = 0; i < NG; i++) {
-        g.clearRect(0, 0, cw, ch);
+        g.clearRect(0, 0, fcw, fch);
         g.fillStyle = '#fff';
-        g.fillText(GLYPHS[i], cw / 2, ch / 2 + ch * 0.04);
-        var d = g.getImageData(0, 0, cw, ch).data;
+        g.fillText(GLYPHS[i], fcw / 2, fch / 2 + fch * 0.04);
+        var d = g.getImageData(0, 0, fcw, fch).data;
         for (k = 0; k < 6; k++) {
           var gx = k & 1, gy = k >> 1;
-          var xa = Math.floor(gx * cw / 2), xb = Math.floor((gx + 1) * cw / 2);
-          var ya = Math.floor(gy * ch / 3), yb = Math.floor((gy + 1) * ch / 3);
+          var xa = Math.floor(gx * fcw / 2), xb = Math.floor((gx + 1) * fcw / 2);
+          var ya = Math.floor(gy * fch / 3), yb = Math.floor((gy + 1) * fch / 3);
           var sum = 0, n = 0;
-          for (var yy = ya; yy < yb; yy++) for (var xx = xa; xx < xb; xx++) { sum += d[(yy * cw + xx) * 4 + 3]; n++; }
+          for (var yy = ya; yy < yb; yy++) for (var xx = xa; xx < xb; xx++) { sum += d[(yy * fcw + xx) * 4 + 3]; n++; }
           var v = n ? sum / n / 255 : 0;
           raw[i * 6 + k] = v; cov[i] += v / 6;
         }
+        ink[i] = cov[i];
       }
       shapeIdx = [];
       for (i = 0; i < NG; i++) if (SHAPE_SET.indexOf(GLYPHS[i]) >= 0) shapeIdx.push(i);
@@ -529,8 +557,12 @@
        the palette. That costs the same however many characters change. A
        browser without WebGL gets the 2D canvas, which draws changed cells one
        at a time from an atlas of glyph images.
+
+       Without glyphs, the picture is kept in a texture one texel per sample,
+       which the GPU stretches over the canvas and smooths. The 2D canvas
+       keeps it in an image of its own and stretches that.
        ---------------------------------------------------------------------- */
-    var gl = null, glProg = null, glTex = null, glBytes = null, glDirty = false, glLoc = null;
+    var gl = null, glProg = null, glPixProg = null, glTex = null, glBytes = null, glDirty = false, glLoc = null, glPixLoc = null;
     function glStart() {
       var g = null;
       try { g = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: true, antialias: false, depth: false, stencil: false }); } catch (e) { g = null; }
@@ -538,29 +570,39 @@
       var hp = g.getShaderPrecisionFormat(g.FRAGMENT_SHADER, g.HIGH_FLOAT);
       if (!hp || hp.precision < 20) return false;
       function sh(type, src) { var o = g.createShader(type); g.shaderSource(o, src); g.compileShader(o); return g.getShaderParameter(o, g.COMPILE_STATUS) ? o : null; }
-      var vs = sh(g.VERTEX_SHADER, GL_VS), fs = sh(g.FRAGMENT_SHADER, GL_FS);
-      if (!vs || !fs) return false;
-      var pr = g.createProgram();
-      g.attachShader(pr, vs); g.attachShader(pr, fs); g.linkProgram(pr);
-      if (!g.getProgramParameter(pr, g.LINK_STATUS)) return false;
-      g.useProgram(pr);
+      function program(fsSrc) {
+        var vs = sh(g.VERTEX_SHADER, GL_VS), fs = sh(g.FRAGMENT_SHADER, fsSrc);
+        if (!vs || !fs) return null;
+        var pr = g.createProgram();
+        g.attachShader(pr, vs); g.attachShader(pr, fs);
+        g.bindAttribLocation(pr, 0, 'aPos');
+        g.linkProgram(pr);
+        return g.getProgramParameter(pr, g.LINK_STATUS) ? pr : null;
+      }
+      var pr = program(GL_FS), pp = program(GL_FS_PIX);
+      if (!pr || !pp) return false;
       var buf = g.createBuffer();
       g.bindBuffer(g.ARRAY_BUFFER, buf);
       g.bufferData(g.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), g.STATIC_DRAW);
-      var ap = g.getAttribLocation(pr, 'aPos');
-      g.enableVertexAttribArray(ap); g.vertexAttribPointer(ap, 2, g.FLOAT, false, 0, 0);
-      glTex = [0, 1, 2].map(function (unit) {
-        var t = g.createTexture();
+      g.enableVertexAttribArray(0); g.vertexAttribPointer(0, 2, g.FLOAT, false, 0, 0);
+      // the cells' states, the glyphs, the palette, and the picture drawn without glyphs
+      glTex = [0, 1, 2, 3].map(function (unit) {
+        var t = g.createTexture(), filter = unit === 3 ? g.LINEAR : g.NEAREST;
         g.activeTexture(g.TEXTURE0 + unit); g.bindTexture(g.TEXTURE_2D, t);
-        [g.TEXTURE_MIN_FILTER, g.TEXTURE_MAG_FILTER].forEach(function (k) { g.texParameteri(g.TEXTURE_2D, k, g.NEAREST); });
+        [g.TEXTURE_MIN_FILTER, g.TEXTURE_MAG_FILTER].forEach(function (k) { g.texParameteri(g.TEXTURE_2D, k, filter); });
         [g.TEXTURE_WRAP_S, g.TEXTURE_WRAP_T].forEach(function (k) { g.texParameteri(g.TEXTURE_2D, k, g.CLAMP_TO_EDGE); });
         return t;
       });
       glLoc = {};
       ['uState', 'uGlyphs', 'uPal', 'uCell', 'uGrid', 'uH', 'uNG'].forEach(function (n) { glLoc[n] = g.getUniformLocation(pr, n); });
+      g.useProgram(pr);
       g.uniform1i(glLoc.uState, 0); g.uniform1i(glLoc.uGlyphs, 1); g.uniform1i(glLoc.uPal, 2);
+      glPixLoc = {};
+      ['uPix', 'uSpan', 'uH'].forEach(function (n) { glPixLoc[n] = g.getUniformLocation(pp, n); });
+      g.useProgram(pp);
+      g.uniform1i(glPixLoc.uPix, 3);
       g.disable(g.BLEND);
-      gl = g; glProg = pr;
+      gl = g; glProg = pr; glPixProg = pp;
       return true;
     }
     // the palette's colours, one texel a row
@@ -574,8 +616,18 @@
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 256, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, d);
       glDirty = true;
     }
-    // a new grid: the glyphs drawn white at its size, and an empty state texture
+    // a new grid: the glyphs drawn white at its size, and an empty state
+    // texture, or without glyphs an empty picture
     function glGrid() {
+      if (!glyphsOn) {
+        gl.useProgram(glPixProg);
+        gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, glTex[3]);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, PW, PH, 0, gl.RGBA, gl.UNSIGNED_BYTE, pxBytes);
+        gl.uniform2f(glPixLoc.uSpan, cols * cw, rows * ch); gl.uniform1f(glPixLoc.uH, H);
+        glDirty = true;
+        return;
+      }
+      gl.useProgram(glProg);
       var c = document.createElement('canvas');
       c.width = cw * NG; c.height = ch;
       var g = c.getContext('2d');
@@ -596,8 +648,13 @@
     function glPresent() {
       glDirty = false;
       gl.viewport(0, 0, W, H);
-      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, glTex[0]);
-      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, cols, rows, gl.RGBA, gl.UNSIGNED_BYTE, glBytes);
+      if (glyphsOn) {
+        gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, glTex[0]);
+        gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, cols, rows, gl.RGBA, gl.UNSIGNED_BYTE, glBytes);
+      } else {
+        gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, glTex[3]);
+        gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, PW, PH, gl.RGBA, gl.UNSIGNED_BYTE, pxBytes);
+      }
       gl.drawArrays(gl.TRIANGLES, 0, 3);
     }
 
@@ -694,6 +751,71 @@
       putCell(cell, state);
     }
 
+    /* ----------------------------------------------------------------------
+       Drawing cells without glyphs. Each sample becomes one pixel of the
+       picture, its brightest channel put through the tone curve and the
+       others scaled with it, so a colour keeps its hue. Where the background
+       shows, its character becomes a point of light in the middle of the
+       cell, as bright as the character's ink and opacity, so a star keeps
+       its colour and its twinkle.
+       ---------------------------------------------------------------------- */
+    var PW = 0, PH = 0, pxBytes = null, pxCanvas = null, pxCtx = null, pxImg = null;
+    // a point of light from a background character: its ink, times STAR_INK, up to 1
+    var STAR_INK = 8;
+    function pixAlloc() {
+      PW = cols * 2; PH = rows * 3;
+      if (glyphsOn) { pxBytes = pxImg = null; return; }
+      if (gl) { pxBytes = new Uint8Array(PW * PH * 4); return; }
+      if (!pxCanvas) { pxCanvas = document.createElement('canvas'); pxCtx = pxCanvas.getContext('2d'); }
+      pxCanvas.width = PW; pxCanvas.height = PH;
+      pxImg = pxCtx.createImageData(PW, PH); pxBytes = pxImg.data;
+    }
+    function drawPix(cell) {
+      var o = cell * 6, c = cell % cols, r = (cell / cols) | 0, has = cHas[cell], lit = 0;
+      var st = cOcc[cell] < 0.35 && bg ? bg.state(cell) : 0, pr = 0, pg = 0, pb = 0;
+      if (st) {
+        var row = (st >> 7) & 255, v = ((st >> 15) & 63) / 63 * Math.min(1, ink[st & 127] * STAR_INK);
+        pr = PAL[row * 3] * v; pg = PAL[row * 3 + 1] * v; pb = PAL[row * 3 + 2] * v;
+      }
+      for (var k = 0; k < 6; k++) {
+        var i = o + k, rr = 0, gg = 0, bb = 0;
+        if (has) {
+          rr = bR[i]; gg = bG[i]; bb = bB[i];
+          var kk = dK[i];
+          if (kk) {
+            if (!(k & 1) || dK[i - 1] !== kk || dU[i] !== dU[i - 1] || dV[i] !== dV[i - 1]) sampler(kk, dU[i], dV[i], so);
+            var f = dF[i];
+            rr += so[0] * f; gg += so[1] * f; bb += so[2] * f;
+          }
+          if (rr < 0) rr = 0;
+          if (gg < 0) gg = 0;
+          if (bb < 0) bb = 0;
+          // the brightest channel through the tone curve, the others in proportion
+          var hi = rr > gg ? (rr > bb ? rr : bb) : (gg > bb ? gg : bb);
+          if (hi > 1e-6) { var t = tone(hi) / hi; rr *= t; gg *= t; bb *= t; }
+        }
+        if (st && (k === 2 || k === 3)) { rr += pr; gg += pg; bb += pb; }
+        var mx = rr > gg ? (rr > bb ? rr : bb) : (gg > bb ? gg : bb);
+        if (mx > 1) { rr /= mx; gg /= mx; bb /= mx; mx = 1; }
+        if (mx > 0.01) lit = 1;
+        // the GPU's texture holds the colour times its opacity, the 2D canvas's image the colour alone
+        var q = ((r * 3 + (k >> 1)) * PW + c * 2 + (k & 1)) * 4, m = gl ? 255 : mx > 0 ? 255 / mx : 0;
+        pxBytes[q] = rr * m + 0.5; pxBytes[q + 1] = gg * m + 0.5; pxBytes[q + 2] = bb * m + 0.5; pxBytes[q + 3] = mx * 255 + 0.5;
+      }
+      if (lit) drawn++;
+      glDirty = true;
+    }
+    // the picture onto the 2D canvas, stretched to the grid and smoothed
+    function pixPresent() {
+      glDirty = false;
+      pxCtx.putImageData(pxImg, 0, 0);
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.globalAlpha = 1;
+      ctx.clearRect(0, 0, W, H);
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(pxCanvas, 0, 0, PW, PH, 0, 0, cols * cw, rows * ch);
+    }
+
     // the whole screen once, finding on the way which cells hold anything
     // and which need shading again each frame
     function compose(background) {
@@ -708,7 +830,7 @@
         }
         cHas[c] = has || dyn;
         if (dyn) dynList[nDyn++] = c;
-        drawCell(c);
+        if (glyphsOn) drawCell(c); else drawPix(c);
       }
       api.drawn = drawn;
     }
@@ -718,19 +840,26 @@
       bg = background || null;
       drawn = 0;
       if (ctx) ctx.setTransform(1, 0, 0, 1, 0, 0);
-      for (var d = 0; d < nDyn; d++) drawCell(dynList[d]);
+      for (var d = 0; d < nDyn; d++) { if (glyphsOn) drawCell(dynList[d]); else drawPix(dynList[d]); }
       if (twinkle && bg) {
         var cells = bg.cells;
         for (var s = 0; s < cells.length; s++) {
           var cell = cells[s];
-          if (!cHas[cell] && cOcc[cell] < 0.35) putCell(cell, bg.state(cell));
+          if (!cHas[cell] && cOcc[cell] < 0.35) { if (glyphsOn) putCell(cell, bg.state(cell)); else drawPix(cell); }
         }
       }
       if (ctx) ctx.globalAlpha = 1;
       api.drawn = drawn;
     }
-    // the grid onto the GPU's canvas, if anything changed; true if it was drawn
-    function present() { if (gl && glDirty) { glPresent(); return true; } return false; }
+    // The grid onto the GPU's canvas, or the picture drawn without glyphs
+    // onto either canvas, if anything changed. True if it was drawn.
+    function present() {
+      if (!glDirty) return false;
+      if (gl) glPresent();
+      else if (!glyphsOn) pixPresent();
+      else return false;
+      return true;
+    }
 
     /* ----------------------------------------------------------------------
        Size and font
@@ -742,14 +871,22 @@
       if (force === true) analysedFor = '';
       fontPx = px;
       mctx.font = glyphFont();
-      cw = Math.max(2, Math.round(mctx.measureText('M').width));
-      ch = Math.round(fontPx * dpr * 1.22);
+      fcw = Math.max(2, Math.round(mctx.measureText('M').width));
+      fch = Math.round(fontPx * dpr * 1.22);
+      cw = fcw; ch = fch;
+      if (!glyphsOn) {
+        // half the size, or larger where that would make more than PIX_CELLS cells
+        var f = Math.min(1, Math.max(0.5, Math.sqrt(W * H / (fcw * fch * PIX_CELLS))));
+        cw = Math.max(2, Math.round(fcw * f)); ch = Math.max(3, Math.round(fch * f));
+      }
       SX = cw / 2; SY = ch / 3;
       cols = Math.ceil(W / cw); rows = Math.ceil(H / ch);
       cellState = new Int32Array(cols * rows);
       allocCache();
-      var glyphKey = glyphFont() + ' ' + cw + 'x' + ch;
+      pixAlloc();
+      var glyphKey = glyphFont() + ' ' + fcw + 'x' + fch;
       if (glyphKey !== analysedFor) { analysedFor = glyphKey; analyseGlyphs(); }
+      glDirty = false;
       if (gl) glGrid();
       else { resetAtlas(); ctx.clearRect(0, 0, W, H); }
       publish();
@@ -762,7 +899,16 @@
       canvas.style.width = cssW + 'px'; canvas.style.height = cssH + 'px';
       setFont(px || fontPx);
     }
-    // the size of a cell for a font size in CSS pixels, in device pixels
+    // Turns the glyphs off or on. The grid's cells change size, so the
+    // caller fills the samples and draws again, as after setFont.
+    function setGlyphs(on) {
+      on = on !== false;
+      if (on === glyphsOn) return;
+      glyphsOn = on; api.glyphs = on;
+      if (W && H) setFont(fontPx);
+    }
+    // the size of a character for a font size in CSS pixels, in device
+    // pixels, which is the size of a cell while the glyphs are on
     function cellSize(px) {
       mctx.font = fontWeight + ' ' + (px * dpr) + 'px ' + fontFamily;
       return [Math.max(2, Math.round(mctx.measureText('M').width)), Math.round(px * dpr * 1.22)];
@@ -784,11 +930,11 @@
     }
 
     var api = {
-      canvas: canvas, view: view, tune: tune, gl: false,
+      canvas: canvas, view: view, tune: tune, gl: false, glyphs: glyphsOn,
       W: 0, H: 0, dpr: 1, cw: 0, ch: 0, cols: 0, rows: 0, fontPx: fontPx,
       red: null, green: null, blue: null, tex: null, texU: null, texV: null, texF: null, cover: null,
       drawn: 0, moving: false, coarse: false, spreadLevels: PYR_N,
-      resize: resize, setFont: setFont, cellSize: cellSize,
+      resize: resize, setFont: setFont, setGlyphs: setGlyphs, cellSize: cellSize,
       font: function (px) { return fontWeight + ' ' + ((px == null ? fontPx : px) * dpr) + 'px ' + fontFamily; },
       draw: draw, clear: clear, compose: compose, update: update, present: present,
       sampleX: sampleX, sampleY: sampleY, add: addBase, splat: splat, line: line, project: project,

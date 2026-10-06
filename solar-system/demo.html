@@ -103,6 +103,9 @@
       <button type="button" class="btn text" data-renderer="webgl" aria-pressed="true">WebGL</button>
       <button type="button" class="btn text" data-renderer="2d" aria-pressed="false">Canvas 2D</button>
     </div>
+    <div class="group glyphs" role="group" aria-label="Characters">
+      <button type="button" class="btn text" id="glyphs" aria-pressed="true">Glyphs</button>
+    </div>
   </div>
 
   <aside class="readme" id="readme" aria-label="Read me" hidden>
@@ -155,7 +158,7 @@
 &lt;/style&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
       </li>
       <li>
-        <p>Start it after the scripts. <code>Orrery.flyTo</code>, <code>Orrery.zoom</code> and <code>Orrery.rotate</code> then move the camera from your own buttons, and <code>Orrery.setRenderer("2d")</code> draws the characters on a 2D canvas instead of with WebGL.</p>
+        <p>Start it after the scripts. <code>Orrery.flyTo</code>, <code>Orrery.zoom</code> and <code>Orrery.rotate</code> then move the camera from your own buttons, and <code>Orrery.setRenderer("2d")</code> draws the characters on a 2D canvas instead of with WebGL. <code>Orrery.setGlyphs(false)</code> draws the sky as a smooth picture without the characters.</p>
         <div class="readme__code"><pre><code>&lt;script&gt;
   Orrery.init(document.getElementById("sky"), document.getElementById("hud"), { focus: "earth" });
 &lt;/script&gt;</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>

@@ -118,6 +118,10 @@ code { font: inherit; color: var(--ink-2); }
   cursor: pointer;
   transition: background 0.12s, color 0.12s;
 }
+/* A pressed button is in the accent colour. The hover and focus look comes
+   after it, so that it wins. */
+.btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.btn[aria-pressed="false"] { color: var(--ink-3); }
 @media (hover: hover) { .btn:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); } }
 .btn:focus-visible { background: var(--ink); color: var(--bg); }
 
@@ -157,6 +161,13 @@ code { font: inherit; color: var(--ink-2); }
   *, *::before, *::after { transition: none !important; }
 }
 
+/* A phone has no room in the bar for the Glyphs button, so it sits in the
+   bottom right corner. */
+@media (max-width: 26em) {
+  .bar [data-glyphs] { position: fixed; right: var(--gutter); bottom: var(--gutter); }
+  .bar [data-glyphs]:not(:hover):not(:focus-visible) { background: var(--bg); }
+}
+
 /* The Read me panel. */
 .readme { position: fixed; top: var(--bar-h); right: 0; bottom: 0; z-index: 30; width: min(52ch, 100%); overflow-y: auto; overscroll-behavior: contain; padding: var(--lh) 3ch calc(var(--lh) * 2); border-left: 1px solid var(--ink-4); background: var(--bg); color: var(--ink-2); }
 .readme[hidden] { display: none; }
@@ -177,8 +188,9 @@ code { font: inherit; color: var(--ink-2); }
 .readme__code .btn:not(:hover):not(:focus-visible) { background: var(--bg); }
 @media (max-width: 45em) { .readme { width: 100%; border-left: 0; } }
 
-/* ?embed shows the picture and Previous and Next without the back link,
-   the name and the Read me, for a frame on the documentation page. */
+/* ?embed shows the picture, Previous and Next and the Glyphs button
+   without the back link, the name and the Read me, for a frame on the
+   documentation page. */
 :root[data-embed] .back,
 :root[data-embed] .brand,
 :root[data-embed] [data-readme-open],

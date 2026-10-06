@@ -51,14 +51,15 @@
      ------------------------------------------------------------------------ */
   const params = new URLSearchParams(window.location.search);
   const embed = root.hasAttribute('data-embed');
+  // Every view keeps the Glyphs button.
   const FEATURES = {
-    flights: { name: 'Flights', keep: ['panels', 'view'] },
+    flights: { name: 'Flights', keep: ['panels', 'view', 'glyphs'] },
     // Saturn in June 2017, with its rings tilted furthest toward the Sun
-    rings: { name: 'Rings', focus: 'saturn', time: Date.UTC(2017, 5, 15), keep: ['view'] },
+    rings: { name: 'Rings', focus: 'saturn', time: Date.UTC(2017, 5, 15), keep: ['view', 'glyphs'] },
     // the total eclipse of the Moon of 7 September 2025, from before the
     // middle to the end, run at a minute a second over and over
-    eclipse: { name: 'Eclipse', focus: 'moon', time: Date.UTC(2025, 8, 7, 16, 55), until: Date.UTC(2025, 8, 7, 20, 0), warp: 60, keep: ['time'] },
-    renderer: { name: 'Renderer', keep: ['renderer'] }
+    eclipse: { name: 'Eclipse', focus: 'moon', time: Date.UTC(2025, 8, 7, 16, 55), until: Date.UTC(2025, 8, 7, 20, 0), warp: 60, keep: ['time', 'glyphs'] },
+    renderer: { name: 'Renderer', keep: ['renderer', 'glyphs'] }
   };
   const featureId = root.getAttribute('data-feature');
   const feature = Object.prototype.hasOwnProperty.call(FEATURES, featureId) ? FEATURES[featureId] : null;
@@ -466,6 +467,13 @@
   if (OR.renderer === '2d') rendererBtns.forEach((b) => { if (b.dataset.renderer === 'webgl') b.disabled = true; });
   rendererBtns.forEach((b) => b.addEventListener('click', () => { OR.setRenderer(b.dataset.renderer); showRenderer(); }));
   showRenderer();
+
+  // The Glyphs button draws the sky without the characters and back.
+  const glyphsBtn = $('glyphs');
+  glyphsBtn.addEventListener('click', () => {
+    OR.setGlyphs(!OR.glyphs);
+    glyphsBtn.setAttribute('aria-pressed', String(OR.glyphs));
+  });
 
   /* ------------------------------------------------------------------------
      Buttons that turn and zoom. Holding one down repeats it.

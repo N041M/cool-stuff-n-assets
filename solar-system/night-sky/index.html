@@ -6,8 +6,8 @@
   <title>Night sky</title>
   <link rel="preload" href="fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
   <script>
-    // ?embed shows the picture and its own controls without the bar and the
-    // Read me, for a frame on the documentation page.
+    // ?embed shows the sky and the Glyphs button without the back link, the
+    // name and the Read me, for a frame on the documentation page.
     if (new URLSearchParams(location.search).has("embed")) document.documentElement.setAttribute("data-embed", "");
   </script>
   <link rel="stylesheet" href="demo.css">
@@ -25,6 +25,7 @@
     <a class="back" href="../" aria-label="Solar system">← <span>Solar system</span></a>
     <h1 class="brand">Night sky</h1>
     <button type="button" class="btn" data-readme-open aria-controls="readme" aria-expanded="false">Read me</button>
+    <button type="button" class="btn" data-glyphs aria-pressed="true">Glyphs</button>
   </header>
 
   <aside class="readme" id="readme" aria-label="Read me" hidden>

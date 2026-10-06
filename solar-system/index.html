@@ -317,6 +317,7 @@ canvas.getContext("2d").putImageData(image, 0, 0);</code></pre><button type="but
         <iframe data-src="glyph-renderer/?embed" title="Glyph renderer"></iframe>
         <figcaption><a href="glyph-renderer/">Open on its own</a></figcaption>
       </figure>
+      <p>Every demo on this page has a Glyphs button. With the glyphs off, the renderer draws the same light as a smooth picture, one pixel a sample.</p>
       <p>The renderer draws with WebGL where the browser has it and on a 2D canvas where it does not. The explorer below switches between the two while it runs, and the picture is the same on both.</p>
       <figure class="frame">
         <iframe data-src="demo.html?feature=renderer&amp;embed" title="WebGL and Canvas 2D"></iframe>
@@ -324,7 +325,7 @@ canvas.getContext("2d").putImageData(image, 0, 0);</code></pre><button type="but
       </figure>
       <p class="label">What you need</p>
       <ul class="needs">
-        <li><code>glyph-renderer/glyph-renderer.js</code>, 40 KB. It has no dependencies.</li>
+        <li><code>glyph-renderer/glyph-renderer.js</code>, 47 KB. It has no dependencies.</li>
         <li>A canvas. WebGL is optional.</li>
       </ul>
       <p class="label">The code</p>
@@ -393,6 +394,10 @@ api.gl = !!gl;</code></pre><button type="button" class="btn" data-copy-code>Copy
           <div class="code"><pre><code>document.getElementById('art').getContext('2d');
 const g = GlyphRenderer.create(document.getElementById('art'));</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
         </li>
+        <li>
+          <p>To show the same light as a smooth picture without characters, turn the glyphs off and call <code>draw</code> again with the same function. <code>g.setGlyphs(true)</code> turns them back on.</p>
+          <div class="code"><pre><code>g.setGlyphs(false);</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+        </li>
       </ol>
     </section>
 
@@ -406,7 +411,7 @@ const g = GlyphRenderer.create(document.getElementById('art'));</code></pre><but
       <p class="label">What you need</p>
       <ul class="needs">
         <li><code>night-sky/night-sky.js</code>, 17 KB, and <code>night-sky/night-sky-glyphs.js</code>, 10 KB.</li>
-        <li><code>glyph-renderer/glyph-renderer.js</code>, 40 KB, for the look in characters. <code>night-sky.js</code> on its own gives the stars as data.</li>
+        <li><code>glyph-renderer/glyph-renderer.js</code>, 47 KB, for the look in characters. <code>night-sky.js</code> on its own gives the stars as data.</li>
       </ul>
       <p class="label">The code</p>
       <p class="file">night-sky/night-sky-glyphs.js</p>
@@ -509,7 +514,7 @@ main { position: relative; z-index: 1; }</code></pre><button type="button" class
       <p class="label">What you need</p>
       <ul class="needs">
         <li><code>deep-sky/deep-sky.js</code>, 58 KB, and <code>deep-sky/deep-sky-glyphs.js</code>, 16 KB.</li>
-        <li><code>glyph-renderer/glyph-renderer.js</code>, 40 KB, for the look in characters. <code>deep-sky.js</code> on its own gives the objects as points and the black hole's light.</li>
+        <li><code>glyph-renderer/glyph-renderer.js</code>, 47 KB, for the look in characters. <code>deep-sky.js</code> on its own gives the objects as points and the black hole's light.</li>
       </ul>
       <p class="label">The code</p>
       <p class="file">deep-sky/deep-sky-glyphs.js</p>
@@ -575,7 +580,7 @@ DeepSky.drawHole(g, { x: g.W / 2, y: g.H / 2, radius: g.H / 6,
       <p class="label">What you need</p>
       <ul class="needs">
         <li><code>comet/comet.js</code>, 16 KB, and <code>comet/comet-glyphs.js</code>, 8 KB.</li>
-        <li><code>glyph-renderer/glyph-renderer.js</code>, 40 KB, for the look in characters. <code>comet.js</code> on its own gives the tails as points.</li>
+        <li><code>glyph-renderer/glyph-renderer.js</code>, 47 KB, for the look in characters. <code>comet.js</code> on its own gives the tails as points.</li>
       </ul>
       <p class="label">The code</p>
       <p class="file">comet/comet.js</p>
@@ -641,7 +646,7 @@ DeepSky.drawHole(g, { x: g.W / 2, y: g.H / 2, radius: g.H / 6,
       <p class="label">What you need</p>
       <ul class="needs">
         <li><code>spacecraft/spacecraft.js</code>, 23 KB, and <code>spacecraft/spacecraft-glyphs.js</code>, 6 KB.</li>
-        <li><code>glyph-renderer/glyph-renderer.js</code>, 40 KB, for the look in characters. <code>spacecraft.js</code> on its own gives the models and a function that casts a ray through them.</li>
+        <li><code>glyph-renderer/glyph-renderer.js</code>, 47 KB, for the look in characters. <code>spacecraft.js</code> on its own gives the models and a function that casts a ray through them.</li>
       </ul>
       <p class="label">The code</p>
       <p class="file">spacecraft/spacecraft-glyphs.js</p>

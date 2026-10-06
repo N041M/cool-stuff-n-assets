@@ -1,7 +1,8 @@
 // The demo page: one spacecraft model at a time, drawn in characters by
 // spacecraft-glyphs.js and ../glyph-renderer/glyph-renderer.js, turning
-// slowly on a turntable. Previous and Next switch the model. It stands still
-// when the system asks for reduced motion.
+// slowly on a turntable. Previous and Next switch the model, and the Glyphs
+// button shows it without the characters. It stands still when the system
+// asks for reduced motion.
 (function () {
   'use strict';
 
@@ -111,6 +112,15 @@
         choose(index + Number(button.getAttribute('data-step')));
         if (!turning) render(true);
       });
+    });
+    const glyphs = document.querySelector('[data-glyphs]');
+    glyphs.addEventListener('click', function () {
+      const on = glyphs.getAttribute('aria-pressed') !== 'true';
+      glyphs.setAttribute('aria-pressed', String(on));
+      g.setGlyphs(on);
+      // a picture's cost changes with the grid, so it is measured again with four rays a sample
+      fine = true; cost = 10;
+      if (!turning) render(true);
     });
     let timer = 0;
     window.addEventListener('resize', function () {

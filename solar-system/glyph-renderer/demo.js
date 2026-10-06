@@ -1,6 +1,7 @@
 // The demo page: a ring drawn in characters by glyph-renderer.js with a scene
 // function of its own, turning slowly. It stands still when the system asks
-// for reduced motion.
+// for reduced motion. The Glyphs button shows the same picture without the
+// characters.
 (function () {
   'use strict';
 
@@ -127,6 +128,14 @@
     if (on) raf = requestAnimationFrame(frame);
     else render();
   }
+
+  const glyphs = document.querySelector('[data-glyphs]');
+  glyphs.addEventListener('click', function () {
+    const on = glyphs.getAttribute('aria-pressed') !== 'true';
+    glyphs.setAttribute('aria-pressed', String(on));
+    g.setGlyphs(on);
+    render();
+  });
 
   function start() {
     size();

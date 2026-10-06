@@ -1,6 +1,6 @@
 # Glyph renderer
 
-This renderer draws a picture in text characters on a canvas. The canvas is divided into character cells, and each cell is sampled at six points, two across and three down. A scene fills those samples with light. Each cell then takes the glyph whose shape best matches its six samples where it holds an edge, or a glyph from a density ramp where it is smooth. The glyph is tinted from a palette of 36 hues and 7 saturations. The grid is drawn with WebGL, or on a 2D canvas where WebGL is missing.
+This renderer draws a picture in text characters on a canvas. The canvas is divided into character cells, and each cell is sampled at six points, two across and three down. A scene fills those samples with light. Each cell then takes the glyph whose shape best matches its six samples where it holds an edge, or a glyph from a density ramp where it is smooth. The glyph is tinted from a palette of 36 hues and 7 saturations. The grid is drawn with WebGL, or on a 2D canvas where WebGL is missing. With the glyphs turned off, the renderer draws the same samples as a smooth picture instead.
 
 ## Running the demo
 
@@ -10,7 +10,7 @@ From the root of this repository:
 python3 -m http.server
 ```
 
-Then open http://localhost:8000/solar-system/glyph-renderer/. The page draws a ring that turns slowly. It stands still when the system asks for reduced motion. The ring's scene function is in `demo.js`, as a longer example than the one below.
+Then open http://localhost:8000/solar-system/glyph-renderer/. The page draws a ring that turns slowly. It stands still when the system asks for reduced motion. The Glyphs button draws the same ring without the characters. The ring's scene function is in `demo.js`, as a longer example than the one below.
 
 ## Using it
 
@@ -46,6 +46,7 @@ This draws a sphere 400 pixels across, lit from the upper left. `draw` calls the
 | `weight` | Its weight. 400 by default |
 | `view`   | A camera object to use (see Camera) |
 | `tune`   | Settings of the glyph matching, by name (see Settings) |
+| `glyphs` | `false` starts with the glyphs off (see Without glyphs) |
 
 `GlyphRenderer.tone(x)` is the default tone curve on its own, for pictures drawn without a renderer.
 
@@ -53,7 +54,7 @@ This draws a sphere 400 pixels across, lit from the upper left. `draw` calls the
 
 - `resize(width, height, ratio, fontPx)` sizes the canvas to `width` by `height` CSS pixels at `ratio` device pixels per CSS pixel, and lays the grid out for characters of `fontPx` CSS pixels. A fifth argument of `true` measures the glyphs again, for a font that has just loaded.
 - `setFont(fontPx)` lays the grid out for another character size on the same canvas.
-- `cellSize(fontPx)` gives the size of a cell at that character size, `[width, height]` in device pixels.
+- `cellSize(fontPx)` gives the size of a character at that size, `[width, height]` in device pixels. It is the size of a cell while the glyphs are on.
 - `font(fontPx)` gives the CSS font string the characters are drawn with at that size.
 
 These read the grid. Every length is in device pixels.
@@ -66,6 +67,7 @@ These read the grid. Every length is in device pixels.
 | `cols`, `rows` | The grid's size in cells |
 | `fontPx`     | The character size in CSS pixels |
 | `gl`         | `true` when the grid is drawn with WebGL |
+| `glyphs`     | `true` while the glyphs are on |
 | `canvas`     | The canvas. It is a fresh copy when WebGL failed after the first one gave a WebGL context |
 
 ### Drawing a scene
@@ -108,6 +110,12 @@ These draw the result:
 `drawn` counts the characters drawn by the last `compose` or `update`. Set `moving` while the camera moves. The 2D canvas then skips cells that only change their opacity by one step, and sets `coarse`. A page that draws less detail while moving sets `coarse` too, and draws again in full once the camera stops and `coarse` is set.
 
 `tone(x)` is the renderer's tone curve, which turns light into a brightness from 0 to 1.
+
+### Without glyphs
+
+`setGlyphs(false)` turns the characters off and `setGlyphs(true)` turns them back on. Without glyphs, each sample is one pixel of a picture that is stretched over the canvas and smoothed between samples. A sample's brightest channel goes through the tone curve and the other two are scaled with it, so its colour keeps its hue. A background character becomes a point of light in the middle of its cell, as bright as the character's ink and opacity.
+
+The cells are then half the size of a character, so the picture has four times as many samples, up to 120,000 cells. The grid changes with the switch, so a page fills the samples and draws again after it, as after `setFont`.
 
 ### Camera
 

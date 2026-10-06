@@ -12,7 +12,7 @@ From the root of this repository:
 python3 -m http.server
 ```
 
-Then open http://localhost:8000/solar-system/night-sky/. The sky fills the window and drifts slowly from left to right, once round in 15 minutes, and the stars twinkle. When the system asks for reduced motion, the sky stands still and the stars hold their brightness.
+Then open http://localhost:8000/solar-system/night-sky/. The sky fills the window and drifts slowly from left to right, once round in 15 minutes, and the stars twinkle. When the system asks for reduced motion, the sky stands still and the stars hold their brightness. The Glyphs button draws the same picture without the characters.
 
 ## Using it
 

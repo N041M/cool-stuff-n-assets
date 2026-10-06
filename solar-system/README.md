@@ -28,6 +28,7 @@ Every gesture also has a button, so the explorer works with touch alone.
 - Holding a zoom, turn or tilt button repeats it.
 - **«** and **»** step the clock's rate, from a month a second backwards to a month a second forwards. The pause button stops the clock and starts it again. **Now** brings the clock back to the present at real speed.
 - **WebGL** and **Canvas 2D** choose what draws the characters. WebGL is the default, and Canvas 2D is the renderer that browsers without WebGL get. The picture is the same on both, and the camera, the body in focus and the clock carry on across a switch. Where the browser has no WebGL, the WebGL button is greyed out.
+- **Glyphs** turns the characters off and on. Without them the same light is drawn as a smooth picture.
 - A click or a tap on a body flies to it and opens the info panel. Close to a planet or a moon, its landing sites are marked, and a click on one lists its date, who sent it and where it is in the panel.
 
 The top bar shows the time on the clock in UTC and its rate, which reads Live, Paused or a rate such as +1 day/s. Its Read me button opens the steps for putting the explorer, or one of its parts, on another page.
@@ -45,7 +46,7 @@ The tab's icon is the body in focus, ray-cast from the explorer's camera and fra
 - Add `?feature=renderer` to show only the WebGL and Canvas 2D switch.
 - Add `?embed` to show the sky and its controls without the bar and the Read me, as the documentation page does in its frames. It combines with the others, as in `demo.html?feature=rings&embed`. In a frame the sky stops drawing while the frame is off screen. The wheel there scrolls the page round the frame, and it zooms only with Ctrl or Cmd held.
 
-The feature views have no info panel. The explorer's name in their bar links to the whole explorer.
+The feature views have no info panel, and each one keeps the Glyphs button. The explorer's name in their bar links to the whole explorer.
 
 Each part's own demo page accepts `?embed` as well, and keeps only its own buttons.
 
@@ -56,7 +57,7 @@ The explorer is built from the components in its subfolders.
 1. **Positions.** `planet-positions/` works out where every body is and how it is turned at the moment on the clock, in heliocentric ecliptic coordinates (J2000).
 2. **Maps.** `planet-surfaces/` generates each body's map the first time it is needed. A small map is made at once, and the full-size one is refined a few rows per frame while the body is large on the screen.
 3. **Samples.** Each character cell is sampled at six points (2 × 3). `js/orrery.js` ray-casts the bodies as ellipsoids with their rings, ring shadows, the shadows of their moons and eclipses, and draws the orbits, the asteroid and Kuiper belts and the Sun's glow into the same samples. The spacecraft (`spacecraft/`), the comet's coma and tails (`comet/`), the galaxy, the nebulae and the black hole (`deep-sky/`), and the background stars and the other galaxies (`night-sky/`) are drawn into them by their own components.
-4. **Glyphs.** `glyph-renderer/` gives each cell the glyph whose shape best matches its six samples where it holds an edge, or a glyph from a density ramp where it is smooth, tinted from a palette of hues and saturations. The grid is drawn with WebGL, or on a 2D canvas where WebGL is missing or the Canvas 2D button is pressed.
+4. **Glyphs.** `glyph-renderer/` gives each cell the glyph whose shape best matches its six samples where it holds an edge, or a glyph from a density ramp where it is smooth, tinted from a palette of hues and saturations. The grid is drawn with WebGL, or on a 2D canvas where WebGL is missing or the Canvas 2D button is pressed. With the Glyphs button off, the same samples are drawn as a smooth picture instead, on a grid of cells half the size.
 5. **Labels.** The names, distances and corner brackets are drawn on a second canvas, on a grid of their own.
 
 Whatever stays the same while a body spins is cached for each view, so a still camera costs one texture lookup per sample. While the camera moves, a large body is sampled at three of the six points and drawn in full once the camera stops. A flight follows van Wijk and Nuij's path for zooming and panning at once (2003).
@@ -97,6 +98,7 @@ The page loads these components from its subfolders, as classic scripts, before 
 | `insets`        | `[top, bottom, right]`, the CSS pixels the page's controls cover |
 | `time`          | A moment to start at, in ms since 1970 |
 | `renderer`      | `'2d'` draws the characters on a 2D canvas instead of with WebGL |
+| `glyphs`        | `false` draws the sky as a smooth picture without characters |
 
 After that:
 
@@ -112,6 +114,7 @@ After that:
 - `setReducedMotion(on)` and `remeasure()` follow the system setting and a font that loads late.
 - `setPaused(on)` stops the drawing while `on` is true, for a page that scrolls the sky out of view. `paused` reads it.
 - `setRenderer(kind)` draws the characters with WebGL (`'webgl'`) or on a 2D canvas (`'2d'`). A new canvas with the same id and attributes takes the old one's place, and the old canvas's WebGL context is released at once. It returns the renderer in use, which stays `'2d'` where the browser has no WebGL. `renderer` reads which one is in use.
+- `setGlyphs(on)` draws the sky in characters (`true`) or as a smooth picture of the same light (`false`). The camera, the body in focus and the clock carry on. `glyphs` reads which one is in use.
 - `BODIES` holds every body by key, with its radius in km, its kind and class, and what it goes round.
 
 ## Data

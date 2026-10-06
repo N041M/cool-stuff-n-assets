@@ -17,7 +17,7 @@ From the root of this repository:
 python3 -m http.server
 ```
 
-Then open http://localhost:8000/solar-system/comet/. The page draws Halley's Comet in characters, seen from the north of the ecliptic. The buttons beside the date show its 1986 perihelion, today and its 2061 perihelion. While the comet has tails the view frames its head and tails. Further out from the Sun the view shows the whole orbit.
+Then open http://localhost:8000/solar-system/comet/. The page draws Halley's Comet in characters, seen from the north of the ecliptic. The buttons beside the date show its 1986 perihelion, today and its 2061 perihelion. While the comet has tails the view frames its head and tails. Further out from the Sun the view shows the whole orbit. The Glyphs button draws the same picture without the characters.
 
 ## Using it
 

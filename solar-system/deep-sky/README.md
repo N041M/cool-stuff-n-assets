@@ -16,7 +16,7 @@ From the root of this repository:
 python3 -m http.server
 ```
 
-Then open http://localhost:8000/solar-system/deep-sky/. Previous and Next step through the Milky Way, the six nebulae, the Pleiades and Sagittarius A*. The points of each object are made the first time it is shown, and a status line shows until they are ready. The galaxy turns once in four minutes, a nebula sways 20° either way, and the gas round the black hole goes round once a minute. When the system asks for reduced motion, they stand still.
+Then open http://localhost:8000/solar-system/deep-sky/. Previous and Next step through the Milky Way, the six nebulae, the Pleiades and Sagittarius A*. The points of each object are made the first time it is shown, and a status line shows until they are ready. The galaxy turns once in four minutes, a nebula sways 20° either way, and the gas round the black hole goes round once a minute. When the system asks for reduced motion, they stand still. The Glyphs button draws the same picture without the characters.
 
 ## Using it
 

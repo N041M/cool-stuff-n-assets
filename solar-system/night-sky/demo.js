@@ -2,7 +2,7 @@
 // and turns slowly round its pole, so the sky drifts from east to west,
 // from left to right, and the stars twinkle. When the system
 // asks for reduced motion, the sky stands still and the stars hold their
-// brightness.
+// brightness. The Glyphs button shows the same sky without the characters.
 (function () {
   "use strict";
 
@@ -97,6 +97,15 @@
       requestAnimationFrame(frame);
     }
   }
+
+  const glyphs = document.querySelector("[data-glyphs]");
+  glyphs.addEventListener("click", function () {
+    if (!g) return;
+    const on = glyphs.getAttribute("aria-pressed") !== "true";
+    glyphs.setAttribute("aria-pressed", String(on));
+    g.setGlyphs(on);
+    draw();
+  });
 
   function start() {
     g = GR.create(canvas, { font: getComputedStyle(document.body).fontFamily });

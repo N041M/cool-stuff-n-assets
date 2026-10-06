@@ -74,6 +74,10 @@ code { font: inherit; color: var(--ink-2); }
 @media (max-width: 45em) { .bar { gap: 0.75rem; } .back span { display: none; } }
 
 .btn { height: 1.75rem; padding: 0 1ch; border: 1px solid var(--ink-4); border-radius: 0; background: none; color: var(--ink); font: inherit; font-size: var(--fs-sm); white-space: nowrap; cursor: pointer; transition: background 0.12s, color 0.12s; }
+/* A pressed button is in the accent colour. The hover and focus look comes
+   after it, so that it wins. */
+.btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.btn[aria-pressed="false"] { color: var(--ink-3); }
 @media (hover: hover) { .btn:hover { background: var(--ink); border-color: var(--ink); color: var(--bg); } }
 .btn:focus-visible { background: var(--ink); color: var(--bg); }
 
@@ -83,6 +87,13 @@ code { font: inherit; color: var(--ink-2); }
 
 /* The model's name under the picture. */
 .name { position: fixed; left: 0; right: 0; bottom: 0; margin: 0; padding: 0 var(--gutter) calc(var(--lh) * 1.5); color: var(--ink-2); text-align: center; pointer-events: none; }
+
+/* A phone has no room in the bar for the Glyphs button, so it sits in the
+   bottom right corner. */
+@media (max-width: 26em) {
+  .bar [data-glyphs] { position: fixed; right: var(--gutter); bottom: var(--gutter); }
+  .bar [data-glyphs]:not(:hover):not(:focus-visible) { background: var(--bg); }
+}
 
 /* The Read me panel. */
 .readme { position: fixed; top: var(--bar-h); right: 0; bottom: 0; z-index: 30; width: min(52ch, 100%); overflow-y: auto; overscroll-behavior: contain; padding: var(--lh) 3ch calc(var(--lh) * 2); border-left: 1px solid var(--ink-4); background: var(--bg); color: var(--ink-2); }
@@ -104,8 +115,9 @@ code { font: inherit; color: var(--ink-2); }
 .readme__code .btn:not(:hover):not(:focus-visible) { background: var(--bg); }
 @media (max-width: 45em) { .readme { width: 100%; border-left: 0; } }
 
-/* ?embed shows the model and Previous and Next without the back link, the
-   name and the Read me, for a frame on the documentation page. */
+/* ?embed shows the model, Previous and Next and the Glyphs button without
+   the back link, the name and the Read me, for a frame on the documentation
+   page. */
 :root[data-embed] .back,
 :root[data-embed] .brand,
 :root[data-embed] [data-readme-open],

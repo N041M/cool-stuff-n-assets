@@ -4,7 +4,8 @@
 // milliseconds at a time, and a status line shows until the ones on the
 // screen are ready. The galaxy turns slowly, a nebula sways a little either way to
 // show its depth, and the gas round the black hole goes round. When the
-// system asks for reduced motion, every object stands still.
+// system asks for reduced motion, every object stands still. The Glyphs
+// button shows the same picture without the characters.
 (function () {
   "use strict";
 
@@ -269,6 +270,13 @@
     requestAnimationFrame(frame);
     document.querySelector("[data-prev]").addEventListener("click", function () { show(index - 1); });
     document.querySelector("[data-next]").addEventListener("click", function () { show(index + 1); });
+    const glyphs = document.querySelector("[data-glyphs]");
+    glyphs.addEventListener("click", function () {
+      const on = glyphs.getAttribute("aria-pressed") !== "true";
+      glyphs.setAttribute("aria-pressed", String(on));
+      g.setGlyphs(on);
+      dirty = true;
+    });
     if (motion.addEventListener) {
       motion.addEventListener("change", function () { still = motion.matches; dirty = true; });
     }
