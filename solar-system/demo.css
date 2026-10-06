@@ -163,7 +163,7 @@ svg .fill { fill: currentColor; stroke: none; }
 #pause .if-paused, #pause.is-paused .if-playing { display: none; }
 #pause.is-paused .if-paused { display: block; }
 
-/* The body list and the info panel */
+/* The body list */
 .panel {
   position: fixed; z-index: 3;
   overflow-y: auto; overscroll-behavior: contain;
@@ -192,32 +192,17 @@ svg .fill { fill: currentColor; stroke: none; }
 .bodies button:focus-visible { color: var(--hue, var(--ink)); outline-offset: -2px; }
 .bodies button[aria-current="true"] { color: var(--accent); }
 
-.info {
-  right: max(var(--gutter), env(safe-area-inset-right));
-  bottom: calc(var(--controls-h, 64px) + 0.5rem);
-  width: min(48ch, calc(100vw - 2 * var(--gutter)));
-  max-height: calc(100% - var(--top) - var(--controls-h, 64px) - 1.5rem);
-  padding: 0.75rem 3ch var(--lh);
-  font-size: var(--fs-sm);
-}
-.info__head { display: flex; align-items: center; justify-content: space-between; gap: 1ch; margin-bottom: 0.5rem; }
-.info-name { color: var(--accent); font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
-.kv div { display: flex; gap: 1ch; }
-.kv dt { flex: none; width: 16ch; color: var(--ink-3); text-transform: uppercase; }
-.kv dd { min-width: 0; color: var(--ink); font-variant-numeric: tabular-nums; }
-.info-back { margin-top: var(--lh); }
-
-/* On a narrow screen both panels take the width above the controls, and
-   the body list covers the info panel while it is open. */
+/* On a narrow screen the body list takes the width above the controls. */
 @media (max-width: 719px) {
-  .bodies, .info {
+  .bodies {
     left: max(var(--gutter), env(safe-area-inset-left));
     right: max(var(--gutter), env(safe-area-inset-right));
+    top: auto;
     width: auto;
+    max-height: min(60vh, calc(100% - var(--top) - var(--controls-h, 64px) - 1.5rem));
+    z-index: 4;
+    background: var(--bg);
   }
-  .bodies { top: auto; max-height: min(60vh, calc(100% - var(--top) - var(--controls-h, 64px) - 1.5rem)); z-index: 4; background: var(--bg); }
-  .info { max-height: min(38vh, calc(100% - var(--top) - var(--controls-h, 64px) - 1.5rem)); padding: 0.5rem 2ch 0.75rem; }
-  .kv dt { width: 14ch; }
 }
 
 /* The Read me panel */

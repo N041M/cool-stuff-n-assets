@@ -21,7 +21,6 @@ In the explorer, the sky fills the window and opens on Saturn. The page is dark 
 Every gesture also has a button, so the explorer works with touch alone.
 
 - **Bodies** opens the list of everything there is to fly to: the Sun, the planets with their moons under them, Pluto, Halley's Comet, the stars, the nebulae, the galactic centre and the spacecraft, then the whole system and the whole galaxy.
-- **Info** shows or hides the panel about the body in focus. The panel lists its distances, size, day and year. Its Close button hides it too.
 - **−** and **+** zoom out and in. The mouse wheel, a pinch and a one-finger swipe up or down zoom as well. Zooming in near a body hands it the focus.
 - The two curved arrows turn the view left and right. A sideways drag or swipe turns it too, and a quick swipe keeps it turning for a moment.
 - The straight arrows tilt the view up and down. A vertical mouse drag or two fingers moving up and down together tilt it too.
@@ -29,11 +28,11 @@ Every gesture also has a button, so the explorer works with touch alone.
 - **«** and **»** step the clock's rate, from a month a second backwards to a month a second forwards. The pause button stops the clock and starts it again. **Now** brings the clock back to the present at real speed.
 - **WebGL** and **Canvas 2D** choose what draws the characters. WebGL is the default, and Canvas 2D is the renderer that browsers without WebGL get. The picture is the same on both, and the camera, the body in focus and the clock carry on across a switch. Where the browser has no WebGL, the WebGL button is greyed out.
 - **Glyphs** turns the characters off and on. Without them the same light is drawn as a smooth picture.
-- A click or a tap on a body flies to it and opens the info panel. Close to a planet or a moon, its landing sites are marked, and a click on one lists its date, who sent it and where it is in the panel.
+- A click or a tap on a body flies to it. Close to a planet or a moon, its landing sites are marked with their names and years.
 
 The top bar shows the time on the clock in UTC and its rate, which reads Live, Paused or a rate such as +1 day/s. Its Read me button opens the steps for putting the explorer, or one of its parts, on another page.
 
-On a keyboard, the up and down arrows zoom and the left and right arrows turn. Keys 0 to 8 fly to the Sun and the planets, M flies to the Moon and Home shows the whole system. Esc closes the Read me panel while it is open. Otherwise it closes the body list on a small screen, then a landing site, then the info panel.
+On a keyboard, the up and down arrows zoom and the left and right arrows turn. Keys 0 to 8 fly to the Sun and the planets, M flies to the Moon and Home shows the whole system. Esc closes the Read me panel while it is open, and otherwise the body list on a small screen.
 
 The tab's icon is the body in focus, ray-cast from the explorer's camera and framed by corner brackets in the body's colour. In a background tab it is drawn again once a minute. Browsers that keep the first icon they load, such as Safari, show the plain icon in the page's head.
 
@@ -46,7 +45,7 @@ The tab's icon is the body in focus, ray-cast from the explorer's camera and fra
 - Add `?feature=renderer` to show only the WebGL and Canvas 2D switch.
 - Add `?embed` to show the sky and its controls without the bar and the Read me, as the documentation page does in its frames. It combines with the others, as in `demo.html?feature=rings&embed`. In a frame the sky stops drawing while the frame is off screen. The wheel there scrolls the page round the frame, and it zooms only with Ctrl or Cmd held.
 
-The feature views have no info panel, and each one keeps the Glyphs button. The explorer's name in their bar links to the whole explorer.
+Each feature view keeps the Glyphs button. The explorer's name in their bar links to the whole explorer.
 
 Each part's own demo page accepts `?embed` as well, and keeps only its own buttons.
 
@@ -65,8 +64,8 @@ Whatever stays the same while a body spins is cached for each view, so a still c
 ## Files
 
 - `index.html` is the documentation page.
-- `demo.html`, `demo.css` and `demo.js` are the explorer's page, its styles and its controls: the gestures, the buttons, the body list, the info panel, the clock, the tab's icon and the views.
-- `js/bodies.js` holds the names, labels, periods and landing sites.
+- `demo.html`, `demo.css` and `demo.js` are the explorer's page, its styles and its controls: the gestures, the buttons, the body list, the clock, the tab's icon and the views.
+- `js/bodies.js` holds the names, labels and landing sites.
 - `fonts/` holds IBM Plex Mono for the page and the characters.
 - `js/orrery.js` is the explorer's engine: the bodies, the camera and its flights, the HUD, picking, the tab's icon and the loop.
 
