@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kissifier</title>
+  <script>
+    // ?embed shows only the demo, for a frame on the documentation page.
+    if (new URLSearchParams(location.search).has("embed")) document.documentElement.setAttribute("data-embed", "");
+  </script>
+  <link rel="stylesheet" href="demo.css">
+  <script defer src="kissifier.js"></script>
+  <script defer src="demo.js"></script>
+</head>
+<body>
+  <header class="bar">
+    <a class="back" href="./">← Documentation</a>
+    <span class="name">Kissifier</span>
+  </header>
+
+  <main>
+    <div class="upload">
+      <label class="btn">Upload a shape<input type="file" accept="image/png,image/jpeg,image/svg+xml,image/webp" data-file hidden></label>
+      <p class="hint">PNG, JPG or SVG, or drop a file on the print. A transparent PNG or an SVG works best.</p>
+    </div>
+
+    <figure class="stage" data-stage>
+      <canvas data-view role="img" aria-label="The print"></canvas>
+    </figure>
+    <p class="status" data-status aria-live="polite"></p>
+
+    <div class="controls">
+      <div class="sliders">
+        <label class="slider"><span>Ridges</span><input type="range" min="0" max="300" step="5" value="80" data-count="ridges"><output>80</output></label>
+        <label class="slider"><span>Lines</span><input type="range" min="0" max="200" step="5" value="50" data-count="lines"><output>50</output></label>
+        <label class="slider"><span>Weak spots</span><input type="range" min="0" max="20" value="3" data-count="weak"><output>3</output></label>
+      </div>
+      <div class="ink">
+        <canvas class="wheel" width="180" height="180" data-wheel aria-label="Colour wheel"></canvas>
+        <div class="ink-side">
+          <div class="group" role="group" aria-label="Ink">
+            <button type="button" data-ink="#7a1e1e" aria-pressed="true"><i style="background:#7a1e1e"></i>Red</button>
+            <button type="button" data-ink="#b23a3a" aria-pressed="false"><i style="background:#b23a3a"></i>Bright</button>
+            <button type="button" data-ink="#1e100b" aria-pressed="false"><i style="background:#1e100b"></i>Brown</button>
+          </div>
+          <label class="slider"><span>Brightness</span><input type="range" min="0" max="100" value="48" data-brightness><output data-hex>#7a1e1e</output></label>
+        </div>
+      </div>
+      <div class="group">
+        <button type="button" data-new>New print</button>
+        <button type="button" class="primary" data-download>Download PNG</button>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
