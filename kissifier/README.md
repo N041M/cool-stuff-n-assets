@@ -69,19 +69,23 @@ Each feature has its own `seed`, so adding or removing one does not change the o
 
 ## The Python tool
 
-`tools/kiss_texture.py` needs numpy, Pillow, SciPy and scikit-image. Its recipes have the same format, but its random numbers differ, so one recipe gives a different print in each.
+`tools/kiss_texture.py` needs numpy, Pillow, SciPy and scikit-image. Its recipes have the same format, but it draws prints differently and its random numbers differ, so one recipe gives a different print in each.
 
 ```sh
 python tools/kiss_texture.py analyze photo.jpg --out kiss_tex/
 python tools/kiss_texture.py add kiss.json --shape shape.png --ridges 100 --lines 10 --box 0,0.5,1,1
 python tools/kiss_texture.py add kiss.json --shape shape.png --ridges 25 --lines 70 --box 0,0,1,0.5
 python tools/kiss_texture.py add kiss.json --shape shape.png --weak 4
-python tools/kiss_texture.py render kiss.json --shape shape.png --color "#7A1E1E" --out kiss.png
+python tools/kiss_texture.py render kiss.json --shape shape.png --texture kiss_tex/ --color "#7A1E1E" --out print.png
 ```
 
-- `analyze` measures a photo of a print. It writes maps of the ink, pressure, creases, grain and crease direction, and `stats.json` with coverage, opacity, crease density, crease spacing and the main crease angles.
+- `analyze` measures a photo of a print. It writes maps of the ink, pressure, creases, grain and crease direction, `stats.json` with coverage, opacity, crease density, crease spacing and the main crease angles, and the texture files that `render` reads.
 - `add` places features and appends them to a recipe, which it creates if it is missing. `--box x0,y0,x1,y1` keeps the new features inside part of the shape, and `--at x,y` puts them at one point.
-- `render` draws a recipe on a shape. The shape is a PNG whose alpha is the outline.
+- `render` draws a recipe on a shape. The shape is a PNG whose alpha is the outline. `--texture` is the folder that `analyze` wrote, and defaults to `kiss_tex`.
+
+The texture files are cut from the photo, so they are not in this repository either. Run `analyze` on the photo before `render`. The same recipe on the same shape with the same `analyze` folder always gives the same print.
+
+The Python render takes the lip texture and the band along the mouth from the photo's own ink, laid out along the shape's mouth. The band carries on from each corner of the mouth along a seam to the notch in the outline where the lips meet, as it does on the photo. Ridges and cracks follow a line through the mouth and the seams rather than the middle of the bounding box, so they run a little differently from the demo's.
 
 The three `add` calls above give a print close to the photo, with ridges mostly on the lower lip and cracks mostly on the upper lip.
 

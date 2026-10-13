@@ -239,13 +239,13 @@ worker.postMessage({ id: 1, alpha: shape.A, width: shape.W, height: shape.H, rec
     </section>
     <section class="doc" aria-labelledby="python">
       <h2 id="python">Python tool</h2>
-      <p><code>tools/kiss_texture.py</code> is the tool the generator was ported from. It measures a photo of a real print and makes prints from the command line. Its recipes have the same format, but its random numbers differ, so one recipe gives a different print in each. It needs numpy, Pillow, SciPy and scikit-image.</p>
+      <p><code>tools/kiss_texture.py</code> is the tool the generator was ported from. It measures a photo of a real print and makes prints with the photo's own texture from the command line. Its recipes have the same format, but it draws prints differently and its random numbers differ, so one recipe gives a different print in each. It needs numpy, Pillow, SciPy and scikit-image.</p>
       <div class="code"><pre><code>python tools/kiss_texture.py analyze photo.jpg --out kiss_tex/
 python tools/kiss_texture.py add kiss.json --shape shape.png --ridges 100 --lines 10 --box 0,0.5,1,1
 python tools/kiss_texture.py add kiss.json --shape shape.png --ridges 25 --lines 70 --box 0,0,1,0.5
 python tools/kiss_texture.py add kiss.json --shape shape.png --weak 4
-python tools/kiss_texture.py render kiss.json --shape shape.png --color "#7A1E1E" --out kiss.png</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
-      <p><code>--box x0,y0,x1,y1</code> keeps new features inside part of the shape and <code>--at x,y</code> puts them at one point. The three <code>add</code> calls above give a print close to the photo, with ridges mostly on the lower lip and cracks mostly on the upper lip.</p>
+python tools/kiss_texture.py render kiss.json --shape shape.png --texture kiss_tex/ --color "#7A1E1E" --out print.png</code></pre><button type="button" class="btn" data-copy-code>Copy</button></div>
+      <p><code>render</code> reads the folder that <code>analyze</code> wrote, so run <code>analyze</code> on a photo first. <code>--box x0,y0,x1,y1</code> keeps new features inside part of the shape and <code>--at x,y</code> puts them at one point. The three <code>add</code> calls above give a print close to the photo, with ridges mostly on the lower lip and cracks mostly on the upper lip.</p>
     </section>
   </main>
 
