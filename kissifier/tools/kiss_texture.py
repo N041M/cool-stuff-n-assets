@@ -26,7 +26,7 @@ Outputs of `analyze` (all PNG are 8-bit grayscale, white = more ink unless noted
   creases.png      ridge filter response: the thin paper-coloured lines inside the ink (white = crease)
   grain.png        fine speckle left after removing creases and pressure
   orientation.png  crease direction as hue (HSV), brightness = coherence
-  texture-tile.png seamless 1024px tile built from detail+creases, for CSS mask-image / overlays
+  texture-tile.png seamless tile of detail+creases, cut from inside the print at the working size, for CSS mask-image / overlays
   stats.json       coverage, opacity distribution, crease density, spacing, dominant angles (0 = horizontal, 90 = vertical)
 
 Needs: numpy, pillow, scipy, scikit-image   (pip install numpy pillow scipy scikit-image)
@@ -54,6 +54,18 @@ def norm(a, lo=1, hi=99, mask=None):
 
 def hex_rgb(h):
     h = h.lstrip("#"); return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+
+def seamless(t):
+    """Make a square tile seamless. Along each axis in turn, the outer quarter on each side fades
+    into a copy of the tile shifted by half its size. The copy's own seam lies in the middle, where
+    the fade has not started. Dividing by the length of the two weights keeps the contrast where the
+    two mix."""
+    n = len(t)
+    ramp = np.clip(4 * np.abs(np.arange(n) - (n - 1) / 2) / (n - 1) - 1, 0, 1)
+    m = t.mean()
+    for axis, w in ((0, ramp[:, None]), (1, ramp[None, :])):
+        t = m + ((1 - w) * (t - m) + w * (np.roll(t, n // 2, axis) - m)) / np.hypot(1 - w, w)
+    return t
 
 
 # ---------- ink extraction ----------
@@ -132,12 +144,19 @@ def analyze(args):
     hsv = np.stack([hue, np.ones_like(hue) * 0.8, norm(coherence, 1, 99, body)], -1)
     Image.fromarray((hsv * 255).astype(np.uint8), "HSV").convert("RGB").save(os.path.join(args.out, "orientation.png"))
 
-    # Crease spacing: dominant frequency of detail perpendicular to creases (FFT of a body patch).
-    ys, xs = np.where(body)
-    cy, cx = int(ys.mean()), int(xs.mean())
-    s = min(256, H // 3, W // 3)
-    patch = detail_n[cy - s // 2: cy + s // 2, cx - s // 2: cx + s // 2]
-    F = np.abs(np.fft.fftshift(np.fft.fft2(patch - patch.mean())))
+    # The crease spacing and the tile come from the largest square that fits inside the print, so
+    # the square holds neither the mouth nor the outline. The padding keeps it inside the image when
+    # a tight --crop lets the print touch the edge.
+    inside = ndi.distance_transform_cdt(np.pad(body, 1), metric="chessboard")[1:-1, 1:-1]
+    cy, cx = np.unravel_index(np.argmax(inside), inside.shape)
+    half = int(inside[cy, cx]) - 1
+    square = np.s_[cy - half: cy + half, cx - half: cx + half]
+
+    # Crease spacing: dominant frequency of detail perpendicular to creases (FFT of the square). A
+    # Hann window stops the jump between opposite edges of the square from showing up as a frequency.
+    s = 2 * half
+    patch = detail_n[square]
+    F = np.abs(np.fft.fftshift(np.fft.fft2((patch - patch.mean()) * np.outer(np.hanning(s), np.hanning(s)))))
     F[s // 2 - 2: s // 2 + 3, s // 2 - 2: s // 2 + 3] = 0
     fy, fx = np.unravel_index(np.argmax(F), F.shape)
     freq = math.hypot(fy - s // 2, fx - s // 2) / s
@@ -147,23 +166,17 @@ def analyze(args):
                       ("creases", creases), ("grain", grain)]:
         save_gray(arr, os.path.join(args.out, f"{name}.png"))
 
-    # Seamless tile: take the densest square of detail+creases, mirror-blend edges.
     tex = np.clip(detail_n * (1 - 0.8 * creases), 0, 1)
-    ts = min(H, W, 512)
-    best, by, bx = -1, 0, 0
-    for yy in range(0, H - ts, 16):
-        for xx in range(0, W - ts, 16):
-            v = body[yy:yy + ts, xx:xx + ts].mean()
-            if v > best:
-                best, by, bx = v, yy, xx
-    t = tex[by:by + ts, bx:bx + ts]
-    t = np.block([[t, t[:, ::-1]], [t[::-1], t[::-1, ::-1]]])   # mirror -> seamless
-    Image.fromarray((t * 255).astype(np.uint8), "L").resize((1024, 1024), Image.LANCZOS).save(
-        os.path.join(args.out, "texture-tile.png"))
+    save_gray(seamless(tex[square]), os.path.join(args.out, "texture-tile.png"))
 
-    ang = np.degrees(theta[body & (coherence > 0.3)])
-    hist, edges = np.histogram(ang, bins=36, range=(-90, 90))
-    top = [float((edges[i] + edges[i + 1]) / 2) for i in np.argsort(hist)[::-1][:3]]
+    # Crease angles repeat every 180 degrees, so the histogram wraps around. Its bins are shifted so
+    # that vertical is one bin centred on 90. The dominant angles are its three highest peaks after
+    # smoothing over neighbouring bins, so a bump on the side of a peak is not a direction of its own.
+    ang = (np.degrees(theta[body & (coherence > 0.3)]) + 87.5) % 180 - 87.5
+    hist, edges = np.histogram(ang, bins=36, range=(-87.5, 92.5))
+    hist = hist + 0.5 * (np.roll(hist, 1) + np.roll(hist, -1))
+    peaks = np.nonzero((hist > np.roll(hist, 1)) & (hist >= np.roll(hist, -1)))[0]
+    top = [float((edges[i] + edges[i + 1]) / 2) for i in peaks[np.argsort(hist[peaks])[::-1][:3]]]
     stats = {
         "source": os.path.basename(args.photo), "crop_px": [int(v) for v in box], "working_size": [W, H],
         "coverage": float((ink > 0.5).sum() / body.sum()),
